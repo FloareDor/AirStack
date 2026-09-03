@@ -1,0 +1,79 @@
+planner:
+  method: mononav
+  depth_source: zoe
+
+flight:
+  start_pose: [0.0, 0.0, 0.07, 0.0]
+  takeoff_height_m: 1.2
+  takeoff_velocity_m_s: 0.3
+  goal:
+    frame: takeoff_odometry
+    offset_m: [8.0, 0.0, 0.0]
+    radius_m: 1.0
+
+trial:
+  timeout_s: 90
+  startup_timeout_s: 240
+  bridge_start_timeout_s: 60
+  planner_start_timeout_s: 90
+  odometry_sample_rate_hz: 10
+  robot_radius_m: 0.25
+
+airstack:
+  repo: /home/ubuntu/airlab/AirStack
+  cli: airstack.sh
+  compose_profiles: desktop,isaac-sim
+  display: ":99"
+  headless: false
+  sim_container: isaac-sim
+  robot_container: airstack-robot-desktop-1
+  docker_network: airstack_airstack_network
+  ros_domain_id: 1
+  robot_setup: /root/AirStack/robot/ros_ws/install/setup.bash
+
+mononav:
+  repo: /home/ubuntu/airlab/MonoNav
+  image: mononav-demo:1.0
+  torch_cache_volume: mononav-torch-cache
+  container_name: mononav-airstack
+  bridge:
+    manage: true
+    server_url: http://airstack-robot-desktop-1:8765
+    health_url: http://127.0.0.1:8765
+  args:
+    - --tsdf-device
+    - CPU:0
+    - --zoe-depth-scale
+    - "1.68"
+    - --rate
+    - "2.0"
+    - --warmup-frames
+    - "4"
+    - --velocity
+    - "0.4"
+    - --command-hold-seconds
+    - "1.2"
+    - --min-dist2obs
+    - "0.6"
+    - --max-altitude-deviation
+    - "0.35"
+    - --stop-confirm-frames
+    - "3"
+    - --planning-height-band
+    - "0.4"
+    - --clearance-recovery-distance
+    - "0.25"
+    - --recovery-yaw-deg
+    - "25"
+    - --recovery-radius
+    - "0.03"
+    - --recovery-velocity
+    - "0.03"
+    - --recovery-hold-seconds
+    - "2.0"
+    - --max-recovery-steps
+    - "12"
+    - --min-tsdf-points
+    - "10"
+    - --tsdf-local-radius
+    - "3.0"

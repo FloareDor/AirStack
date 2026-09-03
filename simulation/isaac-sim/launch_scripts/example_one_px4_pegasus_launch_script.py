@@ -17,6 +17,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import os
+import random
 import sys
 import time
 import asyncio
@@ -70,25 +71,48 @@ VISION_PLANNER_DEMO_OBSTACLES = (
     os.environ.get("VISION_PLANNER_DEMO_OBSTACLES", "false").lower() == "true"
     or os.environ.get("MONONAV_DEMO_OBSTACLES", "false").lower() == "true"
 )
+PRESENTATION_OVERVIEW = os.environ.get("MONONAV_PRESENTATION_OVERVIEW", "false").lower() == "true"
 # ---------------------------------------------------------
 
 
 def add_vision_planner_demo_obstacles(stage):
-    """Add a sparse, deterministic slalom course in front of the spawn."""
+    """Add the stock slalom course, optionally with deterministic test jitter.
+
+    Defaults are exactly the legacy fixed three-box scene.  Set a seed plus one
+    or more nonzero jitter limits to create a replayable domain-randomized case.
+    """
+    seed = os.environ.get("MONONAV_SCENE_SEED") or None
+    lateral_jitter_m = float(os.environ.get("MONONAV_SCENE_LATERAL_JITTER_M", "0.0"))
+    longitudinal_jitter_m = float(os.environ.get("MONONAV_SCENE_LONGITUDINAL_JITTER_M", "0.0"))
+    scale_jitter = float(os.environ.get("MONONAV_SCENE_SCALE_JITTER", "0.0"))
+    if lateral_jitter_m < 0.0 or longitudinal_jitter_m < 0.0 or not 0.0 <= scale_jitter < 1.0:
+        raise ValueError("scene jitter limits must be nonnegative; scale jitter must be below 1")
+    rng = random.Random(int(seed)) if seed is not None else None
     obstacles = (
         ("CenterGate", (3.0, 0.0, 1.0), (0.6, 0.8, 2.0), (0.95, 0.32, 0.12)),
         ("LeftOffset", (5.1, -1.7, 1.0), (0.7, 1.0, 2.0), (0.12, 0.48, 0.95)),
         ("RightOffset", (7.2, 1.6, 1.0), (0.7, 1.0, 2.0), (0.95, 0.78, 0.10)),
     )
+    resolved = []
     for name, position, dimensions, color in obstacles:
+        if rng is None:
+            resolved_position, resolved_dimensions = position, dimensions
+        else:
+            x, y, z = position
+            x += rng.uniform(-longitudinal_jitter_m, longitudinal_jitter_m)
+            y += rng.uniform(-lateral_jitter_m, lateral_jitter_m)
+            scale = rng.uniform(1.0 - scale_jitter, 1.0 + scale_jitter)
+            resolved_position = (x, y, z)
+            resolved_dimensions = tuple(component * scale for component in dimensions)
         cube = UsdGeom.Cube.Define(stage, f"/World/VisionPlannerDemo/{name}")
         cube.GetSizeAttr().Set(1.0)
         cube.CreateDisplayColorAttr([Gf.Vec3f(*color)])
         xform = UsdGeom.Xformable(cube.GetPrim())
-        xform.AddTranslateOp().Set(Gf.Vec3d(*position))
-        xform.AddScaleOp().Set(Gf.Vec3f(*dimensions))
+        xform.AddTranslateOp().Set(Gf.Vec3d(*resolved_position))
+        xform.AddScaleOp().Set(Gf.Vec3f(*resolved_dimensions))
         UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
-    print(f"[VisionPlannerDemo] Added {len(obstacles)} static slalom obstacles")
+        resolved.append((name, resolved_position, resolved_dimensions))
+    print(f"[VisionPlannerDemo] Added {len(obstacles)} slalom obstacles; seed={seed}; resolved={resolved}")
 
 
 # Enable required extensions
@@ -174,6 +198,11 @@ class PegasusApp:
             for _ in range(5):
                 omni.kit.app.get_app().update()
 
+        # A deliberately wide, high view for documentation/capture.  It is
+        # opt-in so normal simulation and evaluation runs retain their UI view.
+        if PRESENTATION_OVERVIEW:
+            self.pg.set_viewport_camera([4.5, -12.0, 10.0], [4.5, 0.0, 0.8])
+
         # Optionally save the prepared scene as a self-contained USD package.
         # The Collector copies all Nucleus-hosted textures and MDLs locally.
         if SAVE_SCENE_TO:
@@ -237,6 +266,12 @@ class PegasusApp:
             self.timeline.stop()
 
         app = omni.kit.app.get_app()
+        # The Pegasus viewport is initialized during play; apply the optional
+        # overview after that initialization rather than during stage setup.
+        if PRESENTATION_OVERVIEW:
+            for _ in range(10):
+                app.update()
+            self.pg.set_viewport_camera([4.5, -12.0, 10.0], [4.5, 0.0, 0.8])
         while simulation_app.is_running():
             # File → Save re-opens the stage, which invalidates the World.
             # Fall back to app.update() until the extension re-creates it.

@@ -1,0 +1,6 @@
+campaign_id: slalom_3box_v1_initial
+scenarios:
+  - ../scenarios/stock.yaml
+  - ../scenarios/medium_seed1.yaml
+  - ../scenarios/medium_seed2.yaml
+  - ../scenarios/medium_seed3.yaml

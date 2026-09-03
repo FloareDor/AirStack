@@ -1,0 +1,9 @@
+extends: _base.yaml
+scenario_id: slalom_3box_v1
+seed: null
+obstacles:
+  preset: slalom_3box_v1
+  variation:
+    lateral_m: 0.0
+    longitudinal_m: 0.0
+    scale_fraction: 0.0
