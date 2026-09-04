@@ -15,7 +15,11 @@ from automated_testbench.metrics import (  # noqa: E402
     point_to_box_distance,
     summarize,
 )
-from automated_testbench.run_trial import EventRecorder, TrialState  # noqa: E402
+from automated_testbench.run_trial import (  # noqa: E402
+    EventRecorder,
+    TrialState,
+    build_termination,
+)
 from automated_testbench.scenario import (  # noqa: E402
     STOCK_OBSTACLES,
     ScenarioError,
@@ -121,4 +125,50 @@ def test_planner_events_are_counted_without_scraping_frame_noise(tmp_path):
         "planner_hold",
         "planner_recovery",
         "planner_terminal",
+    }
+
+
+@pytest.mark.parametrize(
+    ("raw_reason", "reason_code", "recovery_count"),
+    [
+        ("altitude deviation", "altitude_deviation", None),
+        (
+            "no central safe primitive after 12 yaw scans",
+            "recovery_exhausted",
+            12,
+        ),
+    ],
+)
+def test_planner_stop_termination_has_stable_reason(
+    tmp_path, raw_reason, reason_code, recovery_count
+):
+    events = EventRecorder(tmp_path / "events.jsonl")
+    state = TrialState([8.0, 0.0, 1.0], 1.0, [], 0.25, events)
+    state.planner_terminal_reason = raw_reason
+    state.planner_terminal_distance_m = 1.54
+    state.planner_recovery_count = recovery_count or 0
+    events.close()
+
+    termination = build_termination("planner_stopped", state, None)
+
+    assert termination["source"] == "planner"
+    assert termination["reason"] == reason_code
+    assert termination["detail"] == raw_reason
+    assert termination["planner_distance_to_goal_m"] == pytest.approx(1.54)
+    if recovery_count is None:
+        assert "recovery_count" not in termination
+    else:
+        assert termination["recovery_count"] == recovery_count
+
+
+def test_infrastructure_termination_preserves_stage_and_message():
+    termination = build_termination(
+        "infrastructure_error",
+        None,
+        {"stage": "bridge_health", "message": "bridge unavailable"},
+    )
+    assert termination == {
+        "source": "infrastructure",
+        "reason": "bridge_health",
+        "detail": "bridge unavailable",
     }

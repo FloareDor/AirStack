@@ -204,6 +204,78 @@ class TrialState:
             )
 
 
+def planner_reason_code(reason: str) -> str:
+    """Map MonoNav terminal text to a small, stable result vocabulary."""
+    if reason == "altitude deviation":
+        return "altitude_deviation"
+    if reason.startswith("no central safe primitive"):
+        return "recovery_exhausted"
+    if reason == "goal threshold reached":
+        return "goal_threshold_reached"
+    return "planner_terminal"
+
+
+def build_termination(
+    outcome: str,
+    state: TrialState | None,
+    failure: dict[str, str] | None,
+) -> dict[str, Any]:
+    """Build the concise machine-readable explanation saved with every verdict."""
+    if outcome == "infrastructure_error":
+        stage = failure.get("stage", "unknown") if failure else "unknown"
+        detail = failure.get("message", "infrastructure failure") if failure else None
+        return {
+            "source": "infrastructure",
+            "reason": stage,
+            "detail": detail,
+        }
+    if outcome == "collision":
+        return {
+            "source": "odometry_monitor",
+            "reason": "geometry_collision",
+            "detail": "estimated obstacle clearance reached zero",
+        }
+    if outcome == "timeout":
+        return {
+            "source": "runner",
+            "reason": "trial_timeout",
+            "detail": "configured flight timeout elapsed",
+        }
+
+    planner_reason = state.planner_terminal_reason if state is not None else None
+    planner_distance = state.planner_terminal_distance_m if state is not None else None
+    if outcome == "goal_reached":
+        if planner_reason is not None:
+            return {
+                "source": "planner",
+                "reason": planner_reason_code(planner_reason),
+                "detail": planner_reason,
+                "planner_distance_to_goal_m": planner_distance,
+            }
+        return {
+            "source": "odometry_monitor",
+            "reason": "goal_radius_reached",
+            "detail": "odometry entered the configured goal radius",
+        }
+    if outcome == "planner_stopped":
+        if planner_reason is not None:
+            termination = {
+                "source": "planner",
+                "reason": planner_reason_code(planner_reason),
+                "detail": planner_reason,
+                "planner_distance_to_goal_m": planner_distance,
+            }
+            if termination["reason"] == "recovery_exhausted" and state is not None:
+                termination["recovery_count"] = state.planner_recovery_count
+            return termination
+        return {
+            "source": "planner",
+            "reason": "planner_exited_cleanly",
+            "detail": "planner process exited without a terminal message",
+        }
+    raise ValueError(f"unsupported trial outcome: {outcome}")
+
+
 class AirStackRuntime:
     def __init__(
         self, scenario: dict[str, Any], result_dir: Path, events: EventRecorder
@@ -823,13 +895,14 @@ class TrialRunner:
         dump_scenario(self.scenario, result_dir / "scenario.yaml")
         started_at = utc_now()
         result: dict[str, Any] = {
-            "schema_version": 1,
+            "schema_version": 2,
             "trial_id": trial_id,
             "scenario_id": self.scenario["scenario_id"],
             "outcome": "infrastructure_error",
             "started_at_utc": started_at,
             "ended_at_utc": None,
             "metrics": {},
+            "termination": None,
             "failure": None,
         }
         atomic_json(result_dir / "result.json", result)
@@ -1004,11 +1077,13 @@ class TrialRunner:
                     else (outcome_monotonic or time.monotonic())
                     - planner_started_monotonic
                 )
+            termination = build_termination(outcome, state, failure)
             result.update(
                 {
                     "outcome": outcome,
                     "ended_at_utc": utc_now(),
                     "metrics": metrics,
+                    "termination": termination,
                     "failure": failure,
                     "artifacts": {
                         "scenario": "scenario.yaml",
@@ -1017,7 +1092,12 @@ class TrialRunner:
                     },
                 }
             )
-            events.emit("trial_finished", outcome=outcome, metrics=metrics)
+            events.emit(
+                "trial_finished",
+                outcome=outcome,
+                termination=termination,
+                metrics=metrics,
+            )
             atomic_json(result_dir / "result.json", result)
             events.close()
         return result_dir, result

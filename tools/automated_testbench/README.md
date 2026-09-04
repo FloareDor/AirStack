@@ -88,9 +88,13 @@ contains:
   `takeoff.log`, and probe/cleanup logs where applicable.
 
 The only outcomes are `goal_reached`, `collision`, `timeout`,
-`planner_stopped`, and `infrastructure_error`. Docker, Isaac Sim, PX4, ROS 2,
-bridge, takeoff, or stale-telemetry failures are infrastructure errors; a
-healthy planner that exhausts recovery is `planner_stopped`.
+`planner_stopped`, and `infrastructure_error`. Every schema-version 2 result
+also has a `termination` object with a stable `source` and `reason`, the raw
+terminal detail, and planner-specific context when available. For example,
+planner stops distinguish `altitude_deviation` from `recovery_exhausted`.
+Docker, Isaac Sim, PX4, ROS 2, bridge, takeoff, or stale-telemetry failures are
+infrastructure errors; a healthy planner that exhausts recovery is
+`planner_stopped`.
 
 Path length integrates 3-D odometry at the configured sample rate. Time to goal
 uses ROS message (simulation) time. The current obstacle minimum-clearance and
