@@ -65,9 +65,18 @@ def summarize(
         time_to_goal = (
             samples[goal_reached_index]["sim_time_s"] - samples[0]["sim_time_s"]
         )
+    travelled = path_length(samples)
+    direct_distance = None
+    path_efficiency = None
+    if samples and goal_position_m is not None:
+        direct_distance = distance(samples[0]["position_m"], goal_position_m)
+        if travelled > 0.0:
+            path_efficiency = min(1.0, direct_distance / travelled)
     return {
         "time_to_goal_s": time_to_goal,
-        "path_length_m": path_length(samples),
+        "path_length_m": travelled,
+        "direct_start_to_goal_distance_m": direct_distance,
+        "path_efficiency": path_efficiency,
         "final_distance_to_goal_m": final_distance,
         "planner_hold_count": planner_hold_count,
         "planner_recovery_count": planner_recovery_count,

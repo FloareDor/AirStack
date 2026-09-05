@@ -39,6 +39,31 @@ Trials run sequentially because this milestone uses one GPU, one PX4 instance,
 and one executing external planner. A filesystem lock rejects overlapping
 campaigns or individual runs.
 
+Each perturbation has a clean twin with the same scene seed, mission, and
+planner. Candidate autonomy failures are replayed three times before being
+labeled reproducible; infrastructure errors are never autonomy failures.
+
+## Random and TPE search
+
+The read-only public WS2 bounds are in `threat_models/generic-ws2-v1.yaml`.
+Generators see only this manifest and return typed parameter maps; they never
+receive Docker, ROS, PX4, scoring, or cleanup capabilities. Replace the file
+with CyLab's approved manifest when it is handed off.
+
+```bash
+python3 tools/automated_testbench/run_search.py \
+  tools/automated_testbench/scenarios/stock.yaml \
+  --backend random --seed 17 --trial-budget 20
+
+python3 -m pip install -r tools/automated_testbench/requirements-search.txt
+python3 tools/automated_testbench/run_search.py \
+  tools/automated_testbench/scenarios/stock.yaml \
+  --backend tpe --seed 17 --trial-budget 20
+```
+
+TPE uses a SQLite study in the campaign directory, so running the same command
+with `--campaign-dir <that-directory>` resumes it.
+
 ## Scenario contract
 
 Each leaf scenario may `extend` one relative YAML file. The saved
@@ -49,6 +74,8 @@ Each leaf scenario may `extend` one relative YAML file. The saved
 - the fixed spawn, 1.2 m takeoff, relative 8 m goal, and 1 m radius;
 - randomization bounds plus every resolved obstacle pose and size;
 - timeout, sampling, AirStack launch, and Docker/ROS settings;
+- mission, planner adapter, clean environment, perturbations, repetition,
+  oracle settings, threat-model version, and a canonical configuration hash;
 - the measured post-takeoff start and resulting world-frame goal.
 
 The obstacle resolver intentionally mirrors the exact `random.Random` call
@@ -88,7 +115,7 @@ contains:
   `takeoff.log`, and probe/cleanup logs where applicable.
 
 The only outcomes are `goal_reached`, `collision`, `timeout`,
-`planner_stopped`, and `infrastructure_error`. Every schema-version 2 result
+`planner_stopped`, and `infrastructure_error`. Every schema-version 3 result
 also has a `termination` object with a stable `source` and `reason`, the raw
 terminal detail, and planner-specific context when available. For example,
 planner stops distinguish `altitude_deviation` from `recovery_exhausted`.
@@ -97,10 +124,11 @@ infrastructure errors; a healthy planner that exhausts recovery is
 `planner_stopped`.
 
 Path length integrates 3-D odometry at the configured sample rate. Time to goal
-uses ROS message (simulation) time. The current obstacle minimum-clearance and
-collision fallback treats the Iris as a sphere and the three known cubes as
-axis-aligned boxes. PhysX contact becomes the authoritative collision oracle
-when that signal is integrated in a later milestone.
+uses ROS message (simulation) time. Results capture AirStack/MonoNav commits,
+container image IDs, seed, repetition, and configuration hash. PhysX contact
+with a named test obstacle is authoritative whenever its ROS 2 heartbeat is
+available. Geometry-derived clearance remains a metric and documented fallback
+with configurable 0.1 m collision padding.
 
 ## Validation
 

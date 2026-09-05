@@ -24,10 +24,12 @@ if __package__ in (None, ""):
     from automated_testbench.metrics import obstacle_clearance, summarize
     from automated_testbench.processes import CommandError, ManagedProcess, run_logged
     from automated_testbench.scenario import dump_scenario, load_scenario
+    from automated_testbench.locking import try_lock, unlock
 else:
     from .metrics import obstacle_clearance, summarize
     from .processes import CommandError, ManagedProcess, run_logged
     from .scenario import dump_scenario, load_scenario
+    from .locking import try_lock, unlock
 
 
 TERMINAL_RE = re.compile(
@@ -87,17 +89,23 @@ class TrialState:
         obstacles: list[dict[str, Any]],
         robot_radius_m: float,
         events: EventRecorder,
+        collision_padding_m: float = 0.1,
+        geometry_fallback: bool = True,
     ) -> None:
         self.goal_position_m = goal_position_m
         self.goal_radius_m = goal_radius_m
         self.obstacles = obstacles
         self.robot_radius_m = robot_radius_m
+        self.collision_padding_m = collision_padding_m
+        self.geometry_fallback = geometry_fallback
         self.events = events
         self.lock = threading.Lock()
         self.active = False
         self.samples: list[dict[str, Any]] = []
         self.goal_reached_index: int | None = None
         self.collision = False
+        self.collision_source: str | None = None
+        self.physx_contact_available = False
         self.last_telemetry_wall: float | None = None
         self.planner_ready = threading.Event()
         self.planner_terminal_reason: str | None = None
@@ -111,6 +119,7 @@ class TrialState:
             self.samples.clear()
             self.goal_reached_index = None
             self.collision = False
+            self.collision_source = None
             self.active = True
 
     def telemetry_line(self, line: str) -> None:
@@ -121,6 +130,14 @@ class TrialState:
         event = payload.get("event")
         if event == "bridge_status":
             self.events.emit("bridge_status", status=payload.get("status"))
+            return
+        if event == "physx_contact":
+            with self.lock:
+                self.physx_contact_available = True
+                if self.active and bool(payload.get("contact", False)) and not self.collision:
+                    self.collision = True
+                    self.collision_source = "physx_contact"
+                    self.events.emit("physx_contact", contact=True)
             return
         if event != "odometry":
             return
@@ -149,12 +166,26 @@ class TrialState:
                     sim_time_s=sample["sim_time_s"],
                     distance_m=distance_to_goal,
                 )
-            if clearance is not None and clearance <= 0.0 and not self.collision:
+                self.events.emit(
+                    "goal_reached",
+                    source="odometry",
+                    sim_time_s=sample["sim_time_s"],
+                    distance_m=distance_to_goal,
+                )
+            if (
+                self.geometry_fallback
+                and not self.physx_contact_available
+                and clearance is not None
+                and clearance <= self.collision_padding_m
+                and not self.collision
+            ):
                 self.collision = True
+                self.collision_source = "geometry_fallback"
                 self.events.emit(
                     "geometry_collision",
                     sim_time_s=sample["sim_time_s"],
                     clearance_m=clearance,
+                    padding_m=self.collision_padding_m,
                 )
             self.events.emit(
                 "odometry",
@@ -178,13 +209,16 @@ class TrialState:
             self.events.emit(
                 "planner_ready", worker_goal_position_m=self.worker_goal_position_m
             )
+            self.events.emit("ready", adapter="mononav")
             self.planner_ready.set()
         if line.startswith("UNSAFE HOLD:"):
             self.planner_hold_count += 1
             self.events.emit("planner_hold", detail=line)
+            self.events.emit("hold", adapter="mononav", detail=line)
         if line.startswith("RECOVERY "):
             self.planner_recovery_count += 1
             self.events.emit("planner_recovery", detail=line)
+            self.events.emit("recovery", adapter="mononav", detail=line)
         frame_match = FRAME_RE.search(line)
         if frame_match:
             self.events.emit(
@@ -193,6 +227,13 @@ class TrialState:
                 primitive=int(frame_match.group("primitive")),
                 blocked=frame_match.group("blocked") == "True",
             )
+            if int(frame_match.group("primitive")) >= 0:
+                self.events.emit(
+                    "command_issued",
+                    adapter="mononav",
+                    primitive=int(frame_match.group("primitive")),
+                    frame=int(frame_match.group("frame")),
+                )
         terminal_match = TERMINAL_RE.search(line)
         if terminal_match:
             self.planner_terminal_reason = terminal_match.group("reason")
@@ -201,6 +242,11 @@ class TrialState:
                 "planner_terminal",
                 reason=self.planner_terminal_reason,
                 distance_to_goal_m=self.planner_terminal_distance_m,
+            )
+            self.events.emit(
+                "planner_stopped",
+                adapter="mononav",
+                reason=self.planner_terminal_reason,
             )
 
 
@@ -230,10 +276,19 @@ def build_termination(
             "detail": detail,
         }
     if outcome == "collision":
+        collision_source = state.collision_source if state is not None else None
         return {
-            "source": "odometry_monitor",
-            "reason": "geometry_collision",
-            "detail": "estimated obstacle clearance reached zero",
+            "source": collision_source or "geometry_fallback",
+            "reason": (
+                "physx_contact"
+                if collision_source == "physx_contact"
+                else "geometry_collision_fallback"
+            ),
+            "detail": (
+                "PhysX reported obstacle contact"
+                if collision_source == "physx_contact"
+                else "estimated obstacle clearance crossed the configured padding"
+            ),
         }
     if outcome == "timeout":
         return {
@@ -298,6 +353,42 @@ class AirStackRuntime:
         self.bridge_process: ManagedProcess | None = None
         self.worker_process: ManagedProcess | None = None
         self.stack_started = False
+        self.provenance = self._capture_provenance()
+
+    @staticmethod
+    def _git_commit(path: Path) -> str | None:
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(path), "rev-parse", "HEAD"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=10,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        return result.stdout.strip() if result.returncode == 0 else None
+
+    def _capture_provenance(self) -> dict[str, Any]:
+        image = self.monav.get("image", "mononav-demo:1.0")
+        image_id = None
+        try:
+            inspected = subprocess.run(
+                ["docker", "image", "inspect", image, "--format", "{{.Id}}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=10,
+            )
+            if inspected.returncode == 0:
+                image_id = inspected.stdout.strip() or None
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return {
+            "airstack_commit": self._git_commit(self.repo),
+            "mononav_commit": self._git_commit(Path(self.monav["repo"])),
+            "container_images": {"mononav": {"reference": image, "id": image_id}},
+        }
 
     def _log(self, name: str) -> Path:
         return self.result_dir / name
@@ -597,6 +688,8 @@ class AirStackRuntime:
             "/robot_1/odometry_conversion/odometry",
             "--status-topic",
             "/robot_1/mononav/status",
+            "--contact-topic",
+            self.scenario["oracle"]["collision"]["contact_topic"],
             "--timeout",
             str(timeout_s),
             "--minimum-samples",
@@ -709,6 +802,8 @@ class AirStackRuntime:
             "/robot_1/odometry_conversion/odometry",
             "--status-topic",
             "/robot_1/mononav/status",
+            "--contact-topic",
+            self.scenario["oracle"]["collision"]["contact_topic"],
             "--sample-rate",
             str(self.scenario["trial"].get("odometry_sample_rate_hz", 10.0)),
         ]
@@ -895,9 +990,15 @@ class TrialRunner:
         dump_scenario(self.scenario, result_dir / "scenario.yaml")
         started_at = utc_now()
         result: dict[str, Any] = {
-            "schema_version": 2,
+            "schema_version": 3,
             "trial_id": trial_id,
             "scenario_id": self.scenario["scenario_id"],
+            "configuration": {
+                "hash": self.scenario["resolved"]["configuration_hash"],
+                "seed": self.scenario.get("seed"),
+                "repetition": self.scenario.get("repetition", 0),
+                "threat_model_version": self.scenario.get("threat_model_version"),
+            },
             "outcome": "infrastructure_error",
             "started_at_utc": started_at,
             "ended_at_utc": None,
@@ -946,6 +1047,8 @@ class TrialRunner:
                 self.scenario["resolved"]["obstacles"],
                 self.scenario["trial"]["robot_radius_m"],
                 events,
+                self.scenario["oracle"]["collision"]["padding_m"],
+                self.scenario["oracle"]["collision"]["geometry_fallback"],
             )
             telemetry = runtime.start_telemetry(state)
             deadline = time.monotonic() + 10
@@ -1085,6 +1188,7 @@ class TrialRunner:
                     "metrics": metrics,
                     "termination": termination,
                     "failure": failure,
+                    "provenance": runtime.provenance,
                     "artifacts": {
                         "scenario": "scenario.yaml",
                         "events": "events.jsonl",
@@ -1122,20 +1226,19 @@ def main() -> int:
     if args.resolve_only:
         print(json.dumps(scenario, indent=2))
         return 0
-    import fcntl
-
     args.results_dir.mkdir(parents=True, exist_ok=True)
     lock_path = args.results_dir / ".trial.lock"
-    with lock_path.open("w", encoding="utf-8") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
+    with lock_path.open("a+", encoding="utf-8") as lock:
+        if not try_lock(lock):
             print("another AirStack trial is already running", file=sys.stderr)
             return 3
-        runner = TrialRunner(
-            scenario, args.results_dir, teardown_stack=not args.keep_stack
-        )
-        result_dir, result = runner.run()
+        try:
+            runner = TrialRunner(
+                scenario, args.results_dir, teardown_stack=not args.keep_stack
+            )
+            result_dir, result = runner.run()
+        finally:
+            unlock(lock)
     print(json.dumps({"result_dir": str(result_dir), **result}, indent=2))
     return 2 if result["outcome"] == "infrastructure_error" else 0
 

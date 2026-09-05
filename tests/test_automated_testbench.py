@@ -26,6 +26,14 @@ from automated_testbench.scenario import (  # noqa: E402
     load_scenario,
     resolve_scenario,
 )
+from automated_testbench.threat_model import ThreatModel, ThreatModelError  # noqa: E402
+from automated_testbench.adversary import BoundedAdversary  # noqa: E402
+from automated_testbench.paired import prepare_pair, reproducibility_label  # noqa: E402
+from automated_testbench.perturbation_adapters import (  # noqa: E402
+    AdapterError,
+    Ros2SensorProxyAdapter,
+    WS1VisualPatchAdapter,
+)
 
 
 SCENARIOS = TOOLS_DIR / "automated_testbench" / "scenarios"
@@ -47,13 +55,23 @@ def test_seed_one_resolves_identically_every_time():
     first = load_scenario(SCENARIOS / "medium_seed1.yaml")
     second = load_scenario(SCENARIOS / "medium_seed1.yaml")
     assert first["resolved"]["obstacles"] == second["resolved"]["obstacles"]
-    assert first["resolved"]["scene_environment"] == {
+    environment = first["resolved"]["scene_environment"]
+    assert {key: environment[key] for key in (
+        "MONONAV_DEMO_OBSTACLES",
+        "MONONAV_SCENE_SEED",
+        "MONONAV_SCENE_LATERAL_JITTER_M",
+        "MONONAV_SCENE_LONGITUDINAL_JITTER_M",
+        "MONONAV_SCENE_SCALE_JITTER",
+    )} == {
         "MONONAV_DEMO_OBSTACLES": "true",
         "MONONAV_SCENE_SEED": "1",
         "MONONAV_SCENE_LATERAL_JITTER_M": "0.45",
         "MONONAV_SCENE_LONGITUDINAL_JITTER_M": "0.25",
         "MONONAV_SCENE_SCALE_JITTER": "0.1",
     }
+    assert environment["MONONAV_SCENE_OBSTACLE_COUNT"] == "3"
+    assert first["schema_version"] == 2
+    assert first["resolved"]["configuration_hash"] == second["resolved"]["configuration_hash"]
 
 
 def test_different_seeds_change_geometry():
@@ -68,6 +86,95 @@ def test_variation_requires_seed():
     stock["obstacles"]["variation"]["lateral_m"] = 0.1
     with pytest.raises(ScenarioError, match="seed is required"):
         resolve_scenario(stock)
+
+
+def test_nonfinite_and_infeasible_scenes_are_rejected():
+    stock = load_scenario(SCENARIOS / "stock.yaml")
+    stock.pop("resolved")
+    stock["flight"]["goal"]["radius_m"] = float("nan")
+    stock["mission"]["goal"]["radius_m"] = float("nan")
+    with pytest.raises(ScenarioError, match="finite"):
+        resolve_scenario(stock)
+
+    blocked = load_scenario(SCENARIOS / "stock.yaml")
+    blocked.pop("resolved")
+    blocked["flight"]["start_pose"] = [3.0, 0.0, 1.0, 0.0]
+    blocked["mission"]["start_pose"] = [3.0, 0.0, 1.0, 0.0]
+    with pytest.raises(ScenarioError, match="spawn region is blocked"):
+        resolve_scenario(blocked)
+
+
+def test_threat_model_rejects_out_of_model_values_and_builds_clean_twin():
+    model = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+    )
+    with pytest.raises(ThreatModelError, match="undeclared"):
+        model.validate({"shell": "docker down"})
+    with pytest.raises(ThreatModelError, match="outside"):
+        model.validate({"obstacle_count": 4})
+
+    medium = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    proposal = model.extract(medium)
+    attack = model.apply(medium, proposal, repetition=2)
+    clean = model.clean_twin(attack, repetition=2)
+    assert attack["repetition"] == clean["repetition"] == 2
+    assert clean["obstacles"]["variation"] == {
+        "lateral_m": 0.0,
+        "longitudinal_m": 0.0,
+        "scale_fraction": 0.0,
+    }
+    assert attack["resolved"]["configuration_hash"] != clean["resolved"]["configuration_hash"]
+
+
+def test_bounded_llm_facade_audits_and_rejects_undeclared_tools(tmp_path):
+    model = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+    )
+    adversary = BoundedAdversary(
+        load_scenario(SCENARIOS / "medium_seed1.yaml"),
+        model,
+        tmp_path,
+        tmp_path / "llm_audit.json",
+    )
+    decisions = adversary.propose_batch(
+        [{"obstacle_count": 2}, {"shell": "docker compose down"}],
+        rationale="test audit boundary",
+        model_configuration={"model": "test"},
+    )
+    assert decisions[0]["validator"]["accepted"]
+    assert not decisions[1]["validator"]["accepted"]
+    audit = json.loads((tmp_path / "llm_audit.json").read_text())
+    assert audit["model_configurations"] == [{"model": "test"}]
+
+
+def test_clean_pair_preserves_seed_mission_and_replay_configuration_hash():
+    model = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+    )
+    scenario = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    pair_id, clean, perturbed = prepare_pair(scenario, model, repetition=0)
+    _, _, replay = prepare_pair(scenario, model, repetition=1)
+    assert pair_id == clean["pair"]["pair_id"] == perturbed["pair"]["pair_id"]
+    assert clean["seed"] == perturbed["seed"] == 1
+    assert clean["mission"] == perturbed["mission"]
+    assert (
+        perturbed["resolved"]["configuration_hash"]
+        == replay["resolved"]["configuration_hash"]
+    )
+    pairs = [
+        {"verdict": "autonomy_failure", "perturbed": {"outcome": "collision"}}
+        for _ in range(3)
+    ]
+    assert reproducibility_label(pairs) == "reproducible"
+
+
+def test_future_sensor_and_ws1_adapters_remain_bounded():
+    proxy = Ros2SensorProxyAdapter().resolve(
+        {"noise_stddev": 0.1, "fixed_delay_s": 0.02, "dropout_probability": 0.1}
+    )
+    assert "WS2_SENSOR_PROXY_CONFIG_JSON" in proxy
+    with pytest.raises(AdapterError, match="canonical CyLab"):
+        WS1VisualPatchAdapter().resolve({"scene": "patch.usd", "asset": "a.png"})
 
 
 def test_path_length_uses_three_dimensional_odometry():
@@ -125,7 +232,27 @@ def test_planner_events_are_counted_without_scraping_frame_noise(tmp_path):
         "planner_hold",
         "planner_recovery",
         "planner_terminal",
+        "ready",
+        "hold",
+        "recovery",
+        "planner_stopped",
     }
+
+
+def test_physx_contact_overrides_geometry_fallback(tmp_path):
+    events = EventRecorder(tmp_path / "events.jsonl")
+    obstacle = {"position_m": [3.0, 0.0, 1.0], "size_m": [0.6, 0.8, 2.0]}
+    state = TrialState([8.0, 0.0, 1.0], 1.0, [obstacle], 0.25, events)
+    state.activate()
+    state.telemetry_line('{"event":"physx_contact","contact":false}')
+    state.telemetry_line(
+        '{"event":"odometry","sim_time_s":1,"wall_time_s":1,"position_m":[3,0,1]}'
+    )
+    assert not state.collision
+    state.telemetry_line('{"event":"physx_contact","contact":true}')
+    assert state.collision_source == "physx_contact"
+    events.close()
+    assert build_termination("collision", state, None)["reason"] == "physx_contact"
 
 
 @pytest.mark.parametrize(

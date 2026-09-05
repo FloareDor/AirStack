@@ -1,0 +1,58 @@
+version: generic-ws2-v1
+description: Public WS2 bounds pending the authoritative CyLab handoff.
+read_only: true
+
+budgets:
+  max_trials: 50
+  max_wall_clock_s: 14400
+  failure_repetitions: 3
+
+parameters:
+  obstacle_lateral_jitter_m:
+    type: float
+    target: obstacles.variation.lateral_m
+    min: 0.0
+    max: 0.75
+    clean: 0.0
+  obstacle_longitudinal_jitter_m:
+    type: float
+    target: obstacles.variation.longitudinal_m
+    min: 0.0
+    max: 0.5
+    clean: 0.0
+  obstacle_scale_fraction:
+    type: float
+    target: obstacles.variation.scale_fraction
+    min: 0.0
+    max: 0.25
+    clean: 0.0
+  obstacle_count:
+    type: int
+    target: obstacles.count
+    min: 1
+    max: 3
+    clean: 3
+  initial_pose_x_m:
+    type: float
+    target: mission.start_pose[0]
+    min: -0.5
+    max: 0.5
+    clean: 0.0
+  initial_pose_y_m:
+    type: float
+    target: mission.start_pose[1]
+    min: -0.5
+    max: 0.5
+    clean: 0.0
+  lighting_intensity:
+    type: float
+    target: environment.lighting.intensity
+    min: 100.0
+    max: 5000.0
+    clean: 1000.0
+  lighting_exposure:
+    type: float
+    target: environment.lighting.exposure
+    min: -5.0
+    max: 5.0
+    clean: 0.0

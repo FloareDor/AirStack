@@ -27,7 +27,7 @@ import omni.timeline
 import omni.usd
 
 from omni.isaac.core.world import World
-from pxr import Gf, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
 
 # Pegasus imports
 from pegasus.simulator.params import SIMULATION_ENVIRONMENTS
@@ -85,8 +85,11 @@ def add_vision_planner_demo_obstacles(stage):
     lateral_jitter_m = float(os.environ.get("MONONAV_SCENE_LATERAL_JITTER_M", "0.0"))
     longitudinal_jitter_m = float(os.environ.get("MONONAV_SCENE_LONGITUDINAL_JITTER_M", "0.0"))
     scale_jitter = float(os.environ.get("MONONAV_SCENE_SCALE_JITTER", "0.0"))
+    obstacle_count = int(os.environ.get("MONONAV_SCENE_OBSTACLE_COUNT", "3"))
     if lateral_jitter_m < 0.0 or longitudinal_jitter_m < 0.0 or not 0.0 <= scale_jitter < 1.0:
         raise ValueError("scene jitter limits must be nonnegative; scale jitter must be below 1")
+    if not 1 <= obstacle_count <= 3:
+        raise ValueError("MONONAV_SCENE_OBSTACLE_COUNT must be between 1 and 3")
     rng = random.Random(int(seed)) if seed is not None else None
     obstacles = (
         ("CenterGate", (3.0, 0.0, 1.0), (0.6, 0.8, 2.0), (0.95, 0.32, 0.12)),
@@ -94,7 +97,7 @@ def add_vision_planner_demo_obstacles(stage):
         ("RightOffset", (7.2, 1.6, 1.0), (0.7, 1.0, 2.0), (0.95, 0.78, 0.10)),
     )
     resolved = []
-    for name, position, dimensions, color in obstacles:
+    for name, position, dimensions, color in obstacles[:obstacle_count]:
         if rng is None:
             resolved_position, resolved_dimensions = position, dimensions
         else:
@@ -111,8 +114,9 @@ def add_vision_planner_demo_obstacles(stage):
         xform.AddTranslateOp().Set(Gf.Vec3d(*resolved_position))
         xform.AddScaleOp().Set(Gf.Vec3f(*resolved_dimensions))
         UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        PhysxSchema.PhysxContactReportAPI.Apply(cube.GetPrim())
         resolved.append((name, resolved_position, resolved_dimensions))
-    print(f"[VisionPlannerDemo] Added {len(obstacles)} slalom obstacles; seed={seed}; resolved={resolved}")
+    print(f"[VisionPlannerDemo] Added {len(resolved)} slalom obstacles; seed={seed}; resolved={resolved}")
 
 
 # Enable required extensions
@@ -129,6 +133,7 @@ for ext in [
     "omni.graph.window.generic",
     "omni.graph.ui_nodes",
     "pegasus.simulator",
+    "isaacsim.ros2.bridge",
 ]:
     if not ext_manager.is_extension_enabled(ext):
         ext_manager.set_extension_enabled_immediate(ext, True)
@@ -151,6 +156,10 @@ class PegasusApp:
 
     def __init__(self):
         self.timeline = omni.timeline.get_timeline_interface()
+        self._contact_reporter_ready = False
+        self._contact_reporter_disabled = False
+        self._contact_last_value = None
+        self._contact_last_publish_wall = 0.0
 
         # Start Pegasus interface + world
         self.pg = PegasusInterface()
@@ -191,7 +200,11 @@ class PegasusApp:
 
         # Add a dome light for uniform scene illumination.
         # Pass intensity/exposure kwargs to override defaults defined in scene_prep.
-        add_dome_light(stage)
+        add_dome_light(
+            stage,
+            intensity=float(os.environ.get("MONONAV_DOME_LIGHT_INTENSITY", "1000.0")),
+            exposure=float(os.environ.get("MONONAV_DOME_LIGHT_EXPOSURE", "0.0")),
+        )
 
         if VISION_PLANNER_DEMO_OBSTACLES:
             add_vision_planner_demo_obstacles(stage)
@@ -258,6 +271,68 @@ class PegasusApp:
 
         self.play_on_start = os.environ.get("PLAY_SIM_ON_START", "true").lower() == "true"
 
+    def _initialize_contact_reporter(self):
+        """Publish real PhysX obstacle contacts independently of the planner."""
+        if self._contact_reporter_ready or self._contact_reporter_disabled:
+            return
+        drone_prim = omni.usd.get_context().get_stage().GetPrimAtPath("/World/base_link")
+        if not drone_prim.IsValid():
+            return
+        try:
+            PhysxSchema.PhysxContactReportAPI.Apply(drone_prim)
+            from isaacsim.sensors.physics import _sensor
+            import rclpy
+            from std_msgs.msg import Bool
+
+            if not rclpy.ok():
+                rclpy.init(args=None)
+            self._contact_node = rclpy.create_node("ws2_physx_contact_reporter")
+            self._contact_message_type = Bool
+            self._contact_publisher = self._contact_node.create_publisher(
+                Bool,
+                os.environ.get(
+                    "MONONAV_PHYSX_CONTACT_TOPIC",
+                    "/robot_1/simulation/physx_contact",
+                ),
+                10,
+            )
+            self._contact_interface = _sensor.acquire_contact_sensor_interface()
+            self._contact_body_path = "/World/base_link"
+            self._contact_reporter_ready = True
+            carb.log_info("WS2 PhysX contact reporter ready")
+        except Exception as exc:
+            self._contact_reporter_disabled = True
+            carb.log_warn(f"WS2 PhysX contact reporter unavailable: {exc}")
+
+    def _publish_contact_state(self):
+        if not self._contact_reporter_ready:
+            return
+        try:
+            in_contact = False
+            for contact in self._contact_interface.get_rigid_body_raw_data(
+                self._contact_body_path
+            ):
+                values = [*contact]
+                bodies = {
+                    self._contact_interface.decode_body_name(values[2]),
+                    self._contact_interface.decode_body_name(values[3]),
+                }
+                if any(body.startswith("/World/VisionPlannerDemo/") for body in bodies):
+                    in_contact = True
+                    break
+            now = time.monotonic()
+            if in_contact != self._contact_last_value or now - self._contact_last_publish_wall >= 1.0:
+                message = self._contact_message_type()
+                message.data = in_contact
+                self._contact_publisher.publish(message)
+                self._contact_last_value = in_contact
+                self._contact_last_publish_wall = now
+            import rclpy
+            rclpy.spin_once(self._contact_node, timeout_sec=0.0)
+        except Exception as exc:
+            self._contact_reporter_disabled = True
+            carb.log_warn(f"WS2 PhysX contact reporter stopped: {exc}")
+
     def run(self):
 
         if self.play_on_start:
@@ -278,6 +353,8 @@ class PegasusApp:
             world = World.instance()
             if world is not None and hasattr(world, '_scene'):
                 world.step(render=True)
+                self._initialize_contact_reporter()
+                self._publish_contact_state()
                 if world is not self.world:
                     self.world = world
                     self.pg._world = world
