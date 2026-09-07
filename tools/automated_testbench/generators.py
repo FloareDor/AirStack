@@ -54,6 +54,41 @@ class UniformGenerator:
         del proposal, result
 
 
+class GridGenerator:
+    """Deterministic one-factor-at-a-time grid around the clean configuration."""
+
+    def __init__(self, threat_model: ThreatModel) -> None:
+        clean = {
+            name: _clean_value(spec)
+            for name, spec in threat_model.parameters.items()
+        }
+        self._proposals: list[dict[str, Any]] = []
+        for name, spec in threat_model.parameters.items():
+            for value in _grid_values(spec):
+                if value == clean[name]:
+                    continue
+                proposal = dict(clean)
+                proposal[name] = value
+                self._proposals.append(proposal)
+        self._sequence = 0
+
+    def propose(self) -> GeneratedProposal:
+        if self._sequence >= len(self._proposals):
+            raise StopIteration("one-factor grid exhausted")
+        parameters = self._proposals[self._sequence]
+        self._sequence += 1
+        return GeneratedProposal(
+            proposal_id=f"grid-{self._sequence:05d}",
+            parameters=dict(parameters),
+            generator="one_factor_grid",
+        )
+
+    def observe(
+        self, proposal: GeneratedProposal, result: Mapping[str, Any] | None
+    ) -> None:
+        del proposal, result
+
+
 class OptunaTPEGenerator:
     """Optuna TPE backend with resumable SQLite-backed studies."""
 
@@ -120,6 +155,34 @@ def _uniform_value(rng: random.Random, spec: Mapping[str, Any]) -> Any:
         return rng.choice(list(spec["categories"]))
     if kind == "bool":
         return bool(rng.getrandbits(1))
+    raise ValueError(f"unsupported parameter type: {kind}")
+
+
+def _clean_value(spec: Mapping[str, Any]) -> Any:
+    if "clean" in spec:
+        return spec["clean"]
+    kind = spec["type"]
+    if kind in {"float", "int"}:
+        return spec["min"]
+    if kind == "categorical":
+        return spec["categories"][0]
+    if kind == "bool":
+        return False
+    raise ValueError(f"unsupported parameter type: {kind}")
+
+
+def _grid_values(spec: Mapping[str, Any]) -> list[Any]:
+    kind = spec["type"]
+    if kind == "float":
+        low, high = float(spec["min"]), float(spec["max"])
+        return list(dict.fromkeys((low, (low + high) / 2.0, high)))
+    if kind == "int":
+        low, high = int(spec["min"]), int(spec["max"])
+        return list(dict.fromkeys((low, (low + high) // 2, high)))
+    if kind == "categorical":
+        return list(spec["categories"])
+    if kind == "bool":
+        return [False, True]
     raise ValueError(f"unsupported parameter type: {kind}")
 
 

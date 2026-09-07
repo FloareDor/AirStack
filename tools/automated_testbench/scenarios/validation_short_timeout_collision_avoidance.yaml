@@ -1,0 +1,6 @@
+extends: collision_avoidance_stock.yaml
+scenario_id: validation_short_timeout_collision_avoidance
+planner:
+  depth_source: ground-truth
+trial:
+  timeout_s: 0.25

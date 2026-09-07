@@ -77,3 +77,14 @@ mononav:
     - "10"
     - --tsdf-local-radius
     - "3.0"
+
+sensor:
+  fixed_delay_s: 0.0
+  rgb_noise_stddev: 0.0
+  depth_noise_stddev_m: 0.0
+
+recording:
+  enabled: true
+  storage_id: mcap
+  # topics is intentionally omitted: scenario.py defaults it per planner method
+  # so mononav and collision_avoidance each record their own status topic.

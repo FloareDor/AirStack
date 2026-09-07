@@ -13,6 +13,8 @@ from typing import Any
 
 import yaml
 
+from .planner_adapters import PlannerAdapterError, adapter_for
+
 
 STOCK_OBSTACLES = (
     {
@@ -147,13 +149,25 @@ def resolve_scenario(
     planner = _required(scenario, "planner", "scenario")
     if not isinstance(planner, dict):
         raise ScenarioError("scenario.planner must be a mapping")
-    if planner.get("method") != "mononav":
-        raise ScenarioError("only planner.method=mononav is supported in milestone 1")
+    method = planner.get("method")
+    if not isinstance(method, str):
+        raise ScenarioError("scenario.planner.method must be a supported string")
+    try:
+        adapter_definition = adapter_for(method)
+    except PlannerAdapterError as exc:
+        raise ScenarioError(str(exc)) from exc
     adapter = planner.setdefault("adapter", planner["method"])
     if adapter != planner["method"]:
         raise ScenarioError("planner.adapter must match planner.method")
-    if planner.get("depth_source") not in {"zoe", "ground-truth"}:
-        raise ScenarioError("planner.depth_source must be zoe or ground-truth")
+    depth_sources = {
+        "mononav": {"zoe", "ground-truth"},
+        "collision_avoidance": {"fcrn", "ground-truth"},
+    }
+    if planner.get("depth_source") not in depth_sources[method]:
+        allowed = " or ".join(sorted(depth_sources[method]))
+        raise ScenarioError(
+            f"planner.depth_source for {method} must be {allowed}"
+        )
 
     flight = scenario.get("mission", scenario.get("flight"))
     if flight is None:
@@ -306,20 +320,123 @@ def resolve_scenario(
         raise ScenarioError("scenario.oracle.collision.contact_topic must be an absolute topic")
 
     airstack = _required(scenario, "airstack", "scenario")
-    mononav = _required(scenario, "mononav", "scenario")
-    if not isinstance(airstack, dict) or not isinstance(mononav, dict):
-        raise ScenarioError("scenario.airstack and scenario.mononav must be mappings")
-    for config, name in ((airstack, "airstack"), (mononav, "mononav")):
+    planner_config = _required(scenario, adapter_definition.config_key, "scenario")
+    if not isinstance(airstack, dict) or not isinstance(planner_config, dict):
+        raise ScenarioError(
+            f"scenario.airstack and scenario.{adapter_definition.config_key} must be mappings"
+        )
+    for config, name in (
+        (airstack, "airstack"),
+        (planner_config, adapter_definition.config_key),
+    ):
         repo = _required(config, "repo", f"scenario.{name}")
         if not isinstance(repo, str) or not repo.startswith("/"):
             raise ScenarioError(f"scenario.{name}.repo must be an absolute path")
 
-    bridge = mononav.setdefault("bridge", {})
+    bridge = planner_config.setdefault("bridge", {})
+    if not isinstance(bridge, dict):
+        raise ScenarioError(
+            f"scenario.{adapter_definition.config_key}.bridge must be a mapping"
+        )
     bridge.setdefault("manage", True)
     bridge.setdefault("server_url", "http://airstack-robot-desktop-1:8765")
     bridge.setdefault("health_url", "http://127.0.0.1:8765")
     if not isinstance(bridge["manage"], bool):
-        raise ScenarioError("scenario.monav.bridge.manage must be boolean")
+        raise ScenarioError("planner bridge.manage must be boolean")
+    if not all(
+        isinstance(bridge[key], str) and bridge[key].startswith("http")
+        for key in ("server_url", "health_url")
+    ):
+        raise ScenarioError("planner bridge URLs must be absolute HTTP URLs")
+    planner_config.setdefault(
+        "container_name",
+        "mononav-airstack"
+        if method == "mononav"
+        else "collision-avoidance-airstack",
+    )
+    if (
+        not isinstance(planner_config["container_name"], str)
+        or not planner_config["container_name"]
+    ):
+        raise ScenarioError("planner container_name must be a non-empty string")
+    args = planner_config.setdefault("args", [])
+    if not isinstance(args, list) or not all(isinstance(item, str) for item in args):
+        raise ScenarioError("planner args must be a list of strings")
+    if method == "mononav":
+        image = _required(planner_config, "image", "scenario.monav")
+        if not isinstance(image, str) or not image:
+            raise ScenarioError("scenario.monav.image must be a non-empty string")
+    else:
+        worker_script = planner_config.setdefault(
+            "worker_script", "docker/run_airstack_live.sh"
+        )
+        script_path = Path(worker_script) if isinstance(worker_script, str) else None
+        if (
+            script_path is None
+            or not worker_script
+            or script_path.is_absolute()
+            or ".." in script_path.parts
+        ):
+            raise ScenarioError(
+                "scenario.collision_avoidance.worker_script must be a relative path inside its repo"
+            )
+
+    sensor = scenario.setdefault("sensor", {})
+    if not isinstance(sensor, dict):
+        raise ScenarioError("scenario.sensor must be a mapping")
+    sensor["fixed_delay_s"] = _number(
+        sensor.get("fixed_delay_s", 0.0),
+        "scenario.sensor.fixed_delay_s",
+        minimum=0.0,
+    )
+    sensor["rgb_noise_stddev"] = _number(
+        sensor.get("rgb_noise_stddev", 0.0),
+        "scenario.sensor.rgb_noise_stddev",
+        minimum=0.0,
+    )
+    sensor["depth_noise_stddev_m"] = _number(
+        sensor.get("depth_noise_stddev_m", 0.0),
+        "scenario.sensor.depth_noise_stddev_m",
+        minimum=0.0,
+    )
+    if seed is None and (
+        sensor["rgb_noise_stddev"] > 0.0
+        or sensor["depth_noise_stddev_m"] > 0.0
+    ):
+        raise ScenarioError("a seed is required when sensor noise is non-zero")
+
+    recording = scenario.setdefault("recording", {})
+    if not isinstance(recording, dict):
+        raise ScenarioError("scenario.recording must be a mapping")
+    recording["enabled"] = recording.get("enabled", True)
+    if not isinstance(recording["enabled"], bool):
+        raise ScenarioError("scenario.recording.enabled must be boolean")
+    recording["storage_id"] = recording.get("storage_id", "mcap")
+    if recording["storage_id"] != "mcap":
+        raise ScenarioError("scenario.recording.storage_id must be mcap")
+    topics = recording.get(
+        "topics",
+        [
+            "/robot_1/sensors/front_stereo/left/image_rect",
+            "/robot_1/sensors/front_stereo/left/camera_info",
+            "/robot_1/sensors/front_stereo/left/depth_ground_truth",
+            "/robot_1/odometry_conversion/odometry",
+            "/robot_1/trajectory_controller/trajectory_override",
+            adapter_definition.status_topic,
+            collision_oracle["contact_topic"],
+        ],
+    )
+    if (
+        not isinstance(topics, list)
+        or not topics
+        or not all(isinstance(topic, str) and topic.startswith("/") for topic in topics)
+    ):
+        raise ScenarioError(
+            "scenario.recording.topics must be a non-empty list of absolute topics"
+        )
+    if len(set(topics)) != len(topics):
+        raise ScenarioError("scenario.recording.topics must not contain duplicates")
+    recording["topics"] = topics
 
     resolved_obstacles = resolve_obstacles(seed, lateral, longitudinal, scale, count)
     lighting = scenario.setdefault("environment", {}).setdefault("lighting", {})
@@ -337,6 +454,11 @@ def resolve_scenario(
         "obstacle_preset": obstacles["preset"],
         "obstacle_count": len(STOCK_OBSTACLES),
         "lighting": {"intensity": 1000.0, "exposure": 0.0},
+        "sensor": {
+            "fixed_delay_s": 0.0,
+            "rgb_noise_stddev": 0.0,
+            "depth_noise_stddev_m": 0.0,
+        },
     }
     scenario["perturbations"] = {
         "obstacles": {
@@ -347,6 +469,7 @@ def resolve_scenario(
         },
         "initial_pose": {"position_m": list(flight["start_pose"][:3])},
         "lighting": copy.deepcopy(lighting),
+        "sensor": copy.deepcopy(sensor),
     }
     validate_feasibility(
         resolved_obstacles,
@@ -366,6 +489,7 @@ def resolve_scenario(
             lighting,
             collision_oracle["contact_topic"],
         ),
+        "bridge_launch_arguments": bridge_launch_arguments(seed, sensor),
     }
     scenario["schema_version"] = 2
     scenario["resolved"]["configuration_hash"] = configuration_hash(scenario)
@@ -422,6 +546,20 @@ def scene_environment(
         "MONONAV_DOME_LIGHT_INTENSITY": str(lighting["intensity"]),
         "MONONAV_DOME_LIGHT_EXPOSURE": str(lighting["exposure"]),
         "MONONAV_PHYSX_CONTACT_TOPIC": contact_topic,
+    }
+
+
+def bridge_launch_arguments(
+    seed: int | None, sensor: dict[str, float]
+) -> dict[str, str]:
+    """Translate validated sensor disturbances into narrow bridge launch data."""
+    return {
+        "mononav_bridge_disturbance_seed": str(seed if seed is not None else 0),
+        "mononav_bridge_fixed_sensor_delay_s": str(sensor["fixed_delay_s"]),
+        "mononav_bridge_rgb_noise_stddev": str(sensor["rgb_noise_stddev"]),
+        "mononav_bridge_depth_noise_stddev_m": str(
+            sensor["depth_noise_stddev_m"]
+        ),
     }
 
 

@@ -14,6 +14,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from automated_testbench.generators import (
+        GridGenerator,
         OptunaTPEGenerator,
         UniformGenerator,
     )
@@ -22,7 +23,7 @@ if __package__ in (None, ""):
     from automated_testbench.scenario import load_scenario, resolve_scenario
     from automated_testbench.threat_model import ThreatModel, ThreatModelError
 else:
-    from .generators import OptunaTPEGenerator, UniformGenerator
+    from .generators import GridGenerator, OptunaTPEGenerator, UniformGenerator
     from .paired import is_autonomy_failure, run_pair
     from .run_trial import atomic_json, utc_now
     from .scenario import load_scenario, resolve_scenario
@@ -32,7 +33,7 @@ else:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base_scenario", type=Path)
-    parser.add_argument("--backend", choices=("random", "tpe"), required=True)
+    parser.add_argument("--backend", choices=("grid", "random", "tpe"), required=True)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--trial-budget", type=int)
     parser.add_argument("--wall-clock-budget-s", type=float)
@@ -102,9 +103,12 @@ def main() -> int:
         base = resolve_scenario(editable)
 
     generator = _generator(args.backend, threat_model, args.seed, campaign_dir)
-    if args.backend == "random":
+    if args.backend in {"grid", "random"}:
         for _ in range(int(state["attempts"])):
-            generator.propose()
+            try:
+                generator.propose()
+            except StopIteration:
+                break
 
     run_started = time.monotonic()
     prior_elapsed = float(state.get("elapsed_wall_s", 0.0))
@@ -113,7 +117,10 @@ def main() -> int:
         elapsed = prior_elapsed + (time.monotonic() - run_started)
         if elapsed >= wall_budget:
             break
-        proposal = generator.propose()
+        try:
+            proposal = generator.propose()
+        except StopIteration:
+            break
         state["attempts"] += 1
         record: dict[str, Any] = {
             "proposal_id": proposal.proposal_id,
@@ -189,6 +196,8 @@ def _generator(
 ) -> Any:
     if backend == "random":
         return UniformGenerator(threat_model, seed)
+    if backend == "grid":
+        return GridGenerator(threat_model)
     database = (campaign_dir / "optuna.sqlite3").as_posix()
     return OptunaTPEGenerator(
         threat_model,

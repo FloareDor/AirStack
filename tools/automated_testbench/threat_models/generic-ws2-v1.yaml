@@ -26,12 +26,6 @@ parameters:
     min: 0.0
     max: 0.25
     clean: 0.0
-  obstacle_count:
-    type: int
-    target: obstacles.count
-    min: 1
-    max: 3
-    clean: 3
   initial_pose_x_m:
     type: float
     target: mission.start_pose[0]
@@ -55,4 +49,22 @@ parameters:
     target: environment.lighting.exposure
     min: -5.0
     max: 5.0
+    clean: 0.0
+  fixed_sensor_delay_s:
+    type: float
+    target: sensor.fixed_delay_s
+    min: 0.0
+    max: 0.5
+    clean: 0.0
+  rgb_noise_stddev:
+    type: float
+    target: sensor.rgb_noise_stddev
+    min: 0.0
+    max: 25.0
+    clean: 0.0
+  depth_noise_stddev_m:
+    type: float
+    target: sensor.depth_noise_stddev_m
+    min: 0.0
+    max: 0.25
     clean: 0.0

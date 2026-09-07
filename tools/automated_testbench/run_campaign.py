@@ -22,12 +22,14 @@ if __package__ in (None, ""):
     )
     from automated_testbench.threat_model import ThreatModel
     from automated_testbench.locking import try_lock, unlock
+    from automated_testbench.reporting import write_campaign_report
 else:
     from .run_trial import TrialRunner, atomic_json, utc_now
     from .scenario import load_scenario
     from .paired import is_autonomy_failure, reproducibility_label, run_pair
     from .threat_model import ThreatModel
     from .locking import try_lock, unlock
+    from .reporting import write_campaign_report
 
 
 def main() -> int:
@@ -117,16 +119,20 @@ def main() -> int:
                         "scenario_id": scenario["scenario_id"],
                         "result_dir": str(trial_dir),
                         "outcome": result["outcome"],
+                        "termination": result.get("termination"),
+                        "metrics": result.get("metrics", {}),
                     }
                     had_infrastructure_error |= (
                         result["outcome"] == "infrastructure_error"
                     )
                 manifest["trials"].append(entry)
                 atomic_json(campaign_dir / "campaign.json", manifest)
+                write_campaign_report(manifest, campaign_dir)
         finally:
             unlock(lock)
     manifest["ended_at_utc"] = utc_now()
     atomic_json(campaign_dir / "campaign.json", manifest)
+    write_campaign_report(manifest, campaign_dir)
     print(json.dumps({"campaign_dir": str(campaign_dir), **manifest}, indent=2))
     return 2 if had_infrastructure_error else 0
 

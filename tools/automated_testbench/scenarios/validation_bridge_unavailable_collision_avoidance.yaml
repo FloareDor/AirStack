@@ -1,0 +1,8 @@
+extends: collision_avoidance_stock.yaml
+scenario_id: validation_bridge_unavailable_collision_avoidance
+trial:
+  bridge_start_timeout_s: 3
+collision_avoidance:
+  bridge:
+    manage: false
+    health_url: http://127.0.0.1:18765

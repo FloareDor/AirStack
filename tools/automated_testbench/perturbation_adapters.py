@@ -54,7 +54,13 @@ class Ros2SensorProxyAdapter:
     name: str = "ros2_sensor_proxy"
 
     def resolve(self, configuration: Mapping[str, Any]) -> dict[str, str]:
-        allowed = {"noise_stddev", "bias", "fixed_delay_s", "jitter_s", "dropout_probability"}
+        allowed = {
+            "rgb_noise_stddev",
+            "depth_noise_stddev_m",
+            "fixed_delay_s",
+            "jitter_s",
+            "dropout_probability",
+        }
         unknown = set(configuration) - allowed
         if unknown:
             raise AdapterError("unsupported sensor proxy keys: " + ", ".join(sorted(unknown)))
@@ -62,7 +68,12 @@ class Ros2SensorProxyAdapter:
         dropout = float(configuration.get("dropout_probability", 0.0))
         if not 0.0 <= dropout <= 1.0:
             raise AdapterError("dropout_probability must be in [0, 1]")
-        for key in ("noise_stddev", "fixed_delay_s", "jitter_s"):
+        for key in (
+            "rgb_noise_stddev",
+            "depth_noise_stddev_m",
+            "fixed_delay_s",
+            "jitter_s",
+        ):
             if float(configuration.get(key, 0.0)) < 0.0:
                 raise AdapterError(f"{key} must be nonnegative")
         # This is data for the dedicated proxy launch, not an instruction that

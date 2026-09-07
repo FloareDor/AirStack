@@ -1,0 +1,4 @@
+extends: stock.yaml
+scenario_id: stock_search_baseline
+recording:
+  enabled: false

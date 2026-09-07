@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one isolated AirStack + MonoNav scenario and record its verdict."""
+"""Run one isolated AirStack WS2 planner scenario and record its verdict."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import math
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
@@ -23,11 +24,16 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from automated_testbench.metrics import obstacle_clearance, summarize
     from automated_testbench.processes import CommandError, ManagedProcess, run_logged
+    from automated_testbench.planner_adapters import (
+        PlannerAdapterError,
+        adapter_for,
+    )
     from automated_testbench.scenario import dump_scenario, load_scenario
     from automated_testbench.locking import try_lock, unlock
 else:
     from .metrics import obstacle_clearance, summarize
     from .processes import CommandError, ManagedProcess, run_logged
+    from .planner_adapters import PlannerAdapterError, adapter_for
     from .scenario import dump_scenario, load_scenario
     from .locking import try_lock, unlock
 
@@ -89,6 +95,7 @@ class TrialState:
         obstacles: list[dict[str, Any]],
         robot_radius_m: float,
         events: EventRecorder,
+        adapter_name: str = "mononav",
         collision_padding_m: float = 0.1,
         geometry_fallback: bool = True,
     ) -> None:
@@ -99,6 +106,7 @@ class TrialState:
         self.collision_padding_m = collision_padding_m
         self.geometry_fallback = geometry_fallback
         self.events = events
+        self.adapter_name = adapter_name
         self.lock = threading.Lock()
         self.active = False
         self.samples: list[dict[str, Any]] = []
@@ -113,6 +121,8 @@ class TrialState:
         self.planner_hold_count = 0
         self.planner_recovery_count = 0
         self.worker_goal_position_m: list[float] | None = None
+        self.planner_command_count = 0
+        self._last_command_identity: tuple[Any, ...] | None = None
 
     def activate(self) -> None:
         with self.lock:
@@ -129,7 +139,26 @@ class TrialState:
             return
         event = payload.get("event")
         if event == "bridge_status":
-            self.events.emit("bridge_status", status=payload.get("status"))
+            status = payload.get("status")
+            self.events.emit("bridge_status", status=status)
+            if isinstance(status, dict) and isinstance(status.get("last_command"), dict):
+                command = status["last_command"]
+                identity = (
+                    command.get("command_index"),
+                    command.get("stamp"),
+                    command.get("waypoint_count"),
+                )
+                if identity != self._last_command_identity:
+                    self._last_command_identity = identity
+                    self.planner_command_count += 1
+                    self.events.emit(
+                        "command_issued",
+                        adapter=self.adapter_name,
+                        command_index=command.get("command_index"),
+                        waypoint_count=command.get("waypoint_count"),
+                        source="bridge_status",
+                    )
+                    self.planner_ready.set()
             return
         if event == "physx_contact":
             with self.lock:
@@ -209,16 +238,16 @@ class TrialState:
             self.events.emit(
                 "planner_ready", worker_goal_position_m=self.worker_goal_position_m
             )
-            self.events.emit("ready", adapter="mononav")
+            self.events.emit("ready", adapter=self.adapter_name)
             self.planner_ready.set()
         if line.startswith("UNSAFE HOLD:"):
             self.planner_hold_count += 1
             self.events.emit("planner_hold", detail=line)
-            self.events.emit("hold", adapter="mononav", detail=line)
+            self.events.emit("hold", adapter=self.adapter_name, detail=line)
         if line.startswith("RECOVERY "):
             self.planner_recovery_count += 1
             self.events.emit("planner_recovery", detail=line)
-            self.events.emit("recovery", adapter="mononav", detail=line)
+            self.events.emit("recovery", adapter=self.adapter_name, detail=line)
         frame_match = FRAME_RE.search(line)
         if frame_match:
             self.events.emit(
@@ -230,7 +259,7 @@ class TrialState:
             if int(frame_match.group("primitive")) >= 0:
                 self.events.emit(
                     "command_issued",
-                    adapter="mononav",
+                    adapter=self.adapter_name,
                     primitive=int(frame_match.group("primitive")),
                     frame=int(frame_match.group("frame")),
                 )
@@ -245,7 +274,7 @@ class TrialState:
             )
             self.events.emit(
                 "planner_stopped",
-                adapter="mononav",
+                adapter=self.adapter_name,
                 reason=self.planner_terminal_reason,
             )
 
@@ -339,7 +368,11 @@ class AirStackRuntime:
         self.result_dir = result_dir
         self.events = events
         self.airstack = scenario["airstack"]
-        self.monav = scenario["mononav"]
+        try:
+            self.adapter = adapter_for(str(scenario["planner"]["method"]))
+        except PlannerAdapterError as exc:
+            raise InfrastructureError("planner_configuration", str(exc)) from exc
+        self.planner = scenario[self.adapter.config_key]
         self.repo = Path(self.airstack["repo"])
         self.robot_container = self.airstack.get(
             "robot_container", "airstack-robot-desktop-1"
@@ -370,9 +403,11 @@ class AirStackRuntime:
         return result.stdout.strip() if result.returncode == 0 else None
 
     def _capture_provenance(self) -> dict[str, Any]:
-        image = self.monav.get("image", "mononav-demo:1.0")
+        image = self.planner.get("image")
         image_id = None
         try:
+            if not image:
+                raise ValueError("planner image is not managed by this adapter")
             inspected = subprocess.run(
                 ["docker", "image", "inspect", image, "--format", "{{.Id}}"],
                 stdout=subprocess.PIPE,
@@ -382,12 +417,15 @@ class AirStackRuntime:
             )
             if inspected.returncode == 0:
                 image_id = inspected.stdout.strip() or None
-        except (OSError, subprocess.TimeoutExpired):
+        except (OSError, subprocess.TimeoutExpired, ValueError):
             pass
         return {
             "airstack_commit": self._git_commit(self.repo),
-            "mononav_commit": self._git_commit(Path(self.monav["repo"])),
-            "container_images": {"mononav": {"reference": image, "id": image_id}},
+            "planner": {
+                "method": self.adapter.method,
+                "commit": self._git_commit(Path(self.planner["repo"])),
+                "image": {"reference": image, "id": image_id},
+            },
         }
 
     def _log(self, name: str) -> Path:
@@ -454,23 +492,20 @@ class AirStackRuntime:
         checks = [
             ("docker_cli", ["docker", "version", "--format", "{{.Server.Version}}"]),
             ("docker_daemon", ["docker", "info", "--format", "{{.ServerVersion}}"]),
-            (
-                "mononav_image",
-                [
-                    "docker",
-                    "image",
-                    "inspect",
-                    self.monav.get("image", "mononav-demo:1.0"),
-                    "--format",
-                    "{{.Id}}",
-                ],
-            ),
         ]
-        cache_volume = self.monav.get("torch_cache_volume")
+        image = self.planner.get("image")
+        if image:
+            checks.append(
+                (
+                    f"{self.adapter.method}_image",
+                    ["docker", "image", "inspect", image, "--format", "{{.Id}}"],
+                )
+            )
+        cache_volume = self.planner.get("torch_cache_volume")
         if cache_volume:
             checks.append(
                 (
-                    "mononav_torch_cache",
+                    f"{self.adapter.method}_cache",
                     [
                         "docker",
                         "volume",
@@ -489,7 +524,7 @@ class AirStackRuntime:
             self.events.emit("health_check", check=name, ok=True)
         required = [
             self.repo / self.airstack.get("cli", "airstack.sh"),
-            Path(self.monav["repo"]) / "mononav_airstack.py",
+            *self.adapter.required_paths(self.planner),
         ]
         for path in required:
             if not path.exists():
@@ -499,7 +534,7 @@ class AirStackRuntime:
         self.events.emit("health_check", check="required_paths", ok=True)
 
     def reset_stack(self) -> None:
-        worker_name = self.monav.get("container_name", "mononav-airstack")
+        worker_name = self.planner["container_name"]
         self._run(
             ["docker", "rm", "-f", worker_name],
             "airstack.log",
@@ -687,7 +722,7 @@ class AirStackRuntime:
             "--odometry-topic",
             "/robot_1/odometry_conversion/odometry",
             "--status-topic",
-            "/robot_1/mononav/status",
+            self.adapter.status_topic,
             "--contact-topic",
             self.scenario["oracle"]["collision"]["contact_topic"],
             "--timeout",
@@ -713,18 +748,13 @@ class AirStackRuntime:
         return {"ok": False, "message": "probe produced no machine-readable result"}
 
     def start_bridge(self) -> None:
-        bridge = self.monav["bridge"]
+        bridge = self.planner["bridge"]
         if not bridge.get("manage", True):
             self.events.emit("bridge_launch_skipped")
             return
-        command = [
-            "ros2",
-            "launch",
-            "mononav_bridge",
-            "mononav_bridge.launch.xml",
-            "mononav_bridge_max_frame_rate:=3.0",
-            "mononav_bridge_execute_commands:=true",
-        ]
+        command = self.adapter.bridge_command(
+            self.scenario["resolved"]["bridge_launch_arguments"]
+        )
         docker_command = [
             "docker",
             "exec",
@@ -734,10 +764,97 @@ class AirStackRuntime:
             self._ros_shell(command),
         ]
         self.bridge_process = ManagedProcess(docker_command, self._log("bridge.log"))
-        self.events.emit("bridge_started")
+        self.events.emit("bridge_started", adapter=self.adapter.method)
+
+    def start_recording(self) -> ManagedProcess | None:
+        recording = self.scenario["recording"]
+        if not recording["enabled"]:
+            self.events.emit("recording_skipped")
+            return None
+        bag_name = self.result_dir.name
+        command = [
+            "ros2",
+            "bag",
+            "record",
+            "--storage",
+            recording["storage_id"],
+            "--output",
+            f"/bags/{bag_name}",
+            *recording["topics"],
+        ]
+        process = ManagedProcess(
+            [
+                "docker",
+                "exec",
+                self.robot_container,
+                "bash",
+                "-lc",
+                self._ros_shell(command),
+            ],
+            self._log("recording.log"),
+        )
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                raise InfrastructureError(
+                    "recording_start",
+                    f"ros2 bag record exited early (exit {process.poll()})",
+                )
+            time.sleep(0.1)
+        self.events.emit(
+            "recording_started",
+            storage_id=recording["storage_id"],
+            topic_count=len(recording["topics"]),
+        )
+        return process
+
+    def _fix_recording_ownership(self) -> None:
+        """`ros2 bag record` runs as root inside the container, so both the bind
+        mount point and the bag files it creates land root-owned on the host.
+        Reclaim both, while the container is still up, so the unprivileged host
+        runner can later remove the trial directory from its parent during move."""
+        if not self.scenario["recording"]["enabled"]:
+            return
+        owner = f"{os.getuid()}:{os.getgid()}"
+        self._run(
+            ["docker", "exec", self.robot_container, "chown", owner, "/bags"],
+            "cleanup.log",
+            timeout_s=10,
+            check=False,
+        )
+        self._run(
+            [
+                "docker",
+                "exec",
+                self.robot_container,
+                "chown",
+                "-R",
+                owner,
+                f"/bags/{self.result_dir.name}",
+            ],
+            "cleanup.log",
+            timeout_s=15,
+            check=False,
+        )
+
+    def collect_recording(self) -> str | None:
+        if not self.scenario["recording"]["enabled"]:
+            return None
+        source = self.repo / "robot" / "bags" / self.result_dir.name
+        destination = self.result_dir / "recording"
+        if not source.is_dir():
+            self.events.emit(
+                "artifact_collection_error",
+                artifact="recording",
+                message=f"recording directory is missing: {source}",
+            )
+            return None
+        shutil.move(str(source), str(destination))
+        self.events.emit("recording_collected", path="recording")
+        return "recording"
 
     def bridge_health(self) -> dict[str, Any] | None:
-        url = self.monav["bridge"]["health_url"].rstrip("/") + "/health"
+        url = self.planner["bridge"]["health_url"].rstrip("/") + "/health"
         code = (
             "import json,sys,urllib.request; "
             "print(urllib.request.urlopen(sys.argv[1],timeout=2).read().decode())"
@@ -763,7 +880,10 @@ class AirStackRuntime:
             if health and health.get("ready") and health.get("execute_commands"):
                 sequence = health.get("sequence")
                 if previous_sequence is not None and sequence != previous_sequence:
-                    self.events.emit("health_check", check="mononav_bridge", ok=True)
+                    self.events.emit(
+                        "health_check", check="vision_planner_bridge", ok=True,
+                        adapter=self.adapter.method,
+                    )
                     return health
                 previous_sequence = sequence
             if (
@@ -773,7 +893,7 @@ class AirStackRuntime:
                 break
             time.sleep(1)
         raise InfrastructureError(
-            "bridge_health", "MonoNav bridge did not produce fresh synchronized frames"
+            "bridge_health", "vision planner bridge did not produce fresh synchronized frames"
         )
 
     def takeoff(self, timeout_s: float = 60.0) -> dict[str, Any]:
@@ -801,7 +921,7 @@ class AirStackRuntime:
             "--odometry-topic",
             "/robot_1/odometry_conversion/odometry",
             "--status-topic",
-            "/robot_1/mononav/status",
+            self.adapter.status_topic,
             "--contact-topic",
             self.scenario["oracle"]["collision"]["contact_topic"],
             "--sample-rate",
@@ -823,57 +943,28 @@ class AirStackRuntime:
         return process
 
     def start_worker(self, state: TrialState) -> ManagedProcess:
-        config_args = self.monav.get("args", [])
-        if not isinstance(config_args, list) or not all(
-            isinstance(arg, str) for arg in config_args
-        ):
-            raise InfrastructureError(
-                "planner_start", "mononav.args must be a list of strings"
-            )
         goal_distance = self.scenario["flight"]["goal"]["offset_m"][0]
-        command = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            self.monav.get("container_name", "mononav-airstack"),
-            "--gpus",
-            "all",
-            "--network",
-            self.airstack.get("docker_network", "airstack_airstack_network"),
-        ]
-        cache_volume = self.monav.get("torch_cache_volume")
-        if cache_volume:
-            command.extend(["-v", f"{cache_volume}:/root/.cache/torch"])
-        command.extend(
-            [
-                "-v",
-                f"{self.monav['repo']}:/workspace/MonoNav",
-                "-w",
-                "/workspace/MonoNav",
-                self.monav.get("image", "mononav-demo:1.0"),
-                "python",
-                "-u",
-                "mononav_airstack.py",
-                "--server",
-                self.monav["bridge"]["server_url"],
-                "--headless",
-                "--execute",
-                "--depth-source",
-                self.scenario["planner"]["depth_source"],
-                "--goal-distance",
-                str(goal_distance),
-                *config_args,
-            ]
-        )
+        try:
+            command, environment = self.adapter.worker_command(
+                self.planner,
+                airstack=self.airstack,
+                depth_source=self.scenario["planner"]["depth_source"],
+                goal_distance_m=goal_distance,
+            )
+        except PlannerAdapterError as exc:
+            raise InfrastructureError("planner_start", str(exc)) from exc
         self.worker_process = ManagedProcess(
-            command, self._log("mononav.log"), on_line=state.planner_line
+            command,
+            self._log(self.adapter.worker_log),
+            cwd=(None if self.adapter.method == "mononav" else self.planner["repo"]),
+            env=environment,
+            on_line=state.planner_line,
         )
-        self.events.emit("planner_started", method="mononav")
+        self.events.emit("planner_started", method=self.adapter.method, command=command)
         return self.worker_process
 
     def pause(self) -> None:
-        url = self.monav["bridge"]["health_url"].rstrip("/") + "/pause"
+        url = self.planner["bridge"]["health_url"].rstrip("/") + "/pause"
         code = (
             "import sys,urllib.request; "
             "r=urllib.request.Request(sys.argv[1],data=b'{}',method='POST'); "
@@ -935,12 +1026,16 @@ class AirStackRuntime:
             self._log(filename).write_text(output, encoding="utf-8")
 
     def cleanup(
-        self, telemetry: ManagedProcess | None, *, teardown_stack: bool
+        self,
+        telemetry: ManagedProcess | None,
+        recording: ManagedProcess | None,
+        *,
+        teardown_stack: bool,
     ) -> None:
         self.events.emit("cleanup_started")
         if self.stack_started:
             self.pause()
-        worker_name = self.monav.get("container_name", "mononav-airstack")
+        worker_name = self.planner["container_name"]
         self._run(
             ["docker", "rm", "-f", worker_name],
             "cleanup.log",
@@ -949,6 +1044,10 @@ class AirStackRuntime:
         )
         if self.worker_process is not None:
             self.worker_process.stop()
+        if recording is not None:
+            recording.stop(timeout_s=20.0)
+            if self.stack_started:
+                self._fix_recording_ownership()
         if telemetry is not None:
             telemetry.stop()
         if self.bridge_process is not None:
@@ -998,6 +1097,8 @@ class TrialRunner:
                 "seed": self.scenario.get("seed"),
                 "repetition": self.scenario.get("repetition", 0),
                 "threat_model_version": self.scenario.get("threat_model_version"),
+                "planner_method": self.scenario["planner"]["method"],
+                "planner_depth_source": self.scenario["planner"]["depth_source"],
             },
             "outcome": "infrastructure_error",
             "started_at_utc": started_at,
@@ -1009,6 +1110,8 @@ class TrialRunner:
         atomic_json(result_dir / "result.json", result)
         runtime = AirStackRuntime(self.scenario, result_dir, events)
         telemetry: ManagedProcess | None = None
+        recording: ManagedProcess | None = None
+        recording_artifact: str | None = None
         state: TrialState | None = None
         outcome = "infrastructure_error"
         failure = None
@@ -1047,9 +1150,11 @@ class TrialRunner:
                 self.scenario["resolved"]["obstacles"],
                 self.scenario["trial"]["robot_radius_m"],
                 events,
-                self.scenario["oracle"]["collision"]["padding_m"],
-                self.scenario["oracle"]["collision"]["geometry_fallback"],
+                adapter_name=runtime.adapter.method,
+                collision_padding_m=self.scenario["oracle"]["collision"]["padding_m"],
+                geometry_fallback=self.scenario["oracle"]["collision"]["geometry_fallback"],
             )
+            recording = runtime.start_recording()
             telemetry = runtime.start_telemetry(state)
             deadline = time.monotonic() + 10
             while state.last_telemetry_wall is None and time.monotonic() < deadline:
@@ -1068,7 +1173,8 @@ class TrialRunner:
                 if worker.poll() is not None:
                     raise InfrastructureError(
                         "planner_start",
-                        f"MonoNav exited before becoming ready (exit {worker.poll()})",
+                        f"{runtime.adapter.method} exited before issuing a command "
+                        f"(exit {worker.poll()})",
                     )
                 if time.monotonic() >= planner_deadline:
                     health = runtime.bridge_health()
@@ -1111,9 +1217,15 @@ class TrialRunner:
                     else:
                         raise InfrastructureError(
                             "planner_runtime",
-                            f"MonoNav exited unexpectedly (exit {returncode})",
+                            f"{runtime.adapter.method} exited unexpectedly "
+                            f"(exit {returncode})",
                         )
                     break
+                if recording is not None and recording.poll() is not None:
+                    raise InfrastructureError(
+                        "recording_runtime",
+                        f"ros2 bag record exited unexpectedly (exit {recording.poll()})",
+                    )
                 if last_telemetry is None or now - last_telemetry > 5.0:
                     raise InfrastructureError(
                         "telemetry_runtime", "odometry became stale"
@@ -1150,7 +1262,12 @@ class TrialRunner:
             except Exception as exc:  # best effort; never replace the flight verdict
                 events.emit("artifact_collection_error", message=str(exc))
             try:
-                runtime.cleanup(telemetry, teardown_stack=self.teardown_stack)
+                runtime.cleanup(
+                    telemetry,
+                    recording,
+                    teardown_stack=self.teardown_stack,
+                )
+                recording_artifact = runtime.collect_recording()
             except Exception as exc:  # result must survive cleanup failures
                 events.emit("cleanup_error", message=str(exc))
                 if outcome != "infrastructure_error":
@@ -1193,6 +1310,7 @@ class TrialRunner:
                         "scenario": "scenario.yaml",
                         "events": "events.jsonl",
                         "logs": sorted(path.name for path in result_dir.glob("*.log")),
+                        "recording": recording_artifact,
                     },
                 }
             )

@@ -1,0 +1,35 @@
+extends: _base.yaml
+
+planner:
+  method: collision_avoidance
+  adapter: collision_avoidance
+  depth_source: fcrn
+
+# This is the maintained Kim et al. AirStack adapter.  It retains the original
+# FCRN + D3QN policy in its own GPU container; the bench owns scene, bridge,
+# takeoff, outcome, recording, and cleanup.
+collision_avoidance:
+  repo: /home/ubuntu/airlab/Collision-avoidance
+  container_name: collision-avoidance-airstack
+  worker_script: docker/run_airstack_live.sh
+  bridge:
+    manage: true
+    server_url: http://airstack-robot-desktop-1:8765
+    health_url: http://127.0.0.1:8765
+  args:
+    - --rate
+    - "3.0"
+    - --initial-speed
+    - "0.20"
+    - --trajectory-horizon
+    - "0.8"
+    - --command-smoothing
+    - "0.45"
+    - --maximum-speed
+    - "0.35"
+    - --safety-stop-distance
+    - "0.75"
+    - --safety-slow-distance
+    - "1.75"
+    - --max-altitude-deviation
+    - "0.6"

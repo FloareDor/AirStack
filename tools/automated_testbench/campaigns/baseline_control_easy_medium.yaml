@@ -1,0 +1,14 @@
+campaign_id: ws2_control_easy_medium
+threat_model: ../threat_models/generic-ws2-v1.yaml
+# Run this campaign three times with a distinct --results-dir (or resume ID) to
+# establish three independent runs per listed clean condition.  The search
+# runners below preserve the separate 50-pair/4-hour budget for each backend.
+paired: false
+failure_repetitions: 3
+scenarios:
+  - ../scenarios/stock.yaml
+  - ../scenarios/easy_seed1.yaml
+  - ../scenarios/medium_seed1.yaml
+  - ../scenarios/collision_avoidance_stock.yaml
+  - ../scenarios/collision_avoidance_easy_seed1.yaml
+  - ../scenarios/collision_avoidance_medium_seed1.yaml

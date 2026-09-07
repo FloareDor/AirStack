@@ -68,15 +68,22 @@ def summarize(
     travelled = path_length(samples)
     direct_distance = None
     path_efficiency = None
+    mission_progress_percent = None
     if samples and goal_position_m is not None:
         direct_distance = distance(samples[0]["position_m"], goal_position_m)
         if travelled > 0.0:
             path_efficiency = min(1.0, direct_distance / travelled)
+        if direct_distance > 0.0 and final_distance is not None:
+            mission_progress_percent = max(
+                0.0,
+                min(100.0, 100.0 * (direct_distance - final_distance) / direct_distance),
+            )
     return {
         "time_to_goal_s": time_to_goal,
         "path_length_m": travelled,
         "direct_start_to_goal_distance_m": direct_distance,
         "path_efficiency": path_efficiency,
+        "mission_progress_percent": mission_progress_percent,
         "final_distance_to_goal_m": final_distance,
         "planner_hold_count": planner_hold_count,
         "planner_recovery_count": planner_recovery_count,
