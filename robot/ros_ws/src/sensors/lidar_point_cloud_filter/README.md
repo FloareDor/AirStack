@@ -33,14 +33,14 @@ Defaults are in `config/lidar_point_cloud_filter.yaml`. `$(env ROBOT_NAME)` is e
 ros2 launch lidar_point_cloud_filter lidar_point_cloud_filter.launch.xml
 ```
 
-Included from `sensors_bringup` under the robot and `sensors` namespaces. Defaults use **`sensors/ouster/point_cloud_raw` → `sensors/ouster/point_cloud`** to match Pegasus / Isaac and `vdb_params`. For RTX-only topic names, override `input_topic` and `output_topic` (for example under `sensors/lidar/...`).
+Included from the stack entry files (stacks/*/launch) under the robot and `sensors` namespaces. Defaults use **`sensors/ouster/point_cloud_raw` → `sensors/ouster/point_cloud`** to match Pegasus / Isaac and `vdb_params`. For RTX-only topic names, override `input_topic` and `output_topic` (for example under `sensors/lidar/...`).
 
 ## System tests (`sensors` mark)
 
-Sensor checks (sim + robot topic rates, LiDAR validation) live in repo-root **`tests/test_sensors.py`** (`pytest -m sensors`), which runs **after** **`tests/test_liveliness.py`** in the default collection order. For **Isaac Sim** (`--sim isaacsim`), that suite:
+Sensor checks (sim + robot topic rates, LiDAR validation) live in repo-root **`tests/system/test_sensors.py`** (`pytest -m sensors`), which runs **after** **`tests/system/test_liveliness.py`** in the default collection order. **Numpy-only** LiDAR filter rules live in **`lidar_point_cloud_filter/validation_core.py`** (this package's module directory), covered by **`test/test_validation_core.py`** (`pytest -m unit` via proxy in `tests/robot/`) and imported by **`scripts/validate_lidar_filter_clouds.py`** at runtime. For **Isaac Sim** (`--sim isaacsim`), that suite:
 
 - Proves the **filtered** topic is alive (`ros2 topic echo --once` on `.../point_cloud` — large clouds are not probed with `ros2 topic hz`).
-- Runs `scripts/validate_lidar_filter_clouds.py` inside each robot container: checks the **filtered** cloud against `near_range_m`, optionally compares behavior when **`point_cloud_raw`** has near-field returns.
+- Runs `robot/ros_ws/src/sensors/lidar_point_cloud_filter/scripts/validate_lidar_filter_clouds.py` inside each robot container: checks the **filtered** cloud against `near_range_m`, optionally compares behavior when **`point_cloud_raw`** has near-field returns.
 
 **Microsoft AirSim** does not guarantee `sensors/ouster` topics on that profile; those steps are skipped there.
 

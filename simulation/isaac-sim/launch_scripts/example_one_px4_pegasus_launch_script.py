@@ -6,369 +6,48 @@ Demonstrates:
  - Loading a Pegasus world with an environment
  - Scaling the environment prim and adding collision geometry
  - Adding a dome light
-- Spawning a PX4 multirotor with ZED camera and RTX lidar
+ - Spawning a PX4 multirotor with ZED camera and RTX lidar
  - Optionally saving the prepared scene as a self-contained USD
+   (pass ``save_scene_to=`` below)
+
+Env (see pegasus_app.py): ISAAC_SIM_LIVESTREAM, ISAAC_SIM_HEADLESS,
+PLAY_SIM_ON_START, and ISAAC_SIM_SCENE / ISAAC_SIM_STAGE_SCALE (set by
+`airstack up --scene <shortname>` — a Pegasus catalog key or USD URL;
+default: Default Environment).
 """
 
-import carb
-from isaacsim import SimulationApp
-
-# Must be created before any omni imports
-simulation_app = SimulationApp({"headless": False})
-
 import os
-import random
 import sys
-import time
-import asyncio
 
-import omni.kit.app
-import omni.timeline
-import omni.usd
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pegasus_app import create_simulation_app
 
-from omni.isaac.core.world import World
-from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
+# Must be created before any omni/pegasus imports.
+simulation_app = create_simulation_app()
 
-# Pegasus imports
-from pegasus.simulator.params import SIMULATION_ENVIRONMENTS
-from pegasus.simulator.logic.interface.pegasus_interface import PegasusInterface
-from pegasus.simulator.ogn.api.spawn_multirotor import spawn_px4_multirotor_node
-from pegasus.simulator.ogn.api.spawn_zed_camera import add_zed_stereo_camera_subgraph
-from pegasus.simulator.ogn.api.spawn_rtx_lidar import add_rtx_lidar_subgraph
-
-sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "utils")))
-from scene_prep import scale_stage_prim, add_colliders, add_dome_light, save_scene_as_contained_usd
-
-
-# --------------------- CONFIGURATION ---------------------
-# Environment to load. Keep the original empty scene as the default, while
-# allowing repeatable scene selection from the same launcher.
-ENV_NAME = os.environ.get("ISAAC_SIM_ENVIRONMENT", "Default Environment")
-if ENV_NAME not in SIMULATION_ENVIRONMENTS:
-    available = ", ".join(sorted(SIMULATION_ENVIRONMENTS))
-    raise ValueError(f"Unknown ISAAC_SIM_ENVIRONMENT={ENV_NAME!r}. Available: {available}")
-ENV_URL = SIMULATION_ENVIRONMENTS[ENV_NAME]
-
-# Scale applied to /World/stage. 0.01 converts cm→m for Nucleus assets.
-# Set to 1.0 if the environment is already in meters.
-STAGE_SCALE = 1.0
-
-# Set to a directory path to export a self-contained USD after scene prep.
-# Set to None to skip saving.
-SAVE_SCENE_TO = None  # e.g. os.path.expanduser("~/AirStack/my_scene/")
-
-DRONE_USD = "~/.local/share/ov/data/documents/Kit/shared/exts/pegasus.simulator/pegasus/simulator/assets/Robots/Iris/iris.usd"
-
-# Initial vehicle pose in world coordinates. Environment overrides make it
-# possible to reuse this launcher in furnished scenes whose origin is occupied.
-DRONE_INIT_POS = [
-    float(os.environ.get("DRONE_INIT_X", "0.0")),
-    float(os.environ.get("DRONE_INIT_Y", "0.0")),
-    float(os.environ.get("DRONE_INIT_Z", "0.07")),
-]
-ENABLE_LIDAR = os.environ.get("ENABLE_LIDAR", "false").lower() == "true"
-VISION_PLANNER_DEMO_OBSTACLES = (
-    os.environ.get("VISION_PLANNER_DEMO_OBSTACLES", "false").lower() == "true"
-    or os.environ.get("MONONAV_DEMO_OBSTACLES", "false").lower() == "true"
-)
-PRESENTATION_OVERVIEW = os.environ.get("MONONAV_PRESENTATION_OVERVIEW", "false").lower() == "true"
-# ---------------------------------------------------------
-
-
-def add_vision_planner_demo_obstacles(stage):
-    """Add the stock slalom course, optionally with deterministic test jitter.
-
-    Defaults are exactly the legacy fixed three-box scene.  Set a seed plus one
-    or more nonzero jitter limits to create a replayable domain-randomized case.
-    """
-    seed = os.environ.get("MONONAV_SCENE_SEED") or None
-    lateral_jitter_m = float(os.environ.get("MONONAV_SCENE_LATERAL_JITTER_M", "0.0"))
-    longitudinal_jitter_m = float(os.environ.get("MONONAV_SCENE_LONGITUDINAL_JITTER_M", "0.0"))
-    scale_jitter = float(os.environ.get("MONONAV_SCENE_SCALE_JITTER", "0.0"))
-    obstacle_count = int(os.environ.get("MONONAV_SCENE_OBSTACLE_COUNT", "3"))
-    if lateral_jitter_m < 0.0 or longitudinal_jitter_m < 0.0 or not 0.0 <= scale_jitter < 1.0:
-        raise ValueError("scene jitter limits must be nonnegative; scale jitter must be below 1")
-    if not 1 <= obstacle_count <= 3:
-        raise ValueError("MONONAV_SCENE_OBSTACLE_COUNT must be between 1 and 3")
-    rng = random.Random(int(seed)) if seed is not None else None
-    obstacles = (
-        ("CenterGate", (3.0, 0.0, 1.0), (0.6, 0.8, 2.0), (0.95, 0.32, 0.12)),
-        ("LeftOffset", (5.1, -1.7, 1.0), (0.7, 1.0, 2.0), (0.12, 0.48, 0.95)),
-        ("RightOffset", (7.2, 1.6, 1.0), (0.7, 1.0, 2.0), (0.95, 0.78, 0.10)),
-    )
-    resolved = []
-    for name, position, dimensions, color in obstacles[:obstacle_count]:
-        if rng is None:
-            resolved_position, resolved_dimensions = position, dimensions
-        else:
-            x, y, z = position
-            x += rng.uniform(-longitudinal_jitter_m, longitudinal_jitter_m)
-            y += rng.uniform(-lateral_jitter_m, lateral_jitter_m)
-            scale = rng.uniform(1.0 - scale_jitter, 1.0 + scale_jitter)
-            resolved_position = (x, y, z)
-            resolved_dimensions = tuple(component * scale for component in dimensions)
-        cube = UsdGeom.Cube.Define(stage, f"/World/VisionPlannerDemo/{name}")
-        cube.GetSizeAttr().Set(1.0)
-        cube.CreateDisplayColorAttr([Gf.Vec3f(*color)])
-        xform = UsdGeom.Xformable(cube.GetPrim())
-        xform.AddTranslateOp().Set(Gf.Vec3d(*resolved_position))
-        xform.AddScaleOp().Set(Gf.Vec3f(*resolved_dimensions))
-        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
-        PhysxSchema.PhysxContactReportAPI.Apply(cube.GetPrim())
-        resolved.append((name, resolved_position, resolved_dimensions))
-    print(f"[VisionPlannerDemo] Added {len(resolved)} slalom obstacles; seed={seed}; resolved={resolved}")
-
-
-# Enable required extensions
-ext_manager = omni.kit.app.get_app().get_extension_manager()
-for ext in [
-    "omni.graph.core",
-    "omni.graph.action",
-    "omni.graph.action_nodes",
-    "isaacsim.core.nodes",
-    "omni.graph.ui",
-    "omni.graph.visualization.nodes",
-    "omni.graph.scriptnode",
-    "omni.graph.window.action",
-    "omni.graph.window.generic",
-    "omni.graph.ui_nodes",
-    "pegasus.simulator",
-    "isaacsim.ros2.bridge",
-]:
-    if not ext_manager.is_extension_enabled(ext):
-        ext_manager.set_extension_enabled_immediate(ext, True)
-
-
-def wait_for_stage(stage, timeout_s: float = 10.0):
-    """Pump the Kit app loop until /World has content (scene fully loaded)."""
-    for _ in range(int(timeout_s / 0.1)):
-        omni.kit.app.get_app().update()
-        world_prim = stage.GetPrimAtPath("/World")
-        if world_prim.IsValid():
-            non_physics = [c for c in world_prim.GetChildren() if c.GetName() != "PhysicsScene"]
-            if non_physics:
-                return True
-        time.sleep(0.1)
-    return False
-
-
-class PegasusApp:
-
-    def __init__(self):
-        self.timeline = omni.timeline.get_timeline_interface()
-        self._contact_reporter_ready = False
-        self._contact_reporter_disabled = False
-        self._contact_last_value = None
-        self._contact_last_publish_wall = 0.0
-
-        # Start Pegasus interface + world
-        self.pg = PegasusInterface()
-        self.pg._world = World(**self.pg._world_settings)
-        self.world = self.pg.world
-
-        # Keep the timeline stopped throughout setup so that OmniGraph's
-        # OnPlaybackTick never fires.
-        self.timeline.stop()
-
-        # Load environment
-        self.pg.load_environment(ENV_URL)
-
-        stage = omni.usd.get_context().get_stage()
-        if stage is None:
-            raise RuntimeError("Stage failed to load")
-
-        # Wait for the environment to finish loading before modifying it
-        if not wait_for_stage(stage):
-            carb.log_warn("Stage load timed out — continuing anyway.")
-
-        # ----- Scene preparation -----
-
-        # Scale /World/stage if the asset uses non-metric units (e.g. cm).
-        # Remove or set STAGE_SCALE=1.0 if the environment is already in meters.
-        stage_prim = stage.GetPrimAtPath("/World/stage")
-        if stage_prim.IsValid():
-            scale_stage_prim(stage, "/World/stage", STAGE_SCALE)
-
-            # Apply CollisionAPI to every mesh so physics works correctly
-            add_colliders(stage_prim)
-
-            # Let the app process the transform and collision changes
-            for _ in range(10):
-                omni.kit.app.get_app().update()
-        else:
-            carb.log_warn("/World/stage not found — skipping scale and collision.")
-
-        # Add a dome light for uniform scene illumination.
-        # Pass intensity/exposure kwargs to override defaults defined in scene_prep.
-        add_dome_light(
-            stage,
-            intensity=float(os.environ.get("MONONAV_DOME_LIGHT_INTENSITY", "1000.0")),
-            exposure=float(os.environ.get("MONONAV_DOME_LIGHT_EXPOSURE", "0.0")),
-        )
-
-        if VISION_PLANNER_DEMO_OBSTACLES:
-            add_vision_planner_demo_obstacles(stage)
-            for _ in range(5):
-                omni.kit.app.get_app().update()
-
-        # A deliberately wide, high view for documentation/capture.  It is
-        # opt-in so normal simulation and evaluation runs retain their UI view.
-        if PRESENTATION_OVERVIEW:
-            self.pg.set_viewport_camera([4.5, -12.0, 10.0], [4.5, 0.0, 0.8])
-
-        # Optionally save the prepared scene as a self-contained USD package.
-        # The Collector copies all Nucleus-hosted textures and MDLs locally.
-        if SAVE_SCENE_TO:
-            import tempfile
-            tmp_usd = os.path.join(tempfile.gettempdir(), "prepared_scene.usd")
-            success, error = asyncio.get_event_loop().run_until_complete(
-                omni.usd.get_context().export_as_stage_async(tmp_usd)
-            )
-            if success:
-                os.makedirs(SAVE_SCENE_TO, exist_ok=True)
-                save_scene_as_contained_usd(tmp_usd, SAVE_SCENE_TO)
-                os.remove(tmp_usd)
-            else:
-                carb.log_error(f"Scene export failed: {error}")
-
-        # ----- Spawn drone OmniGraph -----
-        # This only creates the graph topology. The actual drone + PX4
-        # backend are created by compute_base on the first Play tick.
-
-        graph_handle = spawn_px4_multirotor_node(
-            pegasus_node_name="PX4Multirotor",
-            drone_prim="/World/base_link",
-            robot_name="robot_1",
-            vehicle_id=1,   # MAVLink port = 14540 + vehicle_id
-            domain_id=1,    # ROS 2 domain ID — match vehicle_id by convention
-            usd_file=DRONE_USD,
-            init_pos=DRONE_INIT_POS,
-            init_orient=[0.0, 0.0, 0.0, 1.0],
-        )
-
-        add_zed_stereo_camera_subgraph(
-            parent_graph_handle=graph_handle,
-            drone_prim="/World/base_link",
-            robot_name="robot_1",
-            camera_name="ZEDCamera",
-            camera_offset=[0.2, 0.0, -0.05],       # X, Y, Z offset from base_link
-            camera_rotation_offset=[0.0, 0.0, 0.0], # roll, pitch, yaw in degrees
-        )
-
-        # External vision planners consume the camera topics. RTX lidar startup is
-        # expensive, so honor the compose flag and create it only for lidar-based runs.
-        if ENABLE_LIDAR:
-            add_rtx_lidar_subgraph(
-                parent_graph_handle=graph_handle,
-                drone_prim="/World/base_link",
-                robot_name="robot_1",
-                lidar_config="ouster_os1",
-                lidar_topic_name="point_cloud_raw",
-                lidar_offset=[0.0, 0.0, 0.025],  # X, Y, Z offset from drone base_link
-                lidar_rotation_offset=[0.0, 0.0, 0.0],
-                min_range=0.75,
-            )
-
-        self.play_on_start = os.environ.get("PLAY_SIM_ON_START", "true").lower() == "true"
-
-    def _initialize_contact_reporter(self):
-        """Publish real PhysX obstacle contacts independently of the planner."""
-        if self._contact_reporter_ready or self._contact_reporter_disabled:
-            return
-        drone_prim = omni.usd.get_context().get_stage().GetPrimAtPath("/World/base_link")
-        if not drone_prim.IsValid():
-            return
-        try:
-            PhysxSchema.PhysxContactReportAPI.Apply(drone_prim)
-            from isaacsim.sensors.physics import _sensor
-            import rclpy
-            from std_msgs.msg import Bool
-
-            if not rclpy.ok():
-                rclpy.init(args=None)
-            self._contact_node = rclpy.create_node("ws2_physx_contact_reporter")
-            self._contact_message_type = Bool
-            self._contact_publisher = self._contact_node.create_publisher(
-                Bool,
-                os.environ.get(
-                    "MONONAV_PHYSX_CONTACT_TOPIC",
-                    "/robot_1/simulation/physx_contact",
-                ),
-                10,
-            )
-            self._contact_interface = _sensor.acquire_contact_sensor_interface()
-            self._contact_body_path = "/World/base_link"
-            self._contact_reporter_ready = True
-            carb.log_info("WS2 PhysX contact reporter ready")
-        except Exception as exc:
-            self._contact_reporter_disabled = True
-            carb.log_warn(f"WS2 PhysX contact reporter unavailable: {exc}")
-
-    def _publish_contact_state(self):
-        if not self._contact_reporter_ready:
-            return
-        try:
-            in_contact = False
-            for contact in self._contact_interface.get_rigid_body_raw_data(
-                self._contact_body_path
-            ):
-                values = [*contact]
-                bodies = {
-                    self._contact_interface.decode_body_name(values[2]),
-                    self._contact_interface.decode_body_name(values[3]),
-                }
-                if any(body.startswith("/World/VisionPlannerDemo/") for body in bodies):
-                    in_contact = True
-                    break
-            now = time.monotonic()
-            if in_contact != self._contact_last_value or now - self._contact_last_publish_wall >= 1.0:
-                message = self._contact_message_type()
-                message.data = in_contact
-                self._contact_publisher.publish(message)
-                self._contact_last_value = in_contact
-                self._contact_last_publish_wall = now
-            import rclpy
-            rclpy.spin_once(self._contact_node, timeout_sec=0.0)
-        except Exception as exc:
-            self._contact_reporter_disabled = True
-            carb.log_warn(f"WS2 PhysX contact reporter stopped: {exc}")
-
-    def run(self):
-
-        if self.play_on_start:
-            self.timeline.play()
-        else:
-            self.timeline.stop()
-
-        app = omni.kit.app.get_app()
-        # The Pegasus viewport is initialized during play; apply the optional
-        # overview after that initialization rather than during stage setup.
-        if PRESENTATION_OVERVIEW:
-            for _ in range(10):
-                app.update()
-            self.pg.set_viewport_camera([4.5, -12.0, 10.0], [4.5, 0.0, 0.8])
-        while simulation_app.is_running():
-            # File → Save re-opens the stage, which invalidates the World.
-            # Fall back to app.update() until the extension re-creates it.
-            world = World.instance()
-            if world is not None and hasattr(world, '_scene'):
-                world.step(render=True)
-                self._initialize_contact_reporter()
-                self._publish_contact_state()
-                if world is not self.world:
-                    self.world = world
-                    self.pg._world = world
-            else:
-                app.update()
-
-        carb.log_warn("Closing simulation.")
-        self.timeline.stop()
-        simulation_app.close()
+from pegasus.simulator.params import SIMULATION_ENVIRONMENTS  # noqa: E402
+from pegasus_app import PegasusApp, resolve_scene_from_env  # noqa: E402
 
 
 def main():
-    pg_app = PegasusApp()
-    pg_app.run()
+    # Scene from `airstack up --scene` (or set ISAAC_SIM_SCENE to any
+    # catalog key / USD URL); stage_scale converts cm-authored stages to m.
+    env_url, stage_scale = resolve_scene_from_env(SIMULATION_ENVIRONMENTS)
+    print(f"[example_one] Scene: {env_url} (stage_scale={stage_scale})")
+    PegasusApp(
+        env_url=env_url,
+        stage_scale=stage_scale,
+        drone_configs=[
+            {
+                "domain_id": 1,  # MAVLink port = 14540 + vehicle_id (= domain_id)
+                "x_m": 0.0, "y_m": 0.0, "z_m": 0.07,
+                # Single-drone scenes keep the historical prim/node names.
+                "prim": "/World/base_link",
+                "node_name": "PX4Multirotor",
+            }
+        ],
+        enable_lidar=True,
+    ).run()
 
 
 if __name__ == "__main__":

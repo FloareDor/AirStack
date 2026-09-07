@@ -71,22 +71,18 @@ nucleus_token.txt
 mkdocs.log
 
 prompts/
-simulation/isaac-sim/launch_scripts/prepare_scene.py
 
 # Generated Microsoft AirSim (legacy) config
 simulation/ms-airsim/config/settings.json
 
-# scenes and raven-specific launch scripts
-scenes/
-simulation/isaac-sim/launch_scripts/AbandonedFactory_Launch.py
-simulation/isaac-sim/launch_scripts/ConstructionSite_Launch.py
-simulation/isaac-sim/launch_scripts/FireAcademy_Launch.py
-simulation/isaac-sim/launch_scripts/RetroNeighborhood_Launch.py
+# Locally saved/collected Isaac scene packages (PegasusApp save_scene_to).
+# Scoped so tracked scene assets (e.g. simulation/ms-airsim/assets/scenes/)
+# stay trackable.
+simulation/isaac-sim/scenes/
 
 # Persisted waypoint/polygon editor saves (host-side mount target)
 gcs/saves/*
 !gcs/saves/.gitkeep
-gcs/foxglove_extensions/airstack_layout_custom.json
 # Downloaded UE4 scene binaries (fetched via assets/scenes/fetch_scene.sh)
 simulation/ms-airsim/assets/scenes/*
 !simulation/ms-airsim/assets/scenes/fetch_scene.sh
@@ -94,8 +90,37 @@ simulation/ms-airsim/assets/scenes/*
 # Test results
 tests/results/
 
+# Per-feature agent notebook (design specs + test results) — local-only, feeds PR descriptions.
+# See .agents/skills/use-feature-notebook
+/notebook/
+
 # Local-only — embedded sibling repo, not part of this branch
 common/rayfronts/
 
 # Docker build cache (root-owned subdirs cause permission warnings on `git add`)
 robot/docker/cache/
+
+# Ephemeral outputs from docker_image_plan.py (docker-build.yml)
+docker-image-plan.json
+docker-compose.fingerprint.yaml
+
+.DS_Store
+gcs/.DS_Store
+
+# Per-run resolved launch config dumps (airstack up)
+/.airstack/runs/
+
+# AirStack modules (RFC #379) — synced checkouts + overlay artifacts are
+# local-only; trunk never carries module code. See docs/development/modules.md
+/modules/
+/modules.repos
+/modules.lock
+robot/ros_ws/src/modules/
+simulation/isaac-sim/launch_scripts/modules/
+stacks/.external/
+/.airstack/generated/
+
+# Machine-local config overlay (RFC #380 §1/§3): per-serial calibration and
+# local overrides — never shared through trunk. The README stays committed.
+/config/local/*
+!/config/local/README.md

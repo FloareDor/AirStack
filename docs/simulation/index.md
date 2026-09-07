@@ -1,6 +1,8 @@
 # Simulation
 
-AirStack provides high-fidelity simulation environments for developing and testing autonomous systems before deploying to hardware. Simulation enables rapid iteration, safe testing of edge cases, and multi-robot scenarios.
+AirStack provides simulation environments for developing and testing autonomous systems before deploying to hardware. Simulation enables rapid iteration, safe testing of edge cases, and multi-robot scenarios.
+
+Three simulators are supported because no single one covers every development need: **Isaac Sim** (primary) for high-fidelity rendering, physics, and full sensor suites; **Microsoft AirSim (legacy)** for native PX4-in-the-loop testing with pre-built Unreal Engine scenes and no Omniverse dependency; and **Simple Sim** for fast, lightweight iteration on planning and perception code without PX4 or a heavyweight GPU workload. Pick the lightest simulator that exercises what you're working on.
 
 ## Directory Structure
 
@@ -12,11 +14,10 @@ simulation/
 │   ├── docker/                    # Isaac Sim containerization
 │   │   ├── docker-compose.yaml    # Main launch configuration
 │   │   └── Dockerfile.isaac-ros   # Image definition
-│   ├── assets/                    # 3D models and props
-│   ├── config/                    # Simulation configurations
+│   ├── assets/                    # Scenes, 3D models and props
 │   ├── extensions/                # Custom Isaac Sim extensions
 │   ├── launch_scripts/            # Python launch scripts
-│   └── standalone_examples/       # Example scenes and scripts
+│   └── utils/                     # Shared helpers
 ├── ms-airsim/
 │   ├── docker/                    # Microsoft AirSim (legacy) containerization
 │   │   ├── docker-compose.yaml    # Launch configuration
@@ -40,18 +41,18 @@ Simulation components are launched via Docker Compose. Each simulator has its ow
 
 **Key launch points:**
 
-- **Launch command:** `airstack up isaac-sim` or `airstack up simple-sim`
+- **Launch command:** `airstack up --sim isaac` (or `airstack up isaac-sim` to start only the sim service)
 - **Main process:** The `command:` in docker-compose.yaml starts the simulator
-- **Scene selection:** Set via `ISAAC_SIM_SCENE` environment variable (Isaac Sim)
-- **Auto-launch:** Controlled by `PLAY_SIM_ON_START` variable
+- **Scene selection:** `airstack up --scene <shortname>` picks the environment for whichever simulator is active — see [Simulation Scenes](scenes.md). The standalone launch script named by `ISAAC_SIM_SCRIPT_NAME` (in `.env`) defines the drones and honors the selected scene; with `ISAAC_SIM_USE_STANDALONE=false`, `ISAAC_SIM_GUI` points at a USD file to open instead
+- **Auto-play:** On by default — controlled by `PLAY_SIM_ON_START` (`airstack up --no-play` starts paused)
 
 **Example:**
 ```bash
-# Launch Isaac Sim with custom scene
-ISAAC_SIM_SCENE=scenes/custom_scene.usd airstack up isaac-sim
+# Launch Isaac Sim with a custom launch script
+ISAAC_SIM_SCRIPT_NAME=my_custom_scene.py airstack up --sim isaac
 
-# Launch simple simulator
-airstack up simple-sim
+# Come up paused
+airstack up --sim isaac --no-play
 ```
 
 **Learn more:** [Docker Workflow](../development/beginner/airstack-cli/docker_usage.md)
@@ -73,7 +74,6 @@ Isaac Sim is our primary simulation platform, offering:
 
 - [Isaac Sim Overview](isaac_sim/index.md)
 - [Pegasus Scene Setup](isaac_sim/pegasus_scene_setup.md)
-- [Ascent SITL Extension](isaac_sim/ascent_sitl_extension.md)
 - [Export from Unreal Engine](isaac_sim/export_stages_from_unreal.md)
 
 ### Microsoft AirSim (legacy) (Unreal Engine)
@@ -86,22 +86,21 @@ An open-source drone simulator built on Unreal Engine with native PX4 SITL integ
 - Depth-based obstacle avoidance testing (DROAN)
 - Environments from the Unreal Engine ecosystem
 
-**Launch:** `airstack up --env-file overrides/ms-airsim.env`
+**Launch:** `airstack up --sim airsim`
 
 **Location:** `simulation/ms-airsim/`
 
 ### Simple Sim (Lightweight)
 
-A lightweight 2D/3D simulator for basic testing and development when full Isaac Sim fidelity isn't needed.
+A lightweight kinematic simulator (single ROS 2 node, no PX4/MAVROS — it mocks the MAVROS interface directly) for fast iteration when full Isaac Sim fidelity isn't needed. Single robot only. See [Simple Sim](simple_sim/index.md).
 
 **Use cases:**
 
-- Quick algorithm prototyping
-- CI/CD testing
-- Lower hardware requirements
+- Quick algorithm prototyping (planning/control/stereo perception)
+- Machines without an Isaac-class GPU or Omniverse credentials
 - Faster iteration cycles
 
-**Launch:** `airstack up simple-sim`
+**Launch:** `airstack up --sim simple`
 
 **Location:** `simulation/simple-sim/`
 
@@ -124,10 +123,14 @@ A lightweight 2D/3D simulator for basic testing and development when full Isaac 
 
 1. **Launch multiple robots:**
    ```bash
-   NUM_ROBOTS=3 airstack up
+   airstack up --sim isaac --robots 3
    ```
+   (`--robots` sets `NUM_ROBOTS` **and** selects the multi-drone launch script.
+   Plain `NUM_ROBOTS=3 airstack up` is rejected by preflight if
+   `ISAAC_SIM_SCRIPT_NAME` is still the single-drone default, which spawns
+   exactly one drone.)
 
-2. Each robot gets independent ROS 2 namespace
+2. Each robot gets an independent ROS 2 namespace and DDS domain
 3. All robots visible in same Isaac Sim scene
 4. Coordinate via ground control station
 
@@ -150,23 +153,22 @@ Key environment variables for simulation (set in `.env` or at runtime):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ISAAC_SIM_SCENE` | Path to USD scene file | `simulation/isaac-sim/scenes/...` |
+| `ISAAC_SIM_SCRIPT_NAME` | Standalone launch script (scene + drones) in `simulation/isaac-sim/launch_scripts/` | `example_one_px4_pegasus_launch_script.py` |
+| `ISAAC_SIM_USE_STANDALONE` | `true`: run the launch script; `false`: open the USD in `ISAAC_SIM_GUI` | `true` |
+| `ISAAC_SIM_GUI` | USD file to open when not using a standalone script | `simple_pegasus.scene.usd` |
 | `PLAY_SIM_ON_START` | Auto-start simulation | `true` |
-| `NUM_ROBOTS` | Number of robots to spawn | `1` |
+| `NUM_ROBOTS` | Number of robot containers (use `--robots` so the sim matches) | `1` |
 
 **Example:**
 ```bash
-# Custom scene
-ISAAC_SIM_SCENE=scenes/custom.usd airstack up isaac-sim
+# Custom launch script
+ISAAC_SIM_SCRIPT_NAME=my_custom_scene.py airstack up --sim isaac
 
-# Don't auto-play
-PLAY_SIM_ON_START=false airstack up isaac-sim
+# Start paused (press Play in the sim window yourself)
+airstack up --sim isaac --no-play
 ```
 
-**Pre-built scenes:** Located in `scenes/` directory
-
-- `two_drone_fire_new.usd` - Fire academy scenario
-- `two_drone_RetroNeighborhood.usd` - Urban neighborhood
+**Pre-built scenes:** Located in `simulation/isaac-sim/assets/scenes/` (e.g. `simple_pegasus.scene.usd`); standalone launch scripts in `simulation/isaac-sim/launch_scripts/` build scenes programmatically.
 
 **Learn more:** [Docker Workflow](../development/beginner/airstack-cli/docker_usage.md#docker-compose-variable-overrides)
 

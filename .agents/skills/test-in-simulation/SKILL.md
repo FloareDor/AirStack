@@ -1,7 +1,7 @@
 ---
 name: test-in-simulation
 description: Test modules in Isaac Sim simulation environment end-to-end. Use after implementing and integrating a module to verify functionality. Covers test scenarios, monitoring, recording, and analysis of simulation tests.
-license: Apache-2.0
+license: BSD-3-Clause-Clear
 metadata:
   author: AirLab CMU
   repository: AirStack
@@ -144,11 +144,10 @@ Plan specific tests for your module:
 
 ### 7. Execute Test Scenario
 
-#### Method 1: Manual Commands via Behavior Tree GUI
+#### Method 1: Manual Commands via the GCS
 
 ```bash
-# If behavior tree GUI is available
-# Send commands through rqt_behavior_tree_command
+# Send commands from the Foxglove Robot Tasks panel (see the GCS docs)
 
 # Typical test sequence:
 # 1. Arm drone
@@ -395,8 +394,9 @@ Don't just test the happy path:
 If module supports multi-robot:
 
 ```bash
-# Launch multi-robot simulation
-NUM_ROBOTS=2 airstack up isaac-sim robot
+# Launch multi-robot simulation (--robots also selects the multi-drone Isaac script;
+# a bare NUM_ROBOTS=2 with the single-drone default script is rejected by preflight)
+airstack up --sim isaac --robots 2
 
 # Verify each robot runs independently
 docker exec airstack-robot-desktop-1 bash -c "ros2 node list | grep robot"
@@ -550,8 +550,8 @@ fi
   - [Isaac Sim Testing](https://docs.omniverse.nvidia.com/isaacsim/latest/index.html)
 
 - **AirStack:**
-  - [System Architecture](../docs/robot/autonomy/system_architecture.md)
-  - [Integration Checklist](../docs/robot/autonomy/integration_checklist.md)
+  - [System Architecture](../../../docs/robot/autonomy/system_architecture.md)
+  - [Integration Checklist](../../../docs/robot/autonomy/integration_checklist.md)
 
 - **Related Skills:**
   - [debug-module](../debug-module) - Debugging issues found in testing

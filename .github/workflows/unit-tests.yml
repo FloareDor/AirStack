@@ -1,0 +1,68 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unit-tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Python unit and harness contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # The tests/meta contract tests exercise `airstack up --dry-run`,
+          # whose preflight requires the PegasusSimulator submodule, and the
+          # docs-catalog contract resolves nav entries that live inside
+          # submodules (e.g. vdb_mapping_ros2/README.md).
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tests/requirements.txt
+
+      - name: Install test dependencies
+        run: python -m pip install -r tests/requirements.txt
+
+      # `airstack up --dry-run --sim isaac` preflight hard-errors without
+      # Nucleus credentials. Provision the same guest stub that
+      # module-system-tests.yml creates; hosted runners never launch Isaac.
+      - name: Create Isaac Sim omni_pass.env (preflight stub)
+        run: |
+          mkdir -p simulation/isaac-sim/docker
+          cat > simulation/isaac-sim/docker/omni_pass.env <<'EOF'
+          OMNI_USER=guest
+          OMNI_PASS=guest
+          OMNI_SERVER="omniverse://airlab-nucleus.andrew.cmu.edu/NVIDIA/Assets/Isaac/5.1"
+          ACCEPT_EULA=Y
+          OMNI_ENV_PRIVACY_CONSENT=Y
+          EOF
+
+      - name: Run unit tests
+        env:
+          AIRSTACK_ROOT: ${{ github.workspace }}
+          AIRSTACK_TESTED_SHA: ${{ github.sha }}
+          AIRSTACK_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: pytest tests/ -m unit
+
+      - name: Upload unit-test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-${{ github.sha }}-${{ github.run_id }}
+          path: tests/results/
+          retention-days: 30

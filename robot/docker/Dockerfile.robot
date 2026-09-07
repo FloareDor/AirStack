@@ -1,4 +1,4 @@
-# either ubuntu:24.04 or l4t. ubuntu:24.04 is default
+# either ubuntu:24.04 / nvidia CUDA, or Jetson intermediary from Dockerfile.l4t-stack-base (see robot-l4t in compose).
 ARG BASE_IMAGE
 # ============================================================
 # Stage 1 — builder: compile/download everything
@@ -10,8 +10,13 @@ ARG BASE_IMAGE
 ARG REAL_ROBOT
 ARG UPDATE_FLAGS="-o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true"
 ARG INSTALL_FLAGS="-o APT::Get::AllowUnauthenticated=true"
-ARG SKIP_MACVO=false
-ARG SKIP_TENSORRT=false
+ARG TARGET_ARCH=x86_64
+
+ARG PIP_VERSION=24.0
+ARG PYTHON_VERSION=3.12
+
+ARG ROS_DISTRO=jazzy
+ENV ROS_DISTRO=${ROS_DISTRO}
 
 # from https://github.com/athackst/dockerfiles/blob/main/ros2/jazzy.Dockerfile
 ENV DEBIAN_FRONTEND=noninteractive
@@ -53,16 +58,15 @@ RUN sudo add-apt-repository universe \
   && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null \
   && apt-get ${UPDATE_FLAGS} update -y && apt-get ${INSTALL_FLAGS} install -y --no-install-recommends \
-  ros-jazzy-desktop \
+  ros-${ROS_DISTRO}-desktop \
   python3-argcomplete \
   && rm -rf /var/lib/apt/lists/*
 
-ENV ROS_DISTRO=jazzy
-ENV AMENT_PREFIX_PATH=/opt/ros/jazzy
-ENV COLCON_PREFIX_PATH=/opt/ros/jazzy
-ENV LD_LIBRARY_PATH=/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/lib
-ENV PATH=/opt/ros/jazzy/bin:$PATH
-ENV PYTHONPATH=/opt/ros/jazzy/local/lib/python3.12/dist-packages:/opt/ros/jazzy/lib/python3.12/site-packages
+ENV AMENT_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+ENV COLCON_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+ENV LD_LIBRARY_PATH=/opt/ros/${ROS_DISTRO}/lib/${TARGET_ARCH}-linux-gnu:/opt/ros/${ROS_DISTRO}/lib
+ENV PATH=/opt/ros/${ROS_DISTRO}/bin:$PATH
+ENV PYTHONPATH=/opt/ros/${ROS_DISTRO}/local/lib/python${PYTHON_VERSION}/dist-packages:/opt/ros/${ROS_DISTRO}/lib/python${PYTHON_VERSION}/site-packages
 ENV ROS_PYTHON_VERSION=3
 ENV ROS_VERSION=2
 ENV ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
@@ -78,105 +82,59 @@ RUN apt update && apt install -y --no-install-recommends \
   python3-rosdep \
   tmux \
   gdb \
+  xvfb \
   && rm -rf /var/lib/apt/lists/*
+
+# Freeze pip and setuptools versions (ignore-installed: apt-shipped wheel/setuptools have no pip RECORD).
+RUN python3 -m pip install --no-cache-dir --break-system-packages --ignore-installed --upgrade \
+  "pip==${PIP_VERSION}" \
+  "setuptools==79.0.1" \
+  wheel
 
 # Install any additional ROS2 packages
 RUN apt update -y && apt install -y --no-install-recommends \
   ros-dev-tools \
-  ros-jazzy-mavros \
-  ros-jazzy-tf2* \
-  ros-jazzy-stereo-image-proc \
-  ros-jazzy-image-view \
-  ros-jazzy-topic-tools \
-  ros-jazzy-grid-map \
-  ros-jazzy-domain-bridge \
-  ros-jazzy-rosbag2-storage-mcap \
-  ros-jazzy-xacro \
-  ros-jazzy-foxglove-bridge \
-  libcgal-dev \
+  ros-${ROS_DISTRO}-mavros \
+  ros-${ROS_DISTRO}-mavros-extras \
+  ros-${ROS_DISTRO}-tf2* \
+  ros-${ROS_DISTRO}-stereo-image-proc \
+  ros-${ROS_DISTRO}-image-view \
+  ros-${ROS_DISTRO}-topic-tools \
+  ros-${ROS_DISTRO}-grid-map \
+  ros-${ROS_DISTRO}-domain-bridge \
+  ros-${ROS_DISTRO}-rosbag2-storage-mcap \
+  ros-${ROS_DISTRO}-xacro \
+  ros-${ROS_DISTRO}-ament-package \
   python3-colcon-common-extensions \
   && rm -rf /var/lib/apt/lists/*
 
-RUN /opt/ros/jazzy/lib/mavros/install_geographiclib_datasets.sh
-
-# Install TensorRT (NVIDIA/L4T images only, unless SKIP_TENSORRT=true)
-# Note: TensorRT 8 packages may not be available for Ubuntu 24.04, so this is optional
-RUN if echo "$BASE_IMAGE" | grep -qE "(nvidia|l4t)" && [ "${SKIP_TENSORRT}" != "true" ]; then \
-  if [ ! -f /etc/apt/sources.list.d/cuda*.list ]; then \
-  wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu$(lsb_release -rs | tr -d .)/x86_64/cuda-keyring_1.1-1_all.deb && \
-  dpkg -i cuda-keyring_1.1-1_all.deb || true; \
-  fi && \
-  apt update -y && \
-  apt install -y --no-install-recommends \
-  libnvinfer10 libnvinfer-dev libnvinfer-plugin10 \
-  python3-libnvinfer python3-libnvinfer-dev; \
-  fi
+RUN /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh
 
 # Install Python dependencies (unconditional)
 # Note: numpy>=1.26 required for Python 3.12 compatibility
 # Using --ignore-installed to avoid conflicts with system packages
 RUN pip3 install --break-system-packages --ignore-installed \
+  "pytest==7.4.*" \
   empy==3.3.4 \
   future \
-  lxml \
+  # matplotlib stays: dev-script consumer + published-image behavior
+  # (its resolver also pulls pillow transitively)
   matplotlib==3.8.4 \
-  # numpy must be <2.0 for MACVO
+  # kept <2.0 conservatively; audit consumers before relaxing
   numpy~=1.26.4 \
-  pkgconfig \
-  psutil \
-  pygments \
   wheel \
-  pymavlink \
   pyyaml \
   requests \
   # setup tools must be <80 for Jazzy https://github.com/ros2/ros2/issues/1702#issuecomment-3007929996
   setuptools==79.0.1 \
-  six \
-  toml \
-  scipy \
-  pypose \
-  rich \
-  tqdm \
-  pillow \
-  flow_vis \
-  h5py \
-  evo \
-  tabulate \
-  einops \
-  timm==0.9.12 \
-  rerun-sdk==0.22.0 \
-  yacs \
-  wandb \
-  loguru \
-  jaxtyping \
-  kornia \
-  typeguard==2.13.3
+  # scipy stays: position_setpoint_pub
+  scipy
 
-# Install MACVO Python dependencies (skipped if SKIP_MACVO=true)
-RUN if [ "${SKIP_MACVO}" != "true" ]; then \
-  pip3 install --break-system-packages \
-  torch \
-  torchvision \
-  onnx \
-  tensorrt; \
-  fi
-
-# Downloading model weights for MACVO (skipped if SKIP_MACVO=true)
-WORKDIR /model_weights
-RUN if [ "${SKIP_MACVO}" != "true" ]; then \
-  wget -r "https://github.com/MAC-VO/MAC-VO/releases/download/model/MACVO_FrontendCov.pth" && \
-  wget -r "https://github.com/MAC-VO/MAC-VO/releases/download/model/MACVO_posenet.pkl" && \
-  pwd && ls -R && \
-  mv /model_weights/github.com/MAC-VO/MAC-VO/releases/download/model/MACVO_FrontendCov.pth /model_weights/MACVO_FrontendCov.pth && \
-  mv /model_weights/github.com/MAC-VO/MAC-VO/releases/download/model/MACVO_posenet.pkl /model_weights/MACVO_posenet.pkl && \
-  rm -rf /model_weights/github.com; \
-  fi
-
-# Fixes for MACVO Integration (skipped if SKIP_MACVO=true)
-RUN if [ "${SKIP_MACVO}" != "true" ]; then \
-  pip install --break-system-packages huggingface_hub && \
-  pip uninstall --break-system-packages matplotlib -y; \
-  fi
+# Keep pytest < 8.1. ROS Jazzy launch_testing still implements
+# pytest_pycollect_makemodule(path=...), which pluggy rejects after pytest 8.1
+# removed the py.path hook argument (PluginValidationError on colcon test).
+RUN python3 -m pip install --no-cache-dir --break-system-packages \
+  "pytest>=7.4,<8.1"
 
 # TMux config
 RUN git clone --depth 1 https://github.com/tmux-plugins/tpm /root/.tmux/plugins/tpm
@@ -211,8 +169,13 @@ ARG BASE_IMAGE
 ARG REAL_ROBOT
 ARG UPDATE_FLAGS="-o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true"
 ARG INSTALL_FLAGS="-o APT::Get::AllowUnauthenticated=true"
-ARG SKIP_MACVO=false
-ARG SKIP_TENSORRT=false
+ARG TARGET_ARCH=x86_64
+
+ARG PIP_VERSION=24.0
+ARG PYTHON_VERSION=3.12
+
+ARG ROS_DISTRO
+ENV ROS_DISTRO=${ROS_DISTRO}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -253,45 +216,59 @@ RUN sudo add-apt-repository universe \
   && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null \
   && apt-get ${UPDATE_FLAGS} update -y && apt-get ${INSTALL_FLAGS} install -y --no-install-recommends \
-  ros-jazzy-desktop \
+  ros-${ROS_DISTRO}-desktop \
   python3-argcomplete \
   && rm -rf /var/lib/apt/lists/*
 
-# Carry over all ROS2 ENV vars from the builder stage
-ENV ROS_DISTRO=jazzy
-ENV AMENT_PREFIX_PATH=/opt/ros/jazzy
-ENV COLCON_PREFIX_PATH=/opt/ros/jazzy
-ENV LD_LIBRARY_PATH=/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/lib
-ENV PATH=/opt/ros/jazzy/bin:$PATH
-ENV PYTHONPATH=/opt/ros/jazzy/local/lib/python3.12/dist-packages:/opt/ros/jazzy/lib/python3.12/site-packages
+ENV AMENT_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+ENV COLCON_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+ENV LD_LIBRARY_PATH=/opt/ros/${ROS_DISTRO}/lib/${TARGET_ARCH}-linux-gnu:/opt/ros/${ROS_DISTRO}/lib
+ENV PATH=/opt/ros/${ROS_DISTRO}/bin:$PATH
+ENV PYTHONPATH=/opt/ros/${ROS_DISTRO}/local/lib/python${PYTHON_VERSION}/dist-packages:/opt/ros/${ROS_DISTRO}/lib/python${PYTHON_VERSION}/site-packages
 ENV ROS_PYTHON_VERSION=3
 ENV ROS_VERSION=2
 ENV ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 ENV DEBIAN_FRONTEND=
 # ========================
 
-# Install runtime dev tools (no cmake or build-essential)
+# Install runtime dev tools. (The compile toolchain — cmake, build-essential —
+# still arrives below via ros-dev-tools: the runtime image keeps it because
+# `bws` builds the ROS workspace inside this container.)
 RUN apt update && apt install -y --no-install-recommends \
   vim nano tree \
   less htop jq \
   python3-pip \
+  python3-yaml \
+  python3-empy \
   python3-rosdep \
   tmux \
+  xvfb \
   && rm -rf /var/lib/apt/lists/*
 
-# Install runtime ROS2 packages (no libcgal-dev)
+# Freeze pip and setuptools versions (ignore-installed: apt-shipped wheel/setuptools have no pip RECORD).
+RUN python3 -m pip install --no-cache-dir --break-system-packages --ignore-installed --upgrade \
+  "pip==${PIP_VERSION}" \
+  "setuptools==79.0.1" \
+  wheel
+
+# Install runtime ROS2 packages. ros-dev-tools pulls in the compile toolchain
+# (cmake, build-essential) — deliberate, since `bws` builds in-container.
+# (ros-*-grid-map pulls CGAL in as a transitive dependency where it needs it.)
+# foxglove-bridge was dropped from the robot image (the GCS image installs its
+# own); per-robot Foxglove returns later as an opt-in stack include.
 RUN apt update -y && apt install -y --no-install-recommends \
   ros-dev-tools \
-  ros-jazzy-mavros \
-  ros-jazzy-tf2* \
-  ros-jazzy-stereo-image-proc \
-  ros-jazzy-image-view \
-  ros-jazzy-topic-tools \
-  ros-jazzy-grid-map \
-  ros-jazzy-domain-bridge \
-  ros-jazzy-rosbag2-storage-mcap \
-  ros-jazzy-xacro \
-  ros-jazzy-foxglove-bridge \
+  ros-${ROS_DISTRO}-mavros \
+  ros-${ROS_DISTRO}-mavros-extras \
+  ros-${ROS_DISTRO}-tf2* \
+  ros-${ROS_DISTRO}-stereo-image-proc \
+  ros-${ROS_DISTRO}-image-view \
+  ros-${ROS_DISTRO}-topic-tools \
+  ros-${ROS_DISTRO}-grid-map \
+  ros-${ROS_DISTRO}-domain-bridge \
+  ros-${ROS_DISTRO}-rosbag2-storage-mcap \
+  ros-${ROS_DISTRO}-xacro \
+  ros-${ROS_DISTRO}-ament-package \
   python3-colcon-common-extensions \
   && rm -rf /var/lib/apt/lists/*
 
@@ -302,7 +279,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && fc-cache -f -v \
   && rm -rf /var/lib/apt/lists/*
 
-RUN /opt/ros/jazzy/lib/mavros/install_geographiclib_datasets.sh
+# MAVROS requires geographiclib-tools to be installed for any offboard control to work.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends geographiclib-tools \
+  && /opt/ros/${ROS_DISTRO}/lib/mavros/install_geographiclib_datasets.sh \
+  && test -f /usr/share/GeographicLib/geoids/egm96-5.pgm \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install DDS Router runtime library dependencies + OpenVDB
 RUN apt update && apt install -y --no-install-recommends \
@@ -310,41 +292,43 @@ RUN apt update && apt install -y --no-install-recommends \
   libopenvdb-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# Install NVIDIA runtime apt packages (no -dev counterparts; NVIDIA/L4T images only, unless SKIP_TENSORRT=true)
-# Note: TensorRT 8 packages may not be available for Ubuntu 24.04, so this is optional
-RUN if echo "$BASE_IMAGE" | grep -qE "(nvidia|l4t)" && [ "${SKIP_TENSORRT}" != "true" ]; then \
-  if [ ! -f /etc/apt/sources.list.d/cuda*.list ]; then \
-  wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu$(lsb_release -rs | tr -d .)/x86_64/cuda-keyring_1.1-1_all.deb && \
-  dpkg -i cuda-keyring_1.1-1_all.deb || true; \
-  fi && \
-  apt update -y && \
-  apt install -y \
-  libnvinfer10 libnvinfer-plugin10 \
-  python3-libnvinfer \
-  && rm -rf /var/lib/apt/lists/*; \
-  fi
+# Install Foxglove Studio desktop app only for non-real-robot images
+RUN if [ "${REAL_ROBOT}" != "true" ] && [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+      wget -q https://get.foxglove.dev/desktop/latest/foxglove-studio-latest-linux-amd64.deb -O /tmp/foxglove-studio.deb && \
+      apt-get ${UPDATE_FLAGS} update && \
+      apt-get ${INSTALL_FLAGS} install -y --no-install-recommends /tmp/foxglove-studio.deb && \
+      rm /tmp/foxglove-studio.deb; \
+    else \
+      echo "Skipping Foxglove Studio install (REAL_ROBOT=${REAL_ROBOT}, arch=$(dpkg --print-architecture))"; \
+    fi && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Foxglove Studio desktop app
-RUN wget -q https://get.foxglove.dev/desktop/latest/foxglove-studio-latest-linux-amd64.deb -O /tmp/foxglove-studio.deb \
-  && apt-get ${UPDATE_FLAGS} update \
-  && apt-get ${INSTALL_FLAGS} install -y --no-install-recommends /tmp/foxglove-studio.deb \
-  && rm /tmp/foxglove-studio.deb \
-  && rm -rf /var/lib/apt/lists/*
-
-# Add ability to SSH (libglfw3-dev and libglm-dev kept per spec)
+# Add ability to SSH
 RUN apt-get ${UPDATE_FLAGS} update && apt-get ${INSTALL_FLAGS} install -y --no-install-recommends \
-  openssh-server libglfw3-dev libglm-dev \
+  openssh-server \
   && rm -rf /var/lib/apt/lists/*
 RUN mkdir /var/run/sshd
 
+# droan_gl link deps (assimp/EGL/GL) — declared in its package.xml
+# (robot/ros_ws/src/local/planners/droan_gl: rosdep keys assimp, opengl,
+# libglfw3-dev, libglm-dev). Installed explicitly so the in-container colcon
+# build doesn't rely on ros-desktop transitives. EGL has no rosdep key on
+# jazzy/noble, hence libegl-dev appears only here.
+RUN apt-get ${UPDATE_FLAGS} update && apt-get ${INSTALL_FLAGS} install -y --no-install-recommends \
+  libassimp-dev \
+  libgl1-mesa-dev \
+  libegl-dev \
+  libglfw3-dev \
+  libglm-dev \
+  && rm -rf /var/lib/apt/lists/*
+
 # Copy build artifacts from the builder stage
-# /opt/ros/jazzy is NOT copied — runtime installs the same packages via apt (including foxglove-bridge)
+# /opt/ros/jazzy is NOT copied — runtime installs the same packages via apt
 # /usr/local/lib/python3.12 is NOT copied separately — it is covered by /usr/local/lib below
 # /usr/local/include is copied to provide OpenVDB (and DDS Router) headers for in-container colcon builds
 COPY --from=builder /usr/local/bin            /usr/local/bin
 COPY --from=builder /usr/local/lib            /usr/local/lib
 COPY --from=builder /usr/local/include        /usr/local/include
-COPY --from=builder /model_weights            /model_weights
 COPY --from=builder /root/.tmux               /root/.tmux
 
 # Password is airstack
