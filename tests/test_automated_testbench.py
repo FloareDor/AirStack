@@ -78,13 +78,13 @@ def test_seed_one_resolves_identically_every_time():
     assert first["resolved"]["obstacles"] == second["resolved"]["obstacles"]
     environment = first["resolved"]["scene_environment"]
     assert {key: environment[key] for key in (
-        "MONONAV_DEMO_OBSTACLES",
+        "ISAAC_SIM_SCRIPT_NAME",
         "MONONAV_SCENE_SEED",
         "MONONAV_SCENE_LATERAL_JITTER_M",
         "MONONAV_SCENE_LONGITUDINAL_JITTER_M",
         "MONONAV_SCENE_SCALE_JITTER",
     )} == {
-        "MONONAV_DEMO_OBSTACLES": "true",
+        "ISAAC_SIM_SCRIPT_NAME": "ws2_slalom_launch_script.py",
         "MONONAV_SCENE_SEED": "1",
         "MONONAV_SCENE_LATERAL_JITTER_M": "0.45",
         "MONONAV_SCENE_LONGITUDINAL_JITTER_M": "0.25",

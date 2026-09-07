@@ -38,8 +38,7 @@ class IsaacEnvironmentAdapter:
             "MONONAV_SCENE_LONGITUDINAL_JITTER_M",
             "MONONAV_SCENE_SCALE_JITTER",
             "MONONAV_SCENE_OBSTACLE_COUNT",
-            "MONONAV_DOME_LIGHT_INTENSITY",
-            "MONONAV_DOME_LIGHT_EXPOSURE",
+            "ISAAC_SIM_DOME_LIGHT",
         }
         unknown = set(configuration) - permitted
         if unknown:

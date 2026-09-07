@@ -537,14 +537,13 @@ def scene_environment(
 ) -> dict[str, str]:
     lighting = lighting or {"intensity": 1000.0, "exposure": 0.0}
     return {
-        "MONONAV_DEMO_OBSTACLES": "true",
+        "ISAAC_SIM_SCRIPT_NAME": "ws2_slalom_launch_script.py",
         "MONONAV_SCENE_SEED": "" if seed is None else str(seed),
         "MONONAV_SCENE_LATERAL_JITTER_M": str(lateral_jitter_m),
         "MONONAV_SCENE_LONGITUDINAL_JITTER_M": str(longitudinal_jitter_m),
         "MONONAV_SCENE_SCALE_JITTER": str(scale_jitter),
         "MONONAV_SCENE_OBSTACLE_COUNT": str(count),
-        "MONONAV_DOME_LIGHT_INTENSITY": str(lighting["intensity"]),
-        "MONONAV_DOME_LIGHT_EXPOSURE": str(lighting["exposure"]),
+        "ISAAC_SIM_DOME_LIGHT": f"{lighting['intensity']},{lighting['exposure']}",
         "MONONAV_PHYSX_CONTACT_TOPIC": contact_topic,
     }
 
