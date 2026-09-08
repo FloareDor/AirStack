@@ -75,8 +75,11 @@ mononav:
     - "12"
     - --min-tsdf-points
     - "10"
+    # Must stay >= MonoNav's config.yml VoxelBlockGrid.depth_max (7.0 m), or
+    # blocks integrated at truncation range get pruned the same frame they're
+    # created (silently empties the map in open scenes like office).
     - --tsdf-local-radius
-    - "3.0"
+    - "8.0"
 
 sensor:
   fixed_delay_s: 0.0
