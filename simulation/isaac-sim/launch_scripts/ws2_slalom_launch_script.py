@@ -18,6 +18,8 @@ mechanisms directly (see pegasus_app.py).
 Env vars specific to this script:
  - ``MONONAV_SCENE_SEED`` / ``_LATERAL_JITTER_M`` / ``_LONGITUDINAL_JITTER_M`` /
    ``_SCALE_JITTER`` / ``_OBSTACLE_COUNT``: obstacle domain randomization.
+   ``_OBSTACLE_COUNT=0`` skips slalom-obstacle spawning entirely (used for
+   scenes, e.g. Office, that don't use the slalom course).
  - ``MONONAV_PHYSX_CONTACT_TOPIC``: where the contact reporter publishes
    (default ``/robot_1/simulation/physx_contact``).
  - ``MONONAV_PRESENTATION_OVERVIEW``: opt-in wide/high camera for capture.
@@ -64,6 +66,9 @@ def add_slalom_obstacles(stage):
     longitudinal_jitter_m = float(os.environ.get("MONONAV_SCENE_LONGITUDINAL_JITTER_M", "0.0"))
     scale_jitter = float(os.environ.get("MONONAV_SCENE_SCALE_JITTER", "0.0"))
     obstacle_count = int(os.environ.get("MONONAV_SCENE_OBSTACLE_COUNT", "3"))
+    if obstacle_count == 0:
+        carb.log_info("[ws2_slalom] MONONAV_SCENE_OBSTACLE_COUNT=0; skipping slalom obstacles for this scene.")
+        return
     if lateral_jitter_m < 0.0 or longitudinal_jitter_m < 0.0 or not 0.0 <= scale_jitter < 1.0:
         raise ValueError("scene jitter limits must be nonnegative; scale jitter must be below 1")
     if not 1 <= obstacle_count <= 3:

@@ -34,6 +34,11 @@ STOCK_OBSTACLES = (
     },
 )
 
+SCENE_CATALOG: dict[str, dict[str, Any]] = {
+    "slalom": {"obstacle_preset": "slalom_3box_v1", "isaac_scene": ""},
+    "office": {"obstacle_preset": None, "isaac_scene": "Office"},
+}
+
 ALLOWED_OUTCOMES = {
     "goal_reached",
     "collision",
@@ -223,46 +228,67 @@ def resolve_scenario(
     scenario["mission"] = copy.deepcopy(flight)
     scenario["flight"] = copy.deepcopy(flight)
 
-    obstacles = _required(scenario, "obstacles", "scenario")
-    if not isinstance(obstacles, dict) or obstacles.get("preset") != "slalom_3box_v1":
-        raise ScenarioError("only obstacles.preset=slalom_3box_v1 is supported")
-    variation = obstacles.setdefault("variation", {})
-    if not isinstance(variation, dict):
-        raise ScenarioError("scenario.obstacles.variation must be a mapping")
-    lateral = _number(
-        variation.get("lateral_m", 0.0),
-        "scenario.obstacles.variation.lateral_m",
-        minimum=0.0,
-    )
-    longitudinal = _number(
-        variation.get("longitudinal_m", 0.0),
-        "scenario.obstacles.variation.longitudinal_m",
-        minimum=0.0,
-    )
-    scale = _number(
-        variation.get("scale_fraction", 0.0),
-        "scenario.obstacles.variation.scale_fraction",
-        minimum=0.0,
-    )
-    if scale >= 1.0:
-        raise ScenarioError("scenario.obstacles.variation.scale_fraction must be < 1")
-    variation.update(
-        {
-            "lateral_m": lateral,
-            "longitudinal_m": longitudinal,
-            "scale_fraction": scale,
-        }
-    )
-    if seed is None and any(value > 0 for value in (lateral, longitudinal, scale)):
-        raise ScenarioError("a seed is required when obstacle variation is non-zero")
-    count = obstacles.get("count", len(STOCK_OBSTACLES))
-    if isinstance(count, bool) or not isinstance(count, int):
-        raise ScenarioError("scenario.obstacles.count must be an integer")
-    if not 1 <= count <= len(STOCK_OBSTACLES):
-        raise ScenarioError(
-            f"scenario.obstacles.count must be between 1 and {len(STOCK_OBSTACLES)}"
+    scene = scenario.get("scene", "slalom")
+    if not isinstance(scene, str) or scene not in SCENE_CATALOG:
+        raise ScenarioError(f"scenario.scene must be one of {sorted(SCENE_CATALOG)}")
+    scenario["scene"] = scene
+    scene_obstacle_preset = SCENE_CATALOG[scene]["obstacle_preset"]
+
+    if scene_obstacle_preset is None:
+        if scenario.get("obstacles") is not None:
+            raise ScenarioError(
+                f"scenario.obstacles is not supported for scene={scene!r}"
+            )
+        obstacles = {"preset": None, "variation": {}, "count": 0}
+        scenario["obstacles"] = obstacles
+        lateral = longitudinal = scale = 0.0
+        count = 0
+    else:
+        obstacles = _required(scenario, "obstacles", "scenario")
+        if (
+            not isinstance(obstacles, dict)
+            or obstacles.get("preset") != scene_obstacle_preset
+        ):
+            raise ScenarioError(
+                f"only obstacles.preset={scene_obstacle_preset!r} is supported"
+            )
+        variation = obstacles.setdefault("variation", {})
+        if not isinstance(variation, dict):
+            raise ScenarioError("scenario.obstacles.variation must be a mapping")
+        lateral = _number(
+            variation.get("lateral_m", 0.0),
+            "scenario.obstacles.variation.lateral_m",
+            minimum=0.0,
         )
-    obstacles["count"] = count
+        longitudinal = _number(
+            variation.get("longitudinal_m", 0.0),
+            "scenario.obstacles.variation.longitudinal_m",
+            minimum=0.0,
+        )
+        scale = _number(
+            variation.get("scale_fraction", 0.0),
+            "scenario.obstacles.variation.scale_fraction",
+            minimum=0.0,
+        )
+        if scale >= 1.0:
+            raise ScenarioError("scenario.obstacles.variation.scale_fraction must be < 1")
+        variation.update(
+            {
+                "lateral_m": lateral,
+                "longitudinal_m": longitudinal,
+                "scale_fraction": scale,
+            }
+        )
+        if seed is None and any(value > 0 for value in (lateral, longitudinal, scale)):
+            raise ScenarioError("a seed is required when obstacle variation is non-zero")
+        count = obstacles.get("count", len(STOCK_OBSTACLES))
+        if isinstance(count, bool) or not isinstance(count, int):
+            raise ScenarioError("scenario.obstacles.count must be an integer")
+        if not 1 <= count <= len(STOCK_OBSTACLES):
+            raise ScenarioError(
+                f"scenario.obstacles.count must be between 1 and {len(STOCK_OBSTACLES)}"
+            )
+        obstacles["count"] = count
 
     trial = _required(scenario, "trial", "scenario")
     if not isinstance(trial, dict):
@@ -488,6 +514,7 @@ def resolve_scenario(
             count,
             lighting,
             collision_oracle["contact_topic"],
+            scene=scene,
         ),
         "bridge_launch_arguments": bridge_launch_arguments(seed, sensor),
     }
@@ -534,10 +561,12 @@ def scene_environment(
     count: int = len(STOCK_OBSTACLES),
     lighting: dict[str, float] | None = None,
     contact_topic: str = "/robot_1/simulation/physx_contact",
+    scene: str = "slalom",
 ) -> dict[str, str]:
     lighting = lighting or {"intensity": 1000.0, "exposure": 0.0}
     return {
         "ISAAC_SIM_SCRIPT_NAME": "ws2_slalom_launch_script.py",
+        "ISAAC_SIM_SCENE": SCENE_CATALOG[scene]["isaac_scene"],
         "MONONAV_SCENE_SEED": "" if seed is None else str(seed),
         "MONONAV_SCENE_LATERAL_JITTER_M": str(lateral_jitter_m),
         "MONONAV_SCENE_LONGITUDINAL_JITTER_M": str(longitudinal_jitter_m),

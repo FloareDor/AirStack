@@ -1,0 +1,4 @@
+extends: _base.yaml
+scenario_id: office_stock
+seed: null
+scene: office

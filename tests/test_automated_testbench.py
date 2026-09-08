@@ -131,6 +131,37 @@ def test_nonfinite_and_infeasible_scenes_are_rejected():
         resolve_scenario(blocked)
 
 
+def test_stock_scenario_defaults_to_slalom_scene():
+    stock = load_scenario(SCENARIOS / "stock.yaml")
+    assert stock["scene"] == "slalom"
+    assert stock["resolved"]["scene_environment"]["ISAAC_SIM_SCENE"] == ""
+
+
+def test_office_scenario_resolves_with_no_obstacles():
+    office = load_scenario(SCENARIOS / "office_stock.yaml")
+    assert office["scene"] == "office"
+    assert office["resolved"]["obstacles"] == []
+    environment = office["resolved"]["scene_environment"]
+    assert environment["ISAAC_SIM_SCENE"] == "Office"
+    assert environment["MONONAV_SCENE_OBSTACLE_COUNT"] == "0"
+
+
+def test_unknown_scene_is_rejected():
+    stock = load_scenario(SCENARIOS / "stock.yaml")
+    stock.pop("resolved")
+    stock["scene"] = "hospital"
+    with pytest.raises(ScenarioError, match="scenario.scene"):
+        resolve_scenario(stock)
+
+
+def test_office_scenario_rejects_obstacles_block():
+    office = load_scenario(SCENARIOS / "office_stock.yaml")
+    office.pop("resolved")
+    office["obstacles"] = {"preset": "slalom_3box_v1"}
+    with pytest.raises(ScenarioError, match="scenario.obstacles is not supported"):
+        resolve_scenario(office)
+
+
 def test_threat_model_rejects_out_of_model_values_and_builds_clean_twin():
     model = ThreatModel.load(
         TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"

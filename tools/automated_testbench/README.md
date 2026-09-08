@@ -72,15 +72,17 @@ Each leaf scenario may `extend` one relative YAML file. The saved
 - the scenario ID and seed;
 - MonoNav method, depth source, image, bridge, and planner arguments;
 - the fixed spawn, 1.2 m takeoff, relative 8 m goal, and 1 m radius;
-- randomization bounds plus every resolved obstacle pose and size;
+- an optional `scene` field (default `slalom`); randomization bounds plus
+  every resolved obstacle pose and size (not applicable for scenes without an
+  obstacle preset, e.g. `office`, which resolves with no obstacles);
 - timeout, sampling, AirStack launch, and Docker/ROS settings;
 - mission, planner adapter, clean environment, perturbations, repetition,
   oracle settings, threat-model version, and a canonical configuration hash;
 - the measured post-takeoff start and resulting world-frame goal.
 
 The obstacle resolver intentionally mirrors the exact `random.Random` call
-order in `example_one_px4_pegasus_launch_script.py`. An empty seed preserves
-the legacy stock geometry.
+order in `ws2_slalom_launch_script.py`. An empty seed preserves the legacy
+stock geometry.
 
 ## Trial lifecycle and isolation
 
