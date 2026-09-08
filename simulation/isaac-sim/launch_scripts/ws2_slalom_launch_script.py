@@ -143,7 +143,18 @@ class Ws2SlalomApp(PegasusApp):
 
             if not rclpy.ok():
                 rclpy.init(args=None)
-            self._contact_node = rclpy.create_node("ws2_physx_contact_reporter")
+            # start_parameter_services/enable_rosout off: this node only ever
+            # needs one Bool publisher. Both features publish rcl_interfaces
+            # messages (ParameterEvent, Log) on node creation, and this
+            # image's system rclpy crashes converting those message types
+            # (rosidl/rclpy ABI skew from the ros-jazzy-desktop apt install
+            # vs. Isaac Sim's bundled ROS2 bridge) — avoid the code path
+            # instead of the underlying package mismatch.
+            self._contact_node = rclpy.create_node(
+                "ws2_physx_contact_reporter",
+                start_parameter_services=False,
+                enable_rosout=False,
+            )
             self._contact_message_type = Bool
             self._contact_publisher = self._contact_node.create_publisher(
                 Bool,

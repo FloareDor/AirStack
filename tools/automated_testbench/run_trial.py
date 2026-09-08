@@ -632,9 +632,11 @@ class AirStackRuntime:
                     check=False,
                 )
                 process_text = process_result.stdout
+                script_name = self.scenario["resolved"]["scene_environment"][
+                    "ISAAC_SIM_SCRIPT_NAME"
+                ]
                 isaac_ready = (
-                    "example_one_px4_pegasus_launch_script.py" in process_text
-                    and "PX4-Autopilot" in process_text
+                    script_name in process_text and "PX4-Autopilot" in process_text
                 )
             if containers_ready and isaac_ready:
                 break

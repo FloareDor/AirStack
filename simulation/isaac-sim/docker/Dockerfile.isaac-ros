@@ -90,7 +90,19 @@ RUN /opt/ros/jazzy/lib/mavros/install_geographiclib_datasets.sh
 # Update LD_LIBRARY_PATH to include ROS2 libraries (Fixes internal rclpy import).
 # The isaacsim.ros2.bridge extension ships its own jazzy-built DDS/rmw libs at
 # /isaac-sim/exts/isaacsim.ros2.bridge/jazzy/lib; /jazzy/lib does not exist.
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/jazzy/lib:/isaac-sim/exts/isaacsim.ros2.bridge/jazzy/lib
+#
+# Isaac Sim's bundled libs MUST come first. ros-jazzy-desktop above is not
+# version-pinned, so apt pulls whatever's newest on packages.ros.org at build
+# time; that build can drift out of ABI compatibility with the specific
+# ROS 2 Jazzy snapshot this Isaac Sim release's bridge was compiled against.
+# With /opt/ros/jazzy/lib resolved first, any code that touches certain
+# messages (e.g. rcl_interfaces/msg/ParameterEvent, auto-published by every
+# plain rclpy.create_node()) aborts with a native rosidl typesupport
+# assertion the instant the two builds' compiled layouts disagree. Isaac's
+# own bundled libs first keeps every ROS2-bridge-facing message conversion
+# self-consistent; anything not shipped there still falls back to the apt
+# install.
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/isaac-sim/exts/isaacsim.ros2.bridge/jazzy/lib:/opt/ros/jazzy/lib
 
 
 # ============================================================================
