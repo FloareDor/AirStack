@@ -1,5 +1,5 @@
 campaign_id: slalom_3box_v1_initial
-threat_model: ../threat_models/generic-ws2-v1.yaml
+threat_model: ../threat_models/generic-ws2-v2.yaml
 paired: true
 failure_repetitions: 3
 scenarios:

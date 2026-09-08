@@ -38,7 +38,9 @@ def add_depth_noise(
 
 
 class DelayedSampleBuffer:
-    """Release the newest sample whose configured wall-time delay has elapsed."""
+    """Release the newest sample whose configured clock-time delay has
+    elapsed. Clock-agnostic: the caller supplies `now_s` from whatever clock
+    it wants delay measured against (wall or simulation time)."""
 
     def __init__(self, delay_s: float) -> None:
         if delay_s < 0.0:
@@ -46,11 +48,26 @@ class DelayedSampleBuffer:
         self.delay_s = float(delay_s)
         self._pending: deque[tuple[float, Any]] = deque()
         self._latest: Any | None = None
+        self._last_now_s: float | None = None
 
     def push(self, sample: Any, now_s: float) -> None:
         self._pending.append((float(now_s) + self.delay_s, sample))
 
     def latest(self, now_s: float) -> Any | None:
+        """Release samples due by `now_s`.
+
+        Simulation time can jump backwards (a sim reset), which would
+        otherwise strand pending samples at deadlines that never arrive
+        again. Re-base pending deadlines by the observed backward jump
+        instead of dropping them.
+        """
+        now_s = float(now_s)
+        if self._last_now_s is not None and now_s < self._last_now_s:
+            shift = self._last_now_s - now_s
+            self._pending = deque(
+                (deadline - shift, sample) for deadline, sample in self._pending
+            )
+        self._last_now_s = now_s
         while self._pending and self._pending[0][0] <= now_s:
             _, self._latest = self._pending.popleft()
         return self._latest

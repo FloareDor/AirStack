@@ -18,6 +18,10 @@ BRIDGE_DIR = (
     / "mononav_bridge"
 )
 sys.path.insert(0, str(BRIDGE_DIR))
+UTILS_DIR = (
+    Path(__file__).resolve().parents[1] / "simulation" / "isaac-sim" / "utils"
+)
+sys.path.insert(0, str(UTILS_DIR))
 
 from automated_testbench.metrics import (  # noqa: E402
     obstacle_clearance,
@@ -30,6 +34,7 @@ from automated_testbench.run_trial import (  # noqa: E402
     EventRecorder,
     TrialState,
     build_termination,
+    flight_deadline_status,
 )
 from automated_testbench.scenario import (  # noqa: E402
     STOCK_OBSTACLES,
@@ -55,6 +60,7 @@ from mononav_bridge.disturbances import (  # noqa: E402
     add_depth_noise,
     add_rgb_noise,
 )
+from contact_filter import external_contact_bodies, is_own_body  # noqa: E402
 
 
 SCENARIOS = TOOLS_DIR / "automated_testbench" / "scenarios"
@@ -146,6 +152,28 @@ def test_office_scenario_resolves_with_no_obstacles():
     assert environment["MONONAV_SCENE_OBSTACLE_COUNT"] == "0"
 
 
+def test_arm_altitude_reaches_scene_environment():
+    stock = load_scenario(SCENARIOS / "stock.yaml")
+    assert (
+        stock["resolved"]["scene_environment"]["MONONAV_CONTACT_ARM_ALTITUDE_M"]
+        == "0.3"
+    )
+
+    negative = load_scenario(SCENARIOS / "stock.yaml")
+    negative.pop("resolved")
+    negative["oracle"] = {"collision": {"arm_altitude_m": -0.1}}
+    with pytest.raises(ScenarioError, match="arm_altitude_m"):
+        resolve_scenario(negative)
+
+    too_high = load_scenario(SCENARIOS / "stock.yaml")
+    too_high.pop("resolved")
+    too_high["oracle"] = {
+        "collision": {"arm_altitude_m": too_high["flight"]["takeoff_height_m"]}
+    }
+    with pytest.raises(ScenarioError, match="below flight.takeoff_height_m"):
+        resolve_scenario(too_high)
+
+
 def test_unknown_scene_is_rejected():
     stock = load_scenario(SCENARIOS / "stock.yaml")
     stock.pop("resolved")
@@ -164,7 +192,7 @@ def test_office_scenario_rejects_obstacles_block():
 
 def test_threat_model_rejects_out_of_model_values_and_builds_clean_twin():
     model = ThreatModel.load(
-        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v2.yaml"
     )
     with pytest.raises(ThreatModelError, match="undeclared"):
         model.validate({"shell": "docker down"})
@@ -173,14 +201,17 @@ def test_threat_model_rejects_out_of_model_values_and_builds_clean_twin():
 
     medium = load_scenario(SCENARIOS / "medium_seed1.yaml")
     proposal = model.extract(medium)
+    proposal["rgb_noise_stddev"] = 12.0
     attack = model.apply(medium, proposal, repetition=2)
     clean = model.clean_twin(attack, repetition=2)
     assert attack["repetition"] == clean["repetition"] == 2
-    assert clean["obstacles"]["variation"] == {
-        "lateral_m": 0.0,
-        "longitudinal_m": 0.0,
-        "scale_fraction": 0.0,
-    }
+    # Scene parameters (obstacle jitter, spawn pose) are shared by both arms.
+    assert clean["obstacles"]["variation"] == attack["obstacles"]["variation"]
+    assert clean["mission"]["start_pose"] == attack["mission"]["start_pose"]
+    assert clean["resolved"]["obstacles"] == attack["resolved"]["obstacles"]
+    # Attack parameters are reset to their clean value in the clean twin.
+    assert clean["sensor"]["rgb_noise_stddev"] == 0.0
+    assert attack["sensor"]["rgb_noise_stddev"] == 12.0
     assert attack["resolved"]["configuration_hash"] != clean["resolved"]["configuration_hash"]
 
     noisy = model.apply(
@@ -227,14 +258,20 @@ def test_bounded_llm_facade_audits_and_rejects_undeclared_tools(tmp_path):
 
 def test_clean_pair_preserves_seed_mission_and_replay_configuration_hash():
     model = ThreatModel.load(
-        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v2.yaml"
     )
-    scenario = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    medium = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    proposal = {**model.extract(medium), "lighting_intensity": 2500.0}
+    scenario = model.apply(medium, proposal, scenario_id=medium["scenario_id"])
     pair_id, clean, perturbed = prepare_pair(scenario, model, repetition=0)
     _, _, replay = prepare_pair(scenario, model, repetition=1)
     assert pair_id == clean["pair"]["pair_id"] == perturbed["pair"]["pair_id"]
     assert clean["seed"] == perturbed["seed"] == 1
     assert clean["mission"] == perturbed["mission"]
+    assert clean["obstacles"]["variation"] == perturbed["obstacles"]["variation"]
+    assert clean["resolved"]["obstacles"] == perturbed["resolved"]["obstacles"]
+    assert clean["environment"]["lighting"]["intensity"] == 1000.0
+    assert perturbed["environment"]["lighting"]["intensity"] == 2500.0
     assert (
         perturbed["resolved"]["configuration_hash"]
         == replay["resolved"]["configuration_hash"]
@@ -244,6 +281,80 @@ def test_clean_pair_preserves_seed_mission_and_replay_configuration_hash():
         for _ in range(3)
     ]
     assert reproducibility_label(pairs) == "reproducible"
+
+
+def test_v1_manifest_clean_twin_still_resets_every_parameter():
+    """v1 predates `role`; every parameter defaults to attack, so clean_twin
+    resets obstacle positions too. This pins the back-compat contract."""
+    model = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+    )
+    medium = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    proposal = model.extract(medium)
+    attack = model.apply(medium, proposal, repetition=2)
+    clean = model.clean_twin(attack, repetition=2)
+    assert clean["obstacles"]["variation"] == {
+        "lateral_m": 0.0,
+        "longitudinal_m": 0.0,
+        "scale_fraction": 0.0,
+    }
+    assert clean["mission"]["start_pose"] == [0.0, 0.0, 0.07, 0.0]
+
+
+def test_is_clean_ignores_scene_parameters():
+    medium = load_scenario(SCENARIOS / "medium_seed1.yaml")
+    v1 = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v1.yaml"
+    )
+    v2 = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v2.yaml"
+    )
+    # medium_seed1 carries only obstacle jitter, no lighting/sensor attack.
+    assert not v1.is_clean(medium)
+    assert v2.is_clean(medium)
+
+
+def test_threat_model_rejects_unknown_role(tmp_path):
+    manifest_path = tmp_path / "bad-role.yaml"
+    manifest_path.write_text(
+        """
+version: bad-role-v1
+parameters:
+  obstacle_lateral_jitter_m:
+    type: float
+    role: bogus
+    target: obstacles.variation.lateral_m
+    min: 0.0
+    max: 0.75
+    clean: 0.0
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ThreatModelError, match="role"):
+        ThreatModel.load(manifest_path)
+
+
+def test_grid_generator_varies_only_attack_parameters():
+    model = ThreatModel.load(
+        TOOLS_DIR / "automated_testbench" / "threat_models" / "generic-ws2-v2.yaml"
+    )
+    generator = GridGenerator(model)
+    scene_names = {name for name in model.parameters if model.role_of(name) == "scene"}
+    proposals = []
+    while True:
+        try:
+            proposals.append(generator.propose())
+        except StopIteration:
+            break
+    for proposal in proposals:
+        validated = model.validate(proposal.parameters)
+        changed = [
+            name
+            for name, value in validated.items()
+            if value != model.parameters[name]["clean"]
+        ]
+        assert len(changed) == 1
+        assert changed[0] not in scene_names
 
 
 def test_future_sensor_and_ws1_adapters_remain_bounded():
@@ -338,6 +449,90 @@ def test_physx_contact_overrides_geometry_fallback(tmp_path):
     assert build_termination("collision", state, None)["reason"] == "physx_contact"
 
 
+def test_external_contact_excludes_drone_subtree():
+    drone_root = "/World/base_link"
+    assert is_own_body(drone_root, drone_root)
+    assert is_own_body("/World/base_link/rotor0", drone_root)
+    assert not is_own_body("/World/stage/floor", drone_root)
+    assert not is_own_body("/World/VisionPlannerDemo/CenterGate", drone_root)
+
+    bodies = (
+        "/World/base_link",
+        "/World/base_link/rotor0",
+        "/World/stage/floor",
+        "",
+    )
+    assert external_contact_bodies(bodies, drone_root) == ["/World/stage/floor"]
+    assert external_contact_bodies(("/World/base_link",), drone_root) == []
+
+
+def test_collision_oracle_state_is_reported(tmp_path):
+    events = EventRecorder(tmp_path / "events.jsonl")
+    state = TrialState([8.0, 0.0, 1.0], 1.0, [], 0.25, events)
+    state.activate()
+    assert state.physx_contact_available is False
+    state.telemetry_line('{"event":"physx_contact","contact":false}')
+    assert state.physx_contact_available is True
+    events.close()
+
+
+def test_trial_state_tracks_sim_time_window(tmp_path):
+    events = EventRecorder(tmp_path / "events.jsonl")
+    state = TrialState([8.0, 0.0, 1.0], 1.0, [], 0.25, events)
+    state.activate()
+    assert state.activation_sim_time_s is None
+    assert state.last_sim_time_s is None
+    state.telemetry_line(
+        '{"event":"odometry","sim_time_s":10.0,"wall_time_s":1,"position_m":[0,0,1]}'
+    )
+    assert state.activation_sim_time_s == pytest.approx(10.0)
+    assert state.last_sim_time_s == pytest.approx(10.0)
+    state.telemetry_line(
+        '{"event":"odometry","sim_time_s":10.5,"wall_time_s":2,"position_m":[0,0,1]}'
+    )
+    assert state.activation_sim_time_s == pytest.approx(10.0)
+    assert state.last_sim_time_s == pytest.approx(10.5)
+    state.activate()
+    assert state.activation_sim_time_s is None
+    assert state.last_sim_time_s is None
+    events.close()
+
+
+def test_flight_deadline_prefers_sim_time_with_wall_backstop():
+    assert flight_deadline_status(None, 90.0, 5.0, 400.0) is None
+    assert flight_deadline_status(89.9, 90.0, 5.0, 400.0) is None
+    assert flight_deadline_status(90.0, 90.0, 5.0, 400.0) == "timeout"
+    # Sim time barely advancing (a stalled/slow sim) still trips the backstop
+    # even though sim-elapsed hasn't reached the mission timeout.
+    assert flight_deadline_status(1.0, 90.0, 400.0, 400.0) == "wall_backstop"
+    # No odometry at all yet: the backstop is still the only thing that can fire.
+    assert flight_deadline_status(None, 90.0, 400.0, 400.0) == "wall_backstop"
+
+
+def test_wall_backstop_is_infrastructure_error():
+    termination = build_termination(
+        "infrastructure_error",
+        None,
+        {
+            "stage": "timeout_wall_backstop",
+            "message": "simulation time advanced 1.0s of 90.0s in 400s wall clock",
+        },
+    )
+    assert termination["source"] == "infrastructure"
+    assert termination["reason"] == "timeout_wall_backstop"
+
+
+def test_timeout_wall_backstop_default_scales_with_timeout():
+    stock = load_scenario(SCENARIOS / "stock.yaml")
+    assert stock["trial"]["timeout_wall_backstop_s"] == pytest.approx(
+        4.0 * stock["trial"]["timeout_s"] + 60.0
+    )
+    stock.pop("resolved")
+    stock["trial"]["timeout_wall_backstop_s"] = 500.0
+    overridden = resolve_scenario(stock)
+    assert overridden["trial"]["timeout_wall_backstop_s"] == pytest.approx(500.0)
+
+
 @pytest.mark.parametrize(
     ("raw_reason", "reason_code", "recovery_count"),
     [
@@ -401,6 +596,19 @@ def test_sensor_noise_and_delay_are_deterministic():
     buffer.push("frame-1", 10.0)
     assert buffer.latest(10.24) is None
     assert buffer.latest(10.25) == "frame-1"
+
+
+def test_delayed_sample_buffer_rebases_on_backward_clock_jump():
+    buffer = DelayedSampleBuffer(0.25)
+    buffer.push("frame-1", 10.0)
+    buffer.push("frame-2", 10.1)
+    assert buffer.latest(10.05) is None
+    # Sim reset: clock jumps back to 0. Without rebasing, both pending
+    # samples would be stranded at deadlines (10.25, 10.35) that never
+    # arrive again on the new timeline.
+    assert buffer.latest(0.0) is None
+    assert buffer.latest(0.25) == "frame-1"
+    assert buffer.latest(0.35) == "frame-2"
 
 
 def test_campaign_report_compares_clean_and_perturbed_metrics():

@@ -42,7 +42,7 @@ def main() -> int:
         type=Path,
         default=Path(__file__).resolve().parent
         / "threat_models"
-        / "generic-ws2-v1.yaml",
+        / "generic-ws2-v2.yaml",
     )
     parser.add_argument(
         "--results-dir", type=Path, default=Path("/home/ubuntu/airlab-data/trials")

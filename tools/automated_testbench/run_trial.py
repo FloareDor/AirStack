@@ -115,6 +115,8 @@ class TrialState:
         self.collision_source: str | None = None
         self.physx_contact_available = False
         self.last_telemetry_wall: float | None = None
+        self.activation_sim_time_s: float | None = None
+        self.last_sim_time_s: float | None = None
         self.planner_ready = threading.Event()
         self.planner_terminal_reason: str | None = None
         self.planner_terminal_distance_m: float | None = None
@@ -130,6 +132,8 @@ class TrialState:
             self.goal_reached_index = None
             self.collision = False
             self.collision_source = None
+            self.activation_sim_time_s = None
+            self.last_sim_time_s = None
             self.active = True
 
     def telemetry_line(self, line: str) -> None:
@@ -180,6 +184,9 @@ class TrialState:
                 "position_m": [float(value) for value in payload["position_m"]],
             }
             self.samples.append(sample)
+            self.last_sim_time_s = sample["sim_time_s"]
+            if self.activation_sim_time_s is None:
+                self.activation_sim_time_s = sample["sim_time_s"]
             index = len(self.samples) - 1
             distance_to_goal = math.dist(sample["position_m"], self.goal_position_m)
             clearance = obstacle_clearance(
@@ -288,6 +295,27 @@ def planner_reason_code(reason: str) -> str:
     if reason == "goal threshold reached":
         return "goal_threshold_reached"
     return "planner_terminal"
+
+
+def flight_deadline_status(
+    sim_elapsed_s: float | None,
+    timeout_s: float,
+    wall_elapsed_s: float,
+    wall_backstop_s: float,
+) -> str | None:
+    """Decide whether the flight loop should end on the mission timeout.
+
+    Uses simulation time (drift-free against real-time factor) for the normal
+    `timeout` verdict, with a wall-clock backstop that catches a stalled or
+    pathologically slow simulation the sim clock itself can't detect. Returns
+    None to keep running, "timeout" for a normal autonomy timeout, or
+    "wall_backstop" for an infrastructure-side stall.
+    """
+    if sim_elapsed_s is not None and sim_elapsed_s >= timeout_s:
+        return "timeout"
+    if wall_elapsed_s >= wall_backstop_s:
+        return "wall_backstop"
+    return None
 
 
 def build_termination(
@@ -1186,9 +1214,13 @@ class TrialRunner:
                     raise InfrastructureError("planner_start", detail)
             state.activate()
             planner_started_monotonic = time.monotonic()
-            events.emit("trial_started", timeout_s=self.scenario["trial"]["timeout_s"])
-            trial_deadline = (
-                planner_started_monotonic + self.scenario["trial"]["timeout_s"]
+            timeout_s = self.scenario["trial"]["timeout_s"]
+            wall_backstop_s = self.scenario["trial"]["timeout_wall_backstop_s"]
+            events.emit(
+                "trial_started",
+                timeout_s=timeout_s,
+                timeout_clock="sim",
+                wall_backstop_s=wall_backstop_s,
             )
             last_health_check = 0.0
             bridge_failures = 0
@@ -1198,6 +1230,8 @@ class TrialRunner:
                     collision = state.collision
                     goal_index = state.goal_reached_index
                     last_telemetry = state.last_telemetry_wall
+                    sim_start = state.activation_sim_time_s
+                    sim_now = state.last_sim_time_s
                 if collision:
                     outcome = "collision"
                     break
@@ -1230,9 +1264,21 @@ class TrialRunner:
                     raise InfrastructureError(
                         "telemetry_runtime", "odometry became stale"
                     )
-                if now >= trial_deadline:
+                sim_elapsed = (
+                    None if sim_start is None or sim_now is None else sim_now - sim_start
+                )
+                deadline_status = flight_deadline_status(
+                    sim_elapsed, timeout_s, now - planner_started_monotonic, wall_backstop_s
+                )
+                if deadline_status == "timeout":
                     outcome = "timeout"
                     break
+                if deadline_status == "wall_backstop":
+                    raise InfrastructureError(
+                        "timeout_wall_backstop",
+                        f"simulation time advanced {sim_elapsed or 0.0:.1f}s of "
+                        f"{timeout_s:.1f}s in {wall_backstop_s:.0f}s wall clock",
+                    )
                 if now - last_health_check >= 2.0:
                     bridge_failures = (
                         0
@@ -1297,6 +1343,23 @@ class TrialRunner:
                     else (outcome_monotonic or time.monotonic())
                     - planner_started_monotonic
                 )
+                metrics["planner_sim_duration_s"] = (
+                    None
+                    if state.activation_sim_time_s is None or state.last_sim_time_s is None
+                    else state.last_sim_time_s - state.activation_sim_time_s
+                )
+                authoritative = self.scenario["oracle"]["collision"]["authoritative"]
+                metrics["collision_oracle"] = {
+                    "authoritative": authoritative,
+                    "physx_contact_available": state.physx_contact_available,
+                    "source": state.collision_source,
+                }
+                if not state.physx_contact_available:
+                    events.emit(
+                        "oracle_degraded",
+                        authoritative=authoritative,
+                        detail="PhysX contact topic never reported",
+                    )
             termination = build_termination(outcome, state, failure)
             result.update(
                 {

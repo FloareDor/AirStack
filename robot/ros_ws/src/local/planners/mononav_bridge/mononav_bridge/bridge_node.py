@@ -157,7 +157,7 @@ class VisionPlannerBridge(Node):
         self._sample_buffer = DelayedSampleBuffer(self._fixed_sensor_delay_s)
         self._sequence = 0
         self._depth_sequence = 0
-        self._last_frame_wall_time = 0.0
+        self._last_frame_time_s = 0.0
         self._last_odom_stamp = None
         self._last_odom_position = None
         self._last_command = None
@@ -198,6 +198,10 @@ class VisionPlannerBridge(Node):
         self._http_server.shutdown()
         self._http_server.server_close()
         return super().destroy_node()
+
+    def _clock_now_s(self) -> float:
+        """Node clock in seconds (sim time under use_sim_time, wall otherwise)."""
+        return self.get_clock().now().nanoseconds * 1.0e-9
 
     def _camera_info_callback(self, msg):
         with self._lock:
@@ -262,8 +266,8 @@ class VisionPlannerBridge(Node):
             self._depth_sample = (stamp, msg.width, msg.height, compressed)
 
     def _image_callback(self, msg):
-        now = time.monotonic()
-        if now - self._last_frame_wall_time < 1.0 / max(self._max_frame_rate, 0.1):
+        now = self._clock_now_s()
+        if now - self._last_frame_time_s < 1.0 / max(self._max_frame_rate, 0.1):
             return
         with self._lock:
             camera_info = self._camera_info
@@ -326,15 +330,15 @@ class VisionPlannerBridge(Node):
             )
         with self._lock:
             self._sample_buffer.push(
-                (metadata, encoded.tobytes(), depth_bytes), time.monotonic()
+                (metadata, encoded.tobytes(), depth_bytes), self._clock_now_s()
             )
-            self._sample = self._sample_buffer.latest(time.monotonic())
+            self._sample = self._sample_buffer.latest(self._clock_now_s())
             self._sequence += 1
-        self._last_frame_wall_time = now
+        self._last_frame_time_s = now
 
     def latest_sample(self):
         with self._lock:
-            self._sample = self._sample_buffer.latest(time.monotonic())
+            self._sample = self._sample_buffer.latest(self._clock_now_s())
             return self._sample
 
     def sensor_disturbance(self):
@@ -347,7 +351,7 @@ class VisionPlannerBridge(Node):
 
     def health(self):
         with self._lock:
-            self._sample = self._sample_buffer.latest(time.monotonic())
+            self._sample = self._sample_buffer.latest(self._clock_now_s())
             sample = self._sample
             odom_stamp = self._last_odom_stamp
             last_command = self._last_command

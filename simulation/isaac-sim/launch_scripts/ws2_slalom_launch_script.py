@@ -21,7 +21,14 @@ Env vars specific to this script:
    ``_OBSTACLE_COUNT=0`` skips slalom-obstacle spawning entirely (used for
    scenes, e.g. Office, that don't use the slalom course).
  - ``MONONAV_PHYSX_CONTACT_TOPIC``: where the contact reporter publishes
-   (default ``/robot_1/simulation/physx_contact``).
+   (default ``/robot_1/simulation/physx_contact``). The reporter watches
+   every contact on the drone body, not just the slalom boxes, so it works
+   unchanged in any scene (e.g. Office) once colliders are on the scene mesh
+   (``scene_prep.add_colliders``, applied automatically at scene load).
+ - ``MONONAV_CONTACT_ARM_ALTITUDE_M`` (default ``0.3``): the reporter ignores
+   contacts until the drone climbs above this altitude, so resting on the
+   spawn floor isn't reported as a collision. Contact after arming — floor
+   included — is a real crash and is reported.
  - ``MONONAV_PRESENTATION_OVERVIEW``: opt-in wide/high camera for capture.
  - ``DRONE_INIT_X`` / ``_Y`` / ``_Z``: spawn pose (default 0, 0, 0.07).
  - ``ENABLE_LIDAR``: forwarded to PegasusApp's per-drone lidar toggle.
@@ -45,10 +52,12 @@ import carb  # noqa: E402
 from omni.isaac.core.world import World  # noqa: E402
 from pegasus.simulator.params import SIMULATION_ENVIRONMENTS  # noqa: E402
 from pegasus_app import PegasusApp, resolve_scene_from_env  # noqa: E402
+from contact_filter import external_contact_bodies  # noqa: E402
 
 PRESENTATION_OVERVIEW = os.environ.get("MONONAV_PRESENTATION_OVERVIEW", "false").lower() == "true"
 _OVERVIEW_EYE = [4.5, -12.0, 10.0]
 _OVERVIEW_LOOK = [4.5, 0.0, 0.8]
+_CONTACT_ARM_ALTITUDE_M = float(os.environ.get("MONONAV_CONTACT_ARM_ALTITUDE_M", "0.3"))
 
 
 def add_slalom_obstacles(stage):
@@ -147,22 +156,58 @@ class Ws2SlalomApp(PegasusApp):
             carb.log_info("WS2 PhysX contact reporter ready")
         except Exception as exc:
             self._contact_reporter_disabled = True
-            carb.log_warn(f"WS2 PhysX contact reporter unavailable: {exc}")
+            import traceback
+
+            carb.log_error(
+                f"WS2 PhysX contact reporter unavailable: {exc!r}\n"
+                f"{traceback.format_exc()}"
+            )
+
+    def _drone_altitude_m(self):
+        """Live world z of the drone, or ``None`` before the vehicle registers.
+
+        PhysX (fabric) does not write simulated poses back to USD, so the
+        authoritative source is the Pegasus vehicle state (mirrors
+        ``PegasusApp._follow_target_position``).
+        """
+        root = self._contact_body_path.rstrip("/")
+        parent = root.rsplit("/", 1)[0]
+        try:
+            from pegasus.simulator.logic.vehicle_manager import VehicleManager
+
+            vehicles = VehicleManager.get_vehicle_manager().vehicles
+            for stage_prefix, vehicle in vehicles.items():
+                sp = stage_prefix.rstrip("/")
+                if sp in (root, parent) or sp.startswith(parent + "/"):
+                    return float(vehicle.state.position[2])
+        except Exception:
+            pass
+        return None
 
     def _publish_contact_state(self):
         if not self._contact_reporter_ready:
             return
         try:
+            if not self._contact_armed:
+                altitude = self._drone_altitude_m()
+                if altitude is not None and altitude > _CONTACT_ARM_ALTITUDE_M:
+                    self._contact_armed = True
+                    carb.log_warn(
+                        f"[ws2_slalom] contact oracle armed at z={altitude:.2f} m"
+                    )
             in_contact = False
-            for contact in self._contact_interface.get_rigid_body_raw_data(self._contact_body_path):
-                values = [*contact]
-                bodies = {
-                    self._contact_interface.decode_body_name(values[2]),
-                    self._contact_interface.decode_body_name(values[3]),
-                }
-                if any(body.startswith("/World/VisionPlannerDemo/") for body in bodies):
-                    in_contact = True
-                    break
+            if self._contact_armed:
+                for contact in self._contact_interface.get_rigid_body_raw_data(
+                    self._contact_body_path
+                ):
+                    values = [*contact]
+                    bodies = (
+                        self._contact_interface.decode_body_name(values[2]),
+                        self._contact_interface.decode_body_name(values[3]),
+                    )
+                    if external_contact_bodies(bodies, self._contact_body_path):
+                        in_contact = True
+                        break
             now = time.monotonic()
             if in_contact != self._contact_last_value or now - self._contact_last_publish_wall >= 1.0:
                 message = self._contact_message_type()
@@ -175,11 +220,17 @@ class Ws2SlalomApp(PegasusApp):
             rclpy.spin_once(self._contact_node, timeout_sec=0.0)
         except Exception as exc:
             self._contact_reporter_disabled = True
-            carb.log_warn(f"WS2 PhysX contact reporter stopped: {exc}")
+            import traceback
+
+            carb.log_error(
+                f"WS2 PhysX contact reporter stopped: {exc!r}\n"
+                f"{traceback.format_exc()}"
+            )
 
     def run(self):
         self._contact_reporter_ready = False
         self._contact_reporter_disabled = False
+        self._contact_armed = False
         self._contact_last_value = None
         self._contact_last_publish_wall = 0.0
 

@@ -91,13 +91,21 @@ class ThreatModel:
             for name, spec in self.parameters.items()
         }
 
+    def role_of(self, name: str) -> str:
+        return str(self.parameters[name].get("role", "attack"))
+
+    def attack_parameters(self) -> dict[str, Mapping[str, Any]]:
+        return {
+            name: spec
+            for name, spec in self.parameters.items()
+            if self.role_of(name) == "attack"
+        }
+
     def is_clean(self, scenario: Mapping[str, Any]) -> bool:
         values = self.extract(scenario)
         return all(
-            name not in self.parameters
-            or "clean" not in spec
-            or values[name] == spec["clean"]
-            for name, spec in self.parameters.items()
+            "clean" not in spec or values[name] == spec["clean"]
+            for name, spec in self.attack_parameters().items()
         )
 
     def apply(
@@ -134,7 +142,7 @@ class ThreatModel:
     ) -> dict[str, Any]:
         proposal = {
             name: spec["clean"]
-            for name, spec in self.parameters.items()
+            for name, spec in self.attack_parameters().items()
             if "clean" in spec
         }
         base_id = str(scenario.get("scenario_id", "scenario"))
@@ -156,6 +164,9 @@ def _validate_spec(name: str, spec: dict[str, Any]) -> None:
         raise ThreatModelError(f"parameter {name}.type is unsupported")
     if not isinstance(spec.get("target"), str) or not spec["target"]:
         raise ThreatModelError(f"parameter {name}.target is required")
+    role = spec.get("role", "attack")
+    if role not in {"scene", "attack"}:
+        raise ThreatModelError(f"parameter {name}.role must be 'scene' or 'attack'")
     if kind in {"float", "int"}:
         for bound in ("min", "max"):
             value = spec.get(bound)

@@ -3,4 +3,7 @@ scenario_id: validation_short_timeout
 planner:
   depth_source: ground-truth
 trial:
+  # timeout_s is simulation seconds; a real trial crosses it within a few
+  # odometry samples. timeout_wall_backstop_s defaults to 4*timeout_s+60,
+  # which still gives ample wall-clock margin for stack startup.
   timeout_s: 0.25

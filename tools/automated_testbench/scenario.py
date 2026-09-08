@@ -146,7 +146,7 @@ def resolve_scenario(
         raise ScenarioError("scenario.repetition must be a nonnegative integer")
     scenario["repetition"] = repetition
 
-    threat_model_version = scenario.get("threat_model_version", "generic-ws2-v1")
+    threat_model_version = scenario.get("threat_model_version", "generic-ws2-v2")
     if not isinstance(threat_model_version, str) or not threat_model_version.strip():
         raise ScenarioError("scenario.threat_model_version must be a non-empty string")
     scenario["threat_model_version"] = threat_model_version
@@ -318,6 +318,11 @@ def resolve_scenario(
         "scenario.trial.robot_radius_m",
         minimum=0.0,
     )
+    trial["timeout_wall_backstop_s"] = _number(
+        trial.get("timeout_wall_backstop_s", 4.0 * trial["timeout_s"] + 60.0),
+        "scenario.trial.timeout_wall_backstop_s",
+        minimum=1.0,
+    )
     oracle = scenario.setdefault("oracle", {})
     if not isinstance(oracle, dict):
         raise ScenarioError("scenario.oracle must be a mapping")
@@ -344,6 +349,15 @@ def resolve_scenario(
     )
     if not isinstance(contact_topic, str) or not contact_topic.startswith("/"):
         raise ScenarioError("scenario.oracle.collision.contact_topic must be an absolute topic")
+    collision_oracle["arm_altitude_m"] = _number(
+        collision_oracle.get("arm_altitude_m", 0.3),
+        "scenario.oracle.collision.arm_altitude_m",
+        minimum=0.0,
+    )
+    if collision_oracle["arm_altitude_m"] >= flight["takeoff_height_m"]:
+        raise ScenarioError(
+            "scenario.oracle.collision.arm_altitude_m must be below flight.takeoff_height_m"
+        )
 
     airstack = _required(scenario, "airstack", "scenario")
     planner_config = _required(scenario, adapter_definition.config_key, "scenario")
@@ -515,6 +529,7 @@ def resolve_scenario(
             lighting,
             collision_oracle["contact_topic"],
             scene=scene,
+            arm_altitude_m=collision_oracle["arm_altitude_m"],
         ),
         "bridge_launch_arguments": bridge_launch_arguments(seed, sensor),
     }
@@ -562,6 +577,7 @@ def scene_environment(
     lighting: dict[str, float] | None = None,
     contact_topic: str = "/robot_1/simulation/physx_contact",
     scene: str = "slalom",
+    arm_altitude_m: float = 0.3,
 ) -> dict[str, str]:
     lighting = lighting or {"intensity": 1000.0, "exposure": 0.0}
     return {
@@ -574,6 +590,7 @@ def scene_environment(
         "MONONAV_SCENE_OBSTACLE_COUNT": str(count),
         "ISAAC_SIM_DOME_LIGHT": f"{lighting['intensity']},{lighting['exposure']}",
         "MONONAV_PHYSX_CONTACT_TOPIC": contact_topic,
+        "MONONAV_CONTACT_ARM_ALTITUDE_M": str(arm_altitude_m),
     }
 
 

@@ -47,7 +47,7 @@ def main() -> int:
         parser.error("campaign YAML must contain a scenarios list")
     campaign_id = document.get("campaign_id", campaign_path.stem)
     manifest_path = document.get(
-        "threat_model", "../threat_models/generic-ws2-v1.yaml"
+        "threat_model", "../threat_models/generic-ws2-v2.yaml"
     )
     threat_model = ThreatModel.load((campaign_path.parent / manifest_path).resolve())
     paired = document.get("paired", True)

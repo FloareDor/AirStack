@@ -45,10 +45,20 @@ labeled reproducible; infrastructure errors are never autonomy failures.
 
 ## Random and TPE search
 
-The read-only public WS2 bounds are in `threat_models/generic-ws2-v1.yaml`.
-Generators see only this manifest and return typed parameter maps; they never
-receive Docker, ROS, PX4, scoring, or cleanup capabilities. Replace the file
-with CyLab's approved manifest when it is handed off.
+The read-only public WS2 bounds are in `threat_models/generic-ws2-v2.yaml`
+(the current default). Generators see only this manifest and return typed
+parameter maps; they never receive Docker, ROS, PX4, scoring, or cleanup
+capabilities. Replace the file with CyLab's approved manifest when it is
+handed off.
+
+Each parameter declares a `role`: `scene` parameters (obstacle jitter, spawn
+pose) are shared by both arms of a clean/attack pair, so the pair compares the
+same scene with only the attack switched on or off; `attack` parameters
+(lighting, sensor noise/delay) are reset to their `clean:` value in the clean
+run. A parameter with no `role` defaults to `attack` (the conservative,
+fail-safe choice). `threat_models/generic-ws2-v1.yaml` is kept, frozen, for
+replaying older results — it predates `role` and every parameter behaves as
+`attack` there, i.e. the clean twin resets obstacle positions too.
 
 ```bash
 python3 tools/automated_testbench/run_search.py \
@@ -79,6 +89,21 @@ Each leaf scenario may `extend` one relative YAML file. The saved
 - mission, planner adapter, clean environment, perturbations, repetition,
   oracle settings, threat-model version, and a canonical configuration hash;
 - the measured post-takeoff start and resulting world-frame goal.
+
+## Collision detection
+
+The PhysX contact reporter watches every contact on the drone body, not a
+per-scene obstacle allowlist, so it works unchanged in any scene once the
+scene mesh has colliders (Isaac catalog scenes, including Office, get these
+automatically at load via `scene_prep.add_colliders`). It arms once the drone
+climbs above `oracle.collision.arm_altitude_m` (default `0.3` m, must stay
+below `flight.takeoff_height_m`) so resting on the spawn floor isn't reported
+as a collision; contact after arming — floor included — is a real crash.
+
+**Known limitation:** scenes with no obstacle preset (currently `office`)
+resolve with `obstacles: []`, so `minimum_obstacle_clearance_m` is always
+`None` and the geometry-fallback oracle can never fire there. Collision
+detection in those scenes is PhysX-only, with no clearance metric.
 
 The obstacle resolver intentionally mirrors the exact `random.Random` call
 order in `ws2_slalom_launch_script.py`. An empty seed preserves the legacy

@@ -1,0 +1,84 @@
+version: generic-ws2-v2
+description: >-
+  Public WS2 bounds pending the authoritative CyLab handoff. Adds a role to
+  each parameter: scene params (obstacle jitter, spawn pose) are shared by
+  both arms of a clean/attack pair; attack params are reset to their clean
+  value in the clean run.
+read_only: true
+
+budgets:
+  max_trials: 50
+  max_wall_clock_s: 14400
+  failure_repetitions: 3
+
+parameters:
+  obstacle_lateral_jitter_m:
+    type: float
+    role: scene
+    target: obstacles.variation.lateral_m
+    min: 0.0
+    max: 0.75
+    clean: 0.0
+  obstacle_longitudinal_jitter_m:
+    type: float
+    role: scene
+    target: obstacles.variation.longitudinal_m
+    min: 0.0
+    max: 0.5
+    clean: 0.0
+  obstacle_scale_fraction:
+    type: float
+    role: scene
+    target: obstacles.variation.scale_fraction
+    min: 0.0
+    max: 0.25
+    clean: 0.0
+  initial_pose_x_m:
+    type: float
+    role: scene
+    target: mission.start_pose[0]
+    min: -0.5
+    max: 0.5
+    clean: 0.0
+  initial_pose_y_m:
+    type: float
+    role: scene
+    target: mission.start_pose[1]
+    min: -0.5
+    max: 0.5
+    clean: 0.0
+  lighting_intensity:
+    type: float
+    role: attack
+    target: environment.lighting.intensity
+    min: 100.0
+    max: 5000.0
+    clean: 1000.0
+  lighting_exposure:
+    type: float
+    role: attack
+    target: environment.lighting.exposure
+    min: -5.0
+    max: 5.0
+    clean: 0.0
+  fixed_sensor_delay_s:
+    type: float
+    role: attack
+    target: sensor.fixed_delay_s
+    min: 0.0
+    max: 0.5
+    clean: 0.0
+  rgb_noise_stddev:
+    type: float
+    role: attack
+    target: sensor.rgb_noise_stddev
+    min: 0.0
+    max: 25.0
+    clean: 0.0
+  depth_noise_stddev_m:
+    type: float
+    role: attack
+    target: sensor.depth_noise_stddev_m
+    min: 0.0
+    max: 0.25
+    clean: 0.0

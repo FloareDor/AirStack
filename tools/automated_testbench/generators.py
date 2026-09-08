@@ -63,7 +63,7 @@ class GridGenerator:
             for name, spec in threat_model.parameters.items()
         }
         self._proposals: list[dict[str, Any]] = []
-        for name, spec in threat_model.parameters.items():
+        for name, spec in threat_model.attack_parameters().items():
             for value in _grid_values(spec):
                 if value == clean[name]:
                     continue
