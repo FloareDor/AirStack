@@ -11,8 +11,9 @@ See [USAGE_KO.md](USAGE_KO.md) for running and screen recording, and
 ## Automated bench (actual planner flight)
 
 **Presentation workflow:** run `python3 tools/ws2_bench/dashboard.py`, open
-`http://127.0.0.1:8892`, select **one target model**, set the flight budget and mission
-duration and **Difficulty**, start screen recording, then click **Start tests**. The left panel shows
+`http://127.0.0.1:8892`, select **one target model**, a method, the flight budget and mission
+duration, start screen recording, then click **Start tests**. Difficulty and legacy attack
+profiles appear only when selecting **Legacy feedback**. The left panel shows
 actual headless Isaac rendering; the right shows the selected model's real
 RGB/depth and TSDF/path or D3QN inference. Camera distance/height/orbit persist
 between frames and flights without changing the model's sensor camera.
@@ -43,6 +44,41 @@ sets; see [AGENT_ROADMAP.md](AGENT_ROADMAP.md).
 Noise/delay values and patch size share a scalar search level; this is not per-parameter causal
 attribution. Decisions, input results and explanations are saved. Random/grid
 remain predefined baselines and do not use result feedback.
+
+### No-noise adaptive pilot
+
+The saved-layout MVP is `agent_campaign.py`. It never lets a policy set RGB or
+depth noise, lighting, patch colour/strength, or planner controls. Its only
+attacked-flight choices are a saved layout and seed, added delay, and patch
+on/off, size, start time, and duration. The runner makes the matching clean
+twin, validates the condition, flies both trials, and records the decision and
+evidence. New obstacle positions are deliberately a later interface change.
+
+Run each method separately with the same seed, model, mission and budget. An
+eight-flight campaign is four clean/attack pairs; the three-method MonoNav pilot
+therefore schedules 24 flights in total.
+
+```bash
+# Saved-layout MonoNav pilot: 8 flights per method (four clean/attack pairs).
+python3 tools/ws2_bench/agent_campaign.py --policy random --planner mononav --budget 8 \
+  --output robot/ros_ws/ws2_runtime/campaigns/ws2_random_mononav
+python3 tools/ws2_bench/agent_campaign.py --policy search --planner mononav --budget 8 \
+  --output robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav
+
+# Agent + deterministic search. The endpoint must be a chat-completions URL.
+export WS2_AGENT_ENDPOINT=https://.../chat/completions
+export WS2_AGENT_API_KEY=...
+export WS2_AGENT_MODEL=...
+python3 tools/ws2_bench/agent_campaign.py --policy agent_search --planner mononav --budget 8 \
+  --output robot/ros_ws/ws2_runtime/campaigns/ws2_agent_mononav
+```
+
+The agent only proposes a high-level hypothesis: layout tier, delay band and
+continuous/timed/off patch mode. Deterministic code filters that proposal to
+the finite valid settings and picks the exact condition. Invalid provider output
+or missing credentials stops before any flight. Use the dashboard's **Search**,
+**Random**, or **Agent + search** method for the same commands. Repeat the
+comparison with `--planner kim` only after the MonoNav pilot is reviewed.
 
 `Vulnerability analysis / Open report` presents candidate failing conditions,
 repeat counts, clean/attack metric differences and termination evidence. Reports
@@ -210,8 +246,10 @@ does **not** establish closed-loop obstacle avoidance or attack success.
 Requires the existing `isaac-sim` and `airstack-robot-desktop-1` containers,
 AirStack bind mounts, ROS domain 1, the local Office
 asset tree, and a built `mononav_bridge`. No image installation is performed.
-Isaac is headless by default; its observer camera publishes JPEG previews to the
-local web UI. `WS2_HEADLESS=0` enables its desktop window if X11 is configured.
+Isaac is headless by default. The optional observer-camera JPEG preview is
+disabled in headless OSMO runs because GPU readback can stall the simulator;
+set `WS2_OBSERVER_PREVIEW=1` only when that local dashboard view is needed.
+`WS2_HEADLESS=0` enables its desktop window if X11 is configured.
 The simulator must contain Office at
 `/tmp/ws2_assets/Isaac/4.5/Isaac/Environments/Office/office.usd`.
 Copy the collected `Assets` directory to `/tmp/ws2_assets` with `docker cp`

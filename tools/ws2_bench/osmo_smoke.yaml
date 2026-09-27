@@ -1,0 +1,40 @@
+version: 2
+workflow:
+  name: ws2-smoke
+  groups:
+    - name: ws2
+      tasks:
+        - name: workspace
+          lead: true
+          image: airlab-docker.andrew.cmu.edu/airstack/airstack-osmo-workspace:latest
+          privileged: true
+          command: [bash]
+          args: [/usr/local/bin/entrypoint.sh]
+          credentials:
+            airlab-docker-login:
+              AIRLAB_REGISTRY_USER: username
+              AIRLAB_REGISTRY_PASS: password
+            airlab-nucleus:
+              OMNI_USER: omni_user
+              OMNI_PASS: omni_pass
+              OMNI_SERVER: omni_server
+          environment:
+            AIRSTACK_REPO_URL: https://github.com/castacks/AirStack.git
+            AIRSTACK_BRANCH: eungchang/adv-ws2
+            # The campaign's start_existing.sh owns the simulator startup.
+            # Leaving the default Isaac example off prevents two Kit processes.
+            AUTOLAUNCH: 'false'
+            NUM_ROBOTS: '1'
+            OSMO_AIRSTACK_UP: 'false'
+            ISAAC_SIM_LIVESTREAM: 'false'
+            SSH_PUB_KEY: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEZL3L9Zb6ktd7UU6gCJQMo7v7k1BYbUgYDfVqwYzPCG sairavig@airstack-osmo
+  resources:
+    default:
+      platform: default
+      cpu: 12
+      memory: 48Gi
+      gpu: 1
+      storage: 200Gi
+  timeout:
+    exec_timeout: 2h
+    queue_timeout: 15m

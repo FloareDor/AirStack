@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 import pytest
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from episode import resolved,fingerprint,patch_active
+from episode import json_payload,resolved,fingerprint,patch_active
 from campaign import clean_twin,candidates,verdict
 from ravi_reporting import build_campaign_report
 import json
@@ -17,6 +17,9 @@ def test_pair_preserves_realized_scene():
     for k in ['layout','layout_seed','seed','light','patch_size']:assert clean['condition'][k]==c['condition'][k]
     assert c['condition']['rgb_noise']==20
     assert fingerprint(clean)!=fingerprint(c)
+
+def test_json_payload_ignores_container_runtime_diagnostics():
+    assert json_payload('runtime warning{"ZoeD_M12_N.pt":"abc"}')=={'ZoeD_M12_N.pt':'abc'}
 
 def test_resume_proposals_and_budget():
     assert candidates('random',4,17,['kim','mononav'])==candidates('random',4,17,['kim','mononav'])

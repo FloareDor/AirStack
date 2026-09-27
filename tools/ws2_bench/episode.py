@@ -49,6 +49,9 @@ def sha256_file(path):
     with path.open('rb') as stream:
         for block in iter(lambda:stream.read(1024*1024),b''):digest.update(block)
     return digest.hexdigest()
+def json_payload(output):
+    """Read the final JSON object from command output with runtime diagnostics."""
+    return json.loads(output[output.rfind('{'):])
 def cmd(argv,log=None,timeout=45,check=True,env=None):
     r=subprocess.run(argv,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=timeout,env=env)
     if log:
@@ -127,7 +130,10 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             shutil.move(RUNTIME/'flight_guard.json',out/'previous_guard.json')
         for f in ['scene_status.json','scene_reply.json','scene_command.json']:(RUNTIME/f).unlink(missing_ok=True)
         provenance={}
-        for name,repo in {'AirStack':HERE.parents[1],**REPOS}.items():
+        # Record only the selected worker's source. Requiring the other
+        # planner checkout makes a MonoNav-only or Kim-only campaign fail
+        # before the simulator starts on a fresh workspace.
+        for name,repo in {'AirStack':HERE.parents[1],c['planner']:REPOS[c['planner']]}.items():
             provenance[name]={'head':cmd(['git','-C',str(repo),'rev-parse','HEAD']).strip(),
                               'diff_sha256':hashlib.sha256(cmd(['git','-C',str(repo),'diff']).encode()).hexdigest()}
         provenance['worker_image']=json.loads(cmd(['docker','image','inspect',IMAGES[c['planner']]]))[0]['Id']
@@ -142,8 +148,12 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             provenance['model_weights']={str(p.relative_to(REPOS['kim'])):sha256_file(p) for p in model_files}
         else:
             hash_code="import hashlib,json,pathlib; p=pathlib.Path('/cache/hub/checkpoints/ZoeD_M12_N.pt'); h=hashlib.sha256(); f=p.open('rb'); [h.update(b) for b in iter(lambda:f.read(1048576),b'')]; print(json.dumps({p.name:h.hexdigest()}))"
-            provenance['model_weights']=json.loads(cmd(['docker','run','--rm','--network','none','-v','mononav-torch-cache:/cache:ro',
-                '--entrypoint','python',IMAGES['mononav'],'-c',hash_code],log,timeout=30))
+            hash_output=cmd(['docker','run','--rm','--network','none','-v','mononav-torch-cache:/cache:ro',
+                '--entrypoint','python',IMAGES['mononav'],'-c',hash_code],log,timeout=30)
+            # NVIDIA's container runtime can prepend diagnostics to stdout on
+            # fresh hosts even when the hash command succeeds. The command's
+            # final line is the machine-readable payload we requested.
+            provenance['model_weights']=json_payload(hash_output)
         atomic(out/'provenance.json',provenance)
         initial_condition=dict(c['condition'],patch_enabled=patch_active(c,0))
         atomic(RUNTIME/'episode.json',{'condition':initial_condition,'spawn':[-4,0,.07],'fault':c['fault']})

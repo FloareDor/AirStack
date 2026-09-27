@@ -15,6 +15,11 @@ os.environ["PX4_PHYSICS_HZ"] = "200"
 os.environ["PX4_RENDERING_HZ"] = "30"
 from isaacsim import SimulationApp
 HEADLESS=os.environ.get('WS2_HEADLESS','1')!='0'
+# The overview camera is only for the operator dashboard.  Its first GPU
+# readback stalls headless Isaac runs on OSMO, while the planner's ZED camera
+# is independent of it.  Keep previews for interactive runs and allow an
+# explicit override when a headless dashboard is needed.
+PREVIEW_ENABLED=os.environ.get('WS2_OBSERVER_PREVIEW','0' if HEADLESS else '1')!='0'
 app = SimulationApp({"headless": HEADLESS, "width": 1280, "height": 720,
                      "window_width": 1440, "window_height": 900,
                      "renderer": "RaytracedLighting"})
@@ -112,6 +117,10 @@ shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).ConnectToSource(t
 UsdShade.MaterialBindingAPI.Apply(quad.GetPrim()).Bind(material)
 
 condition = None
+def startup_checkpoint(name):
+    """Emit coarse startup phases so remote runs can identify a blocked step."""
+    print(f"[WS2] Startup: {name}", flush=True)
+
 def apply_condition(raw):
     global condition
     c = validate(raw)
@@ -157,12 +166,16 @@ def apply_condition(raw):
     print('[WS2] Condition applied: '+json.dumps(c),flush=True)
 
 apply_condition(episode.get('condition',{"name":"Office clean", "layout":"furnished_a"}))
+startup_checkpoint("spawning drone")
 iris = "/isaac-sim/.local/share/ov/data/documents/Kit/shared/exts/pegasus.simulator/pegasus/simulator/assets/Robots/Iris/iris.usd"
 graph=spawn_px4_multirotor_node(drone_prim="/World/base_link",usd_file=iris,robot_name="robot_1",vehicle_id=1,domain_id=1,
                               init_pos=episode.get('spawn',[-4.,0.,.07]),init_orient=[0.,0.,0.,1.])
+startup_checkpoint("adding ZED camera")
 add_zed_stereo_camera_subgraph(parent_graph_handle=graph,drone_prim="/World/base_link",robot_name="robot_1",camera_name="ZEDCamera",
                               camera_offset=[.2,0.,-.05],camera_rotation_offset=[0.,0.,0.])
+startup_checkpoint("setting viewport")
 set_camera_view(eye=np.array([-8.,-3.,2.3]),target=np.array([2.,0.,1.2]))
+startup_checkpoint("creating observer render product")
 import omni.replicator.core as rep
 from PIL import Image as PilImage
 observer=UsdGeom.Camera.Define(stage,'/World/WS2Observer')
@@ -173,9 +186,12 @@ render_product=rep.create.render_product(str(observer.GetPath()),(960,540))
 observer_rgb=rep.AnnotatorRegistry.get_annotator('rgb');observer_rgb.attach([render_product])
 view={'mode':'follow','distance':2.5,'height':1.5,'azimuth':180.}
 observer_eye=np.array([-8.,-3.,3.]);observer_target=np.array([0.,0.,1.])
+startup_checkpoint("resetting world")
 world.reset()
+startup_checkpoint("creating scene oracle")
 from scene_oracle import SceneOracle
 oracle=SceneOracle(stage)
+startup_checkpoint("starting timeline")
 omni.timeline.get_timeline_interface().play()
 last_status=0.
 camera_mode="follow"
@@ -185,6 +201,7 @@ telemetry_target=(socket.gethostbyname("robot-desktop"),9877)
 telemetry_registered=False
 guard=None
 last_preview=0.
+first_loop=True
 def publish_state(dt):
     global guard
     vehicle=next(iter(drone_sim_dict.values()))["multirotor"]
@@ -204,6 +221,8 @@ while app.is_running():
         app.update()
         continue
     world.step(render=True)
+    if first_loop:
+        startup_checkpoint("first physics step complete")
     if drone_sim_dict and not telemetry_registered:
         world.add_physics_callback("ws2_ground_truth",publish_state)
         telemetry_registered=True
@@ -250,14 +269,19 @@ while app.is_running():
             observer_target=center+np.array([0.,0.,.3])
             observer_transform.Set(Gf.Matrix4d().SetLookAt(Gf.Vec3d(*map(float,observer_eye)),Gf.Vec3d(*map(float,observer_target)),Gf.Vec3d(0,0,1)).GetInverse())
             if not HEADLESS:set_camera_view(eye=observer_eye,target=observer_target)
-    if time.monotonic()-last_preview>.125:
+    if PREVIEW_ENABLED and time.monotonic()-last_preview>.125:
+        if first_loop:
+            startup_checkpoint("first observer readback")
         pixels=observer_rgb.get_data()
+        if first_loop:
+            startup_checkpoint("first observer readback complete")
         if pixels is not None and getattr(pixels,'size',0):
             target=RUNTIME/'live_view.jpg';tmp=target.with_suffix('.tmp.jpg')
             PilImage.fromarray(np.asarray(pixels)[:,:,:3]).save(tmp,quality=85);tmp.replace(target)
             meta={'wall_time':time.time(),'sim_time':float(world.current_time),'view':view,'headless':HEADLESS}
             temp=RUNTIME/'live_view.tmp.json';temp.write_text(json.dumps(meta));temp.replace(RUNTIME/'live_view.json')
         last_preview=time.monotonic()
+    first_loop=False
     if time.monotonic()-last_status>.1:
         data={"sim_time":float(world.current_time),"condition":condition,"patch_kind":PATCH_KIND,
               "patch_sha256":PATCH_SHA256,"patch_corners_world":[list(p) for p in quad.GetPointsAttr().Get() or []],
