@@ -116,7 +116,7 @@ it does not alter the training repository, deployed policy or learned PNG.
 This implementation was validated with the Office **4.5 asset set** in the
 existing local AirStack v0.18 containers. The simulator itself reports Isaac Sim
 5.1; record the actual image ID from each episode's `provenance.json`.
-Fresh-host provisioning has not been independently rerun in this task.
+Fresh-host provisioning was rerun in OSMO on 2026-09-28.
 
 NVIDIA documents Office in the [4.5 environment catalogue](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/assets/usd_assets_environments.html)
 and provides [asset-pack download/setup instructions](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/install_faq.html#local-assets-packs).
@@ -125,6 +125,15 @@ The asset root is `Assets/Isaac/4.5`; Office is
 preserving both `Isaac` and `NVIDIA` directories and all relative references.
 Alternatively use Isaac's asset collection/export workflow to collect Office
 and its dependencies. Copying only `office.usd` will lose materials/references.
+
+For a fresh OSMO worker, the public Isaac 4.5 Office subtree can be downloaded
+and copied into the simulator container with:
+
+```bash
+python3 tools/ws2_bench/download_office_assets.py
+docker cp /tmp/ws2_assets/Isaac/4.5/. \
+  isaac-sim:/tmp/ws2_assets/Isaac/4.5
+```
 
 After repository setup and authenticated image pull, create the simulator and
 robot containers with automatic application startup disabled, build the bridge,
