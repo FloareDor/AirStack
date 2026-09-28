@@ -11,7 +11,7 @@ from operator_control import request,UserStop
 WORKSPACE=HERE.parents[2]
 ROBOT='airstack-robot-desktop-1'
 CONTAINER_RUNTIME='/root/AirStack/robot/ros_ws/ws2_runtime'
-IMAGES={'mononav':'mononav-demo:1.0','kim':'collision-avoidance-airstack:1.0'}
+IMAGES={'mononav':'mononav-demo:2.7.1-cu128','kim':'collision-avoidance-airstack:1.0'}
 REPOS={'mononav':WORKSPACE/'MonoNav','kim':WORKSPACE/'Collision-avoidance'}
 WORKERS={'mononav':'mononav_airstack.py','kim':'collision_avoidance_airstack.py'}
 
@@ -81,7 +81,8 @@ def worker_command(c,run_id=''):
                               '--maximum-speed',str(c['maximum_speed']),'--trajectory-horizon',str(c['trajectory_horizon'])]
     else:command+=['--depth-source','zoe','--zoe-depth-scale','1.68','--rate','1','--warmup-frames','6',
                    '--velocity',str(c['velocity']),'--goal-distance',str(c['goal_distance']),'--goal-radius',str(c['goal_radius']),
-                   '--min-tsdf-points','1000','--tsdf-local-radius','8']
+                   '--min-tsdf-points','1000','--tsdf-local-radius','8','--tsdf-device','CPU:0',
+                   '--tsdf-weight-threshold','0.5']
     return command
 
 def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag=True,control_path=None):
@@ -159,8 +160,9 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
         atomic(RUNTIME/'episode.json',{'condition':initial_condition,'spawn':[-4,0,.07],'fault':c['fault']})
         env=os.environ.copy();env.update(WS2_CONTROL_MODE='bench',WS2_EPISODE_CONFIG='/isaac-sim/AirStack/robot/ros_ws/ws2_runtime/episode.json',
             WS2_PATCH_TEXTURE='/isaac-sim/AirStack/tools/ws2_bench/assets/learned_patch.png',WS2_PATCH_KIND='Rui learned FCRN patch')
-        phase='startup';event('starting_simulator');cmd(['bash',str(HERE/'start_existing.sh')],log,timeout=60,env=env)
-        url=bridge_url();deadline=time.monotonic()+180;previous=None;ready_count=0
+        phase='startup';event('starting_simulator');cmd(['bash',str(HERE/'start_existing.sh')],log,
+            timeout=float(os.environ.get('WS2_ROBOT_STARTUP_TIMEOUT','180')),env=env)
+        url=bridge_url();deadline=time.monotonic()+float(os.environ.get('WS2_STARTUP_TIMEOUT','360'));previous=None;ready_count=0
         while time.monotonic()<deadline:
             if request(control_path)=='stop':raise UserStop('operator requested stop during startup')
             try:

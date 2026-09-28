@@ -36,5 +36,5 @@ workflow:
       gpu: 1
       storage: 200Gi
   timeout:
-    exec_timeout: 2h
+    exec_timeout: 4h
     queue_timeout: 15m

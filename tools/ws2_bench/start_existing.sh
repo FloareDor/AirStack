@@ -22,9 +22,45 @@ if [[ -e "$runtime/flight_guard.json" ]]; then
   exit 1
 fi
 docker start isaac-sim airstack-robot-desktop-1
+# The standard desktop image defaults to AUTOLAUNCH=true.  This helper owns
+# the robot launch, so clear that tmux session before starting its managed
+# stack; otherwise both launchers expose /robot_1/tasks/takeoff.
+docker exec airstack-robot-desktop-1 bash -lc '
+  tmux kill-session -t bringup 2>/dev/null || true
+  pkill -TERM -f "[r]os2 launch .*robot.launch.xml" 2>/dev/null || true
+  pkill -TERM -f "[t]akeoff_landing_task" 2>/dev/null || true
+  for _ in {1..20}; do
+    pgrep -f "[r]os2 launch .*robot.launch.xml|[t]akeoff_landing_task" >/dev/null || exit 0
+    sleep .25
+  done
+  echo "existing robot launch did not stop" >&2
+  exit 1
+'
 docker cp "$task_dir/ground_truth.py" airstack-robot-desktop-1:/tmp/ws2_ground_truth.py
 docker cp "$task_dir/gt_pid.yaml" airstack-robot-desktop-1:/tmp/ws2_gt_pid.yaml
 docker exec -d airstack-robot-desktop-1 bash -lc 'sws && ros2 launch desktop_bringup robot.launch.xml role:=full > /root/AirStack/robot/ros_ws/ws2_runtime/robot_gt.log 2>&1'
+for attempt in {1..120}; do
+  action_info=$(docker exec airstack-robot-desktop-1 bash -lc 'sws && ros2 action info /robot_1/tasks/takeoff' 2>&1 || true)
+  takeoff_servers=$(awk '/Action servers:/{print $3; exit}' <<<"$action_info")
+  [[ "$takeoff_servers" == 1 ]] && break
+  if [[ "$takeoff_servers" =~ ^[2-9][0-9]*$ ]]; then
+    echo "Expected one /robot_1/tasks/takeoff server, found $takeoff_servers:" >&2
+    echo "$action_info" >&2
+    exit 1
+  fi
+  sleep 1
+done
+[[ "$takeoff_servers" == 1 ]] || { echo "Timed out waiting for one /robot_1/tasks/takeoff server: $action_info" >&2; exit 1; }
+for attempt in {1..120}; do
+  robot_command_type=$(docker exec airstack-robot-desktop-1 bash -lc \
+    'sws >/dev/null && ros2 service type /robot_1/interface/robot_command' 2>/dev/null || true)
+  grep -qx 'airstack_msgs/srv/RobotCommand' <<<"$robot_command_type" && break
+  sleep 1
+done
+if ! grep -qx 'airstack_msgs/srv/RobotCommand' <<<"$robot_command_type"; then
+  echo 'Timed out waiting for /robot_1/interface/robot_command. Check robot_gt.log for a robot_interface startup error.' >&2
+  exit 1
+fi
 docker exec -d airstack-robot-desktop-1 bash -lc 'sws && python3 /tmp/ws2_ground_truth.py > /root/AirStack/robot/ros_ws/ws2_runtime/ground_truth.log 2>&1'
 docker exec -d -e WS2_EXECUTE="$([[ "$control_mode" == bench ]] && echo true || echo false)" airstack-robot-desktop-1 bash -lc 'sws && ros2 launch mononav_bridge vision_planner_bridge.launch.xml vision_planner_name:=ws2_bench vision_planner_max_frame_rate:=3.0 vision_planner_execute_commands:="$WS2_EXECUTE" > /root/AirStack/robot/ros_ws/ws2_runtime/bridge_gt.log 2>&1'
 if [[ "$control_mode" == demo ]]; then
