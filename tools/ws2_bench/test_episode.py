@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 import pytest
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from episode import json_payload,resolved,fingerprint,patch_active
+from episode import json_payload,resolved,fingerprint,patch_active,worker_command
 from campaign import clean_twin,candidates,verdict
 from ravi_reporting import build_campaign_report
 import json
@@ -20,6 +20,12 @@ def test_pair_preserves_realized_scene():
 
 def test_json_payload_ignores_container_runtime_diagnostics():
     assert json_payload('runtime warning{"ZoeD_M12_N.pt":"abc"}')=={'ZoeD_M12_N.pt':'abc'}
+
+def test_mononav_executes_safe_extreme_primitives_with_a_bounded_map():
+    command=worker_command(resolved({'planner':'mononav'}))
+    assert '--execute-extreme-primitives' in command
+    radius=command.index('--tsdf-local-radius')
+    assert command[radius+1]=='3'
 
 def test_resume_proposals_and_budget():
     assert candidates('random',4,17,['kim','mononav'])==candidates('random',4,17,['kim','mononav'])

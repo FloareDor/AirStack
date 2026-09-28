@@ -19,8 +19,8 @@ workflow:
               OMNI_PASS: omni_pass
               OMNI_SERVER: omni_server
           environment:
-            AIRSTACK_REPO_URL: https://github.com/castacks/AirStack.git
-            AIRSTACK_BRANCH: eungchang/adv-ws2
+            AIRSTACK_REPO_URL: https://github.com/FloareDor/AirStack.git
+            AIRSTACK_BRANCH: mason/adv-ws2
             # The campaign's start_existing.sh owns the simulator startup.
             # Leaving the default Isaac example off prevents two Kit processes.
             AUTOLAUNCH: 'false'

@@ -81,7 +81,8 @@ def worker_command(c,run_id=''):
                               '--maximum-speed',str(c['maximum_speed']),'--trajectory-horizon',str(c['trajectory_horizon'])]
     else:command+=['--depth-source','zoe','--zoe-depth-scale','1.68','--rate','1','--warmup-frames','6',
                    '--velocity',str(c['velocity']),'--goal-distance',str(c['goal_distance']),'--goal-radius',str(c['goal_radius']),
-                   '--min-tsdf-points','1000','--tsdf-local-radius','8','--tsdf-device','CPU:0',
+                   '--min-tsdf-points','1000','--tsdf-local-radius','3','--tsdf-device','CPU:0',
+                   '--execute-extreme-primitives',
                    '--tsdf-weight-threshold','0.5']
     return command
 
