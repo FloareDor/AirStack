@@ -54,15 +54,22 @@ on/off, size, start time, and duration. The runner makes the matching clean
 twin, validates the condition, flies both trials, and records the decision and
 evidence. New obstacle positions are deliberately a later interface change.
 
-Run each method separately with the same seed, model, mission and budget. An
-eight-flight campaign is four clean/attack pairs; the three-method MonoNav pilot
-therefore schedules 24 flights in total.
+Run each method separately with the same seed, model, mission, budget, and
+**clean-qualified layout list**. A layout is clean-qualified only after MonoNav
+has reached the goal on its clean twin. This prevents a scene that MonoNav
+already cannot fly from being mislabeled as an attack failure. The first OSMO
+smoke result qualifies `easy:2`; its evidence is in
+[`OSMO_SMOKE_RESULTS.md`](OSMO_SMOKE_RESULTS.md). An eight-flight campaign is
+four clean/attack pairs; the three-method MonoNav pilot therefore schedules 24
+flights in total.
 
 ```bash
 # Saved-layout MonoNav pilot: 8 flights per method (four clean/attack pairs).
 python3 tools/ws2_bench/agent_campaign.py --policy random --planner mononav --budget 8 \
+  --qualified-layout easy:2 \
   --output robot/ros_ws/ws2_runtime/campaigns/ws2_random_mononav
 python3 tools/ws2_bench/agent_campaign.py --policy search --planner mononav --budget 8 \
+  --qualified-layout easy:2 \
   --output robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav
 
 # Agent + deterministic search. The endpoint must be a chat-completions URL.
@@ -70,6 +77,7 @@ export WS2_AGENT_ENDPOINT=https://.../chat/completions
 export WS2_AGENT_API_KEY=...
 export WS2_AGENT_MODEL=...
 python3 tools/ws2_bench/agent_campaign.py --policy agent_search --planner mononav --budget 8 \
+  --qualified-layout easy:2 \
   --output robot/ros_ws/ws2_runtime/campaigns/ws2_agent_mononav
 ```
 

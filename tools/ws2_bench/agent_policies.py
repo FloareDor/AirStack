@@ -99,9 +99,9 @@ def _decision(round_number, policy, action, rule, reason, hypothesis):
 class RandomPolicy:
     name = "random"
 
-    def __init__(self, seed):
+    def __init__(self, seed, allowed_actions=None):
         self.seed = seed
-        self.actions = all_actions()
+        self.actions = list(allowed_actions or all_actions())
 
     def choose_next(self, history, remaining_pairs):
         confirm = _confirmation(history)
@@ -218,8 +218,8 @@ class OpenAICompatibleIntentProvider:
 class AgentSearchPolicy(SearchPolicy):
     name = "agent_search"
 
-    def __init__(self, seed, provider):
-        super().__init__(seed)
+    def __init__(self, seed, provider, allowed_actions=None):
+        super().__init__(seed, allowed_actions)
         self.provider = provider
         self.intent_log = []
 
@@ -252,6 +252,8 @@ class AgentSearchPolicy(SearchPolicy):
         context = {
             "intent_schema_version": INTENT_SCHEMA_VERSION,
             "remaining_pairs": remaining_pairs,
+            "clean_qualified_layouts": sorted({f"{action['layout']}:{action['layout_seed']}"
+                                                for action in self.actions}),
             "history": [
                 {"round": r["decision"].get("round"), "hypothesis": r["decision"].get("hypothesis"),
                  "action": r["decision"].get("action"), "pairs": r.get("pairs", [])}
@@ -270,11 +272,11 @@ class AgentSearchPolicy(SearchPolicy):
         return decision
 
 
-def policy_from_name(name, seed, provider=None):
+def policy_from_name(name, seed, provider=None, allowed_actions=None):
     if name == "random":
-        return RandomPolicy(seed)
+        return RandomPolicy(seed, allowed_actions)
     if name == "search":
-        return SearchPolicy(seed)
+        return SearchPolicy(seed, allowed_actions)
     if name == "agent_search":
-        return AgentSearchPolicy(seed, provider or OpenAICompatibleIntentProvider())
+        return AgentSearchPolicy(seed, provider or OpenAICompatibleIntentProvider(), allowed_actions)
     raise ValueError("policy must be random, search, or agent_search")

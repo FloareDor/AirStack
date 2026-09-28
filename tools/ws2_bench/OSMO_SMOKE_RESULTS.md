@@ -47,6 +47,14 @@ not establish that the patch causes a reliability or safety problem.
 
 ## Next step
 
+The first unrestricted random campaign was stopped after two invalid pairs:
+both clean twins hit the native Office plant, so neither pair can measure an
+attack effect. The layout generator guarantees only collision-free placement,
+clear start/goal regions, and one coarse route; it does not prove a learned
+planner can fly every saved layout. The pilot now accepts only explicitly
+clean-qualified layouts. `easy:2` is qualified by the smoke result above.
+
 Run the MonoNav random baseline: four matched clean/attack pairs (eight
-flights), using the saved layouts and the same reproducible OSMO environment.
-After that, run the same-size search-only and agent-plus-search pilots.
+flights) on `easy:2`, using the same reproducible OSMO environment. After that,
+run the same-size search-only and agent-plus-search pilots on the same qualified
+layout list.

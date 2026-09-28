@@ -24,6 +24,17 @@ def test_random_policy_is_seeded_and_does_not_repeat_an_action():
     assert next_["action"] != first["action"]
 
 
+def test_random_policy_can_be_limited_to_clean_qualified_layouts():
+    allowed = [
+        {"layout": "easy", "layout_seed": 2, "delay_s": 0.0, "patch_enabled": False,
+         "patch_start_s": 0.0, "patch_duration_s": 0.0},
+        {"layout": "easy", "layout_seed": 2, "delay_s": 0.15, "patch_enabled": True,
+         "patch_size_m": 0.6, "patch_start_s": 5.0, "patch_duration_s": 10.0},
+    ]
+    decision = RandomPolicy(42, allowed).choose_next([], 2)
+    assert (decision["action"]["layout"], decision["action"]["layout_seed"]) == ("easy", 2)
+
+
 def test_search_policy_repeats_a_clean_pass_attack_failure_once():
     policy = SearchPolicy(42)
     first = policy.choose_next([], 4)

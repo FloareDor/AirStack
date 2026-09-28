@@ -9,7 +9,7 @@ import math
 from pathlib import Path
 import time
 
-from agent_policies import policy_from_name
+from agent_policies import all_actions, policy_from_name
 from agent_schema import ACTION_SCHEMA_VERSION, action_to_episode, validate_action
 from campaign import clean_twin, verdict
 from conditions import PATCH_POLICY
@@ -27,7 +27,24 @@ BACKEND_LABELS = {
 }
 
 
-def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance):
+def parse_qualified_layouts(values):
+    """Parse explicit clean-qualified layout selectors such as ``easy:2``."""
+    qualified = set()
+    for value in values:
+        try:
+            layout, seed_text = value.split(":", 1)
+            seed = int(seed_text)
+        except (AttributeError, ValueError) as exc:
+            raise ValueError("qualified layouts must use layout:seed, for example easy:2") from exc
+        if layout not in ("easy", "medium", "hard") or not 0 <= seed <= 7:
+            raise ValueError("qualified layouts must use easy|medium|hard and seed 0..7")
+        qualified.add((layout, seed))
+    if not qualified:
+        raise ValueError("at least one clean-qualified layout is required")
+    return tuple(sorted(qualified))
+
+
+def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance, qualified_layouts):
     mission = defaults(planner)
     if timeout is not None:
         mission["timeout"] = timeout
@@ -46,6 +63,7 @@ def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, g
         "record_bags": record_bags,
         "mission": mission,
         "patch_policy": PATCH_POLICY,
+        "clean_qualified_layouts": [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts],
     }
 
 
@@ -66,7 +84,7 @@ def _load_json(path):
 
 def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="mononav", retries=1,
                           record_bags=False, pause_seconds=5, timeout=None, goal_distance=None,
-                          provider=None):
+                          provider=None, qualified_layouts=(("easy", 2),)):
     """Run one planner's paired campaign. Scheduled budget counts flights, not retries."""
     if policy_name not in BACKEND_LABELS:
         raise ValueError("policy must be random, search, or agent_search")
@@ -79,10 +97,15 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
     if not 0 <= pause_seconds <= 60 or not math.isfinite(pause_seconds):
         raise ValueError("pause_seconds must be 0..60")
 
+    qualified_layouts = parse_qualified_layouts(
+        [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts])
+    allowed_actions = [action for action in all_actions()
+                       if (action["layout"], action["layout_seed"]) in qualified_layouts]
     root = Path(output).resolve()
     root.relative_to(RUNTIME.resolve())
     root.mkdir(parents=True, exist_ok=True)
-    config = _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance)
+    config = _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
+                     qualified_layouts)
     resolved({"planner": planner, **config["mission"]})
     config_path = root / "config.json"
     if config_path.exists() and _load_json(config_path) != config:
@@ -99,7 +122,7 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
     history = _load_json(history_path) if history_path.exists() else []
     if len(history) > budget // 2:
         raise ValueError("saved history exceeds the configured budget")
-    policy = policy_from_name(policy_name, seed, provider)
+    policy = policy_from_name(policy_name, seed, provider, allowed_actions)
     completed = len(history) * 2
     actual_attempts = 0
     live_rows = []
@@ -217,10 +240,13 @@ def main():
     parser.add_argument("--review-seconds", type=float, default=5)
     parser.add_argument("--timeout", type=float)
     parser.add_argument("--goal-distance", type=float)
+    parser.add_argument("--qualified-layout", action="append", required=True, metavar="LAYOUT:SEED",
+                        help="a layout that has already passed a clean flight, e.g. easy:2 (repeatable)")
     args = parser.parse_args()
     run_adaptive_campaign(args.output, args.policy, args.budget, args.seed, args.planner,
                           args.infrastructure_retries, args.record_bags, args.review_seconds,
-                          args.timeout, args.goal_distance)
+                          args.timeout, args.goal_distance,
+                          qualified_layouts=parse_qualified_layouts(args.qualified_layout))
 
 
 if __name__ == "__main__":

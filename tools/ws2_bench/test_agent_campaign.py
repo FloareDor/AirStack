@@ -17,6 +17,17 @@ class FakeProvider:
                 "layouts": ["easy"], "delay_band": "high", "patch_mode": "timed"}
 
 
+def test_qualified_layout_parser_rejects_unverified_selector_forms():
+    assert agent_campaign.parse_qualified_layouts(["easy:2", "easy:2"]) == (("easy", 2),)
+    for value in ("easy", "stock:2", "hard:8"):
+        try:
+            agent_campaign.parse_qualified_layouts([value])
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"expected invalid selector: {value}")
+
+
 def test_agent_campaign_is_no_noise_and_resumes_without_another_model_call(tmp_path, monkeypatch):
     monkeypatch.setattr(agent_campaign, "RUNTIME", tmp_path)
     calls = []
