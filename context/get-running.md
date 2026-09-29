@@ -1,0 +1,122 @@
+# getting WS2 running on OSMO
+
+This is the shortest known-good path for a fresh OSMO GPU workspace. Run local
+commands from WSL in the AirStack checkout. The OSMO workspace filesystem is
+ephemeral: copy campaign evidence out before the workspace reaches its timeout.
+
+## submit and connect
+
+```bash
+cd /path/to/AirStack
+osmo workflow validate tools/ws2_bench/osmo_pilot.yaml
+osmo workflow submit tools/ws2_bench/osmo_pilot.yaml
+osmo workflow query WORKFLOW_ID
+osmo workflow port-forward WORKFLOW_ID workspace --port 22039:22
+ssh -p 22039 root@127.0.0.1
+```
+
+Wait until the workspace task is `RUNNING`. The entrypoint starts AirStack, so
+do not run a second `airstack.sh up`. Check with:
+
+```bash
+docker ps --format '{{.Names}} {{.Status}}'
+```
+
+The expected container names are `isaac-sim` and
+`airstack-robot-desktop-1`.
+
+## fresh-workspace setup
+
+Run this inside the OSMO workspace after its containers are up:
+
+```bash
+cd /root/AirStack
+git pull --ff-only origin mason/adv-ws2
+apt-get update && apt-get install -y python3-yaml
+python3 tools/ws2_bench/download_office_assets.py
+docker exec isaac-sim mkdir -p /tmp/ws2_assets/Isaac/4.5
+docker cp /tmp/ws2_assets/Isaac/4.5/. isaac-sim:/tmp/ws2_assets/Isaac/4.5
+docker exec airstack-robot-desktop-1 bash -lc 'bws'
+git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor/MonoNav.git /root/MonoNav
+(cd /root/MonoNav && bash docker/build_image.sh)
+```
+
+The full ROS build is slow on a clean workspace. Wait for it to finish before
+starting an episode. Its normal warnings are not failures. The Office download
+should contain 910 files and `office.usd` should exist under
+`/tmp/ws2_assets/Isaac/4.5/Isaac/Environments/Office/`.
+
+Warm the shared model cache once after the MonoNav image build:
+
+```bash
+docker run --rm --gpus all \
+  -v mononav-torch-cache:/root/.cache/torch \
+  -v /root/MonoNav:/workspace/planner -w /workspace/planner \
+  mononav-demo:2.7.1-cu128 \
+  timeout 300 python mononav_airstack.py --headless --server http://127.0.0.1:1
+```
+
+Success ends with `ZoeDepth ready on cuda`. The first run downloads about 1.34
+GB of model weights.
+
+## run the guarded search baseline
+
+```bash
+cd /root/AirStack
+nohup python3 tools/ws2_bench/agent_campaign.py \
+  --policy search --planner mononav --budget 8 --seed 42 \
+  --qualified-layout easy:2 --clean-validation-runs 2 \
+  --record-bags --review-seconds 0 \
+  --output robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_guarded \
+  >/tmp/ws2_search_mononav_guarded.log 2>&1 &
+```
+
+The two clean validation flights do not count toward the eight paired flights.
+If either validation or a per-pair clean control fails, the guarded campaign
+stops rather than treating an unmatched attack flight as evidence.
+
+Check progress:
+
+```bash
+cat robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_guarded/presentation.json
+tail -40 /tmp/ws2_search_mononav_guarded.log
+```
+
+## copy results before timeout
+
+Run this locally while the SSH tunnel is alive. It copies all campaign evidence
+except the large ROS bags:
+
+```bash
+rsync -a --exclude 'bag/' \
+  -e 'ssh -p 22039' \
+  root@127.0.0.1:/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_guarded/ \
+  tools/ws2_bench/artifacts/ws2_search_mononav_guarded/
+```
+
+## saved result locations
+
+Committed summaries:
+
+- `tools/ws2_bench/OSMO_SMOKE_RESULTS.md`
+- `tools/ws2_bench/OSMO_RANDOM_BASELINE_RESULTS.md`
+- `tools/ws2_bench/OSMO_SEARCH_BASELINE_RESULTS.md`
+
+Local raw evidence (ignored by git):
+
+- `tools/ws2_bench/artifacts/ws2_random_mononav_qualified/`
+- `tools/ws2_bench/artifacts/ws2_search_mononav_qualified/` (old unguarded run; clean controls were unstable)
+- `tools/ws2_bench/artifacts/ws2_search_mononav_guarded/`
+
+OSMO campaign directories:
+
+- `/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_random_mononav_qualified`
+  on the expired `ws2-pilot-2` workspace
+- `/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_qualified`
+  on the expired `ws2-pilot-2` workspace
+- `/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_guarded`
+  on the current `ws2-pilot-3` workspace
+
+The OSMO workspace page does not retain these result directories after timeout;
+only normal task logs survive. The local artifact copies are the durable raw
+evidence.
