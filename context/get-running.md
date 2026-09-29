@@ -4,6 +4,45 @@ This is the shortest known-good path for a fresh OSMO GPU workspace. Run local
 commands from WSL in the AirStack checkout. The OSMO workspace filesystem is
 ephemeral: copy campaign evidence out before the workspace reaches its timeout.
 
+## project context and goal
+
+WS2 is the AirStack simulation benchmark for testing learning-based drone
+obstacle avoidance under controlled sensor delay and visual-patch conditions.
+The current target is MonoNav first; Kim can be added after the MonoNav pilot is
+stable. The bench owns configuration validation, flight execution, metrics,
+logs, bags, and saved evidence. It does not let an agent directly fly the
+drone.
+
+The immediate experiment compares three ways to choose tests under the same
+flight budget:
+
+- seeded random sampling;
+- deterministic result-guided search;
+- later, agent-guided search.
+
+Each tested action can choose a saved obstacle layout, added sensor delay, and
+patch enablement, size, and timing. A clean twin disables delay and the patch.
+An attack outcome only counts when that clean twin reaches the goal. The guarded
+campaign also requires two pristine clean successes before it starts the paired
+budget.
+
+The current goal is not to claim a general vulnerability from a few flights.
+It is to find distinct candidate failures, repeat them, and compare how many
+reproducible clean-pass/attack-fail cases each method finds with the same
+budget. The existing pilots use `easy:2`, seed 42, and four clean/attack pairs
+(eight scheduled flights) because that layout has a working MonoNav control.
+
+## current state
+
+- Random baseline: complete; four clean goals, two attack collisions. One
+  candidate was repeated and then passed, so neither is yet reproducible.
+- Guarded search baseline: complete; two clean validations and four paired clean
+  goals. It found one planner stop and one collision, and both passed on their
+  one confirmation run.
+- Agent-guided search: not run yet. It needs the same guarded setup plus
+  `WS2_AGENT_ENDPOINT`, `WS2_AGENT_API_KEY`, and `WS2_AGENT_MODEL` in the OSMO
+  task environment. Do not commit those credentials.
+
 ## submit and connect
 
 ```bash
