@@ -50,11 +50,11 @@ apt-get update && apt-get install -y python3-yaml
 python3 tools/ws2_bench/download_office_assets.py
 docker exec isaac-sim mkdir -p /tmp/ws2_assets/Isaac/4.5
 docker cp /tmp/ws2_assets/Isaac/4.5/. isaac-sim:/tmp/ws2_assets/Isaac/4.5
-docker exec robot bash -lc 'bws'
-docker exec robot bash -lc 'bws --packages-select mononav_bridge'
+docker exec airstack-robot-desktop-1 bash -lc 'bws'
+docker exec airstack-robot-desktop-1 bash -lc 'bws --packages-select mononav_bridge'
 git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor/MonoNav.git /root/MonoNav
 (cd /root/MonoNav && bash docker/build_image.sh)
-docker stop --timeout 3 isaac-sim robot
+docker stop --timeout 3 isaac-sim airstack-robot-desktop-1
 ```
 
 The image pull can take several minutes. Check progress without starting another
