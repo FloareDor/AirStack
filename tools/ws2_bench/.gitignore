@@ -3,3 +3,4 @@ assets/*.png
 diagnostic_patch.png
 __pycache__/
 .pytest_cache/
+artifacts/

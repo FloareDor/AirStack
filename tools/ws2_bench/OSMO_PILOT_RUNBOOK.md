@@ -46,10 +46,15 @@ one is still pulling images.
 ```bash
 cd /root/AirStack
 AUTOLAUNCH=false ./airstack.sh up isaac-sim robot-desktop
+apt-get update && apt-get install -y python3-yaml
 python3 tools/ws2_bench/download_office_assets.py
+docker exec isaac-sim mkdir -p /tmp/ws2_assets/Isaac/4.5
 docker cp /tmp/ws2_assets/Isaac/4.5/. isaac-sim:/tmp/ws2_assets/Isaac/4.5
-docker exec airstack-robot-desktop-1 bash -lc 'bws --packages-select mononav_bridge'
-docker stop --timeout 3 isaac-sim airstack-robot-desktop-1
+docker exec robot bash -lc 'bws'
+docker exec robot bash -lc 'bws --packages-select mononav_bridge'
+git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor/MonoNav.git /root/MonoNav
+(cd /root/MonoNav && bash docker/build_image.sh)
+docker stop --timeout 3 isaac-sim robot
 ```
 
 The image pull can take several minutes. Check progress without starting another
@@ -57,6 +62,18 @@ copy:
 
 ```bash
 docker ps --format '{{.Names}} {{.Status}}'
+```
+
+The campaign downloads the MonoNav depth model if it is missing. To make that
+happen before the first flight, warm the shared model cache after building the
+image:
+
+```bash
+docker run --rm --gpus all \
+  -v mononav-torch-cache:/root/.cache/torch \
+  -v /root/MonoNav:/workspace/planner -w /workspace/planner \
+  mononav-demo:2.7.1-cu128 \
+  timeout 300 python mononav_airstack.py --headless --server http://127.0.0.1:1
 ```
 
 ## 4. Run the qualified MonoNav random baseline
