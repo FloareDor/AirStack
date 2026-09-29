@@ -48,7 +48,8 @@ def test_agent_campaign_is_no_noise_and_resumes_without_another_model_call(tmp_p
     provider = FakeProvider()
     root = tmp_path / "campaign"
     history = agent_campaign.run_adaptive_campaign(root, "agent_search", 4, 42, "mononav",
-                                                    retries=0, pause_seconds=0, provider=provider)
+                                                    retries=0, pause_seconds=0, provider=provider,
+                                                    clean_validation_runs=0)
     assert len(history) == 2
     assert provider.calls == 1  # round two is the required confirmation
     assert len(calls) == 4
@@ -61,6 +62,35 @@ def test_agent_campaign_is_no_noise_and_resumes_without_another_model_call(tmp_p
     assert history[1]["decision"]["rule"] == "confirm_failure"
 
     agent_campaign.run_adaptive_campaign(root, "agent_search", 4, 42, "mononav",
-                                         retries=0, pause_seconds=0, provider=provider)
+                                         retries=0, pause_seconds=0, provider=provider,
+                                         clean_validation_runs=0)
     assert provider.calls == 1
     assert len(calls) == 4
+
+
+def test_clean_failure_stops_before_the_attack_twin(tmp_path, monkeypatch):
+    monkeypatch.setattr(agent_campaign, "RUNTIME", tmp_path)
+    calls = []
+
+    def fake_run(config, folder, **kwargs):
+        folder.mkdir()
+        calls.append(config)
+        result = {
+            "configuration_hash": fingerprint(config),
+            "outcome": "collision",
+            "metrics": {"minimum_obstacle_clearance_m": .01, "mission_progress_percent": 20},
+            "result_dir": str(folder),
+        }
+        (folder / "result.json").write_text(json.dumps(result))
+        return result
+
+    monkeypatch.setattr(agent_campaign, "run_episode", fake_run)
+    root = tmp_path / "campaign"
+    history = agent_campaign.run_adaptive_campaign(root, "search", 2, 42, "mononav",
+                                                    retries=0, pause_seconds=0,
+                                                    clean_validation_runs=0)
+
+    assert history == []
+    assert len(calls) == 1
+    assert json.loads((root / "presentation.json").read_text())["phase"] == "unstable_clean_baseline"
+    assert (root / "round_01" / "mononav" / "clean_baseline_failure.json").exists()

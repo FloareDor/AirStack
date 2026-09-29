@@ -15,7 +15,7 @@ from campaign import clean_twin, verdict
 from conditions import PATCH_POLICY
 from episode import RUNTIME, atomic, fingerprint, resolved, run_episode
 from feedback import summary
-from mission import defaults
+from mission import SUCCESSES, defaults
 from operator_control import UserStop, wait_between_trials
 from vulnerability_report import write_report
 
@@ -44,7 +44,8 @@ def parse_qualified_layouts(values):
     return tuple(sorted(qualified))
 
 
-def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance, qualified_layouts):
+def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
+            qualified_layouts, clean_validation_runs):
     mission = defaults(planner)
     if timeout is not None:
         mission["timeout"] = timeout
@@ -64,6 +65,7 @@ def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, g
         "mission": mission,
         "patch_policy": PATCH_POLICY,
         "clean_qualified_layouts": [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts],
+        "clean_validation_runs": clean_validation_runs,
     }
 
 
@@ -84,8 +86,12 @@ def _load_json(path):
 
 def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="mononav", retries=1,
                           record_bags=False, pause_seconds=5, timeout=None, goal_distance=None,
-                          provider=None, qualified_layouts=(("easy", 2),)):
-    """Run one planner's paired campaign. Scheduled budget counts flights, not retries."""
+                          provider=None, qualified_layouts=(("easy", 2),), clean_validation_runs=2):
+    """Run one paired campaign after repeated pristine-clean validation.
+
+    The scheduled budget counts matched clean/attack flights. Validation and
+    infrastructure retries are tracked separately as actual attempts.
+    """
     if policy_name not in BACKEND_LABELS:
         raise ValueError("policy must be random, search, or agent_search")
     if planner not in ("mononav", "kim"):
@@ -94,6 +100,8 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
         raise ValueError("budget must be even: one clean/attack pair needs two flights")
     if retries not in (0, 1, 2):
         raise ValueError("retries must be 0, 1, or 2")
+    if clean_validation_runs not in (0, 1, 2, 3):
+        raise ValueError("clean_validation_runs must be 0, 1, 2, or 3")
     if not 0 <= pause_seconds <= 60 or not math.isfinite(pause_seconds):
         raise ValueError("pause_seconds must be 0..60")
 
@@ -105,7 +113,7 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
     root.relative_to(RUNTIME.resolve())
     root.mkdir(parents=True, exist_ok=True)
     config = _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
-                     qualified_layouts)
+                     qualified_layouts, clean_validation_runs)
     resolved({"planner": planner, **config["mission"]})
     config_path = root / "config.json"
     if config_path.exists() and _load_json(config_path) != config:
@@ -160,7 +168,45 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
         global_lock.close()
         return history
 
+    def validate_clean_baseline():
+        """Require repeated pristine clean successes before spending attack budget."""
+        nonlocal actual_attempts
+        if not clean_validation_runs:
+            return True
+        validation_root = root / "clean_validation"
+        validation_path = validation_root / "validation.json"
+        saved = _load_json(validation_path) if validation_path.exists() else []
+        if len(saved) > clean_validation_runs:
+            raise ValueError("saved clean validation exceeds configured runs")
+        action = dict(allowed_actions[0])
+        action.update(delay_s=0.0, patch_enabled=False, patch_start_s=0.0, patch_duration_s=0.0)
+        base = resolved(action_to_episode(action, planner, seed, "pristine clean validation", config["mission"]))
+        for index in range(len(saved), clean_validation_runs):
+            folder = validation_root / f"attempt_{index}"
+            if (folder / "result.json").exists():
+                result = _load_json(folder / "result.json")
+                if result["configuration_hash"] != fingerprint(base):
+                    raise ValueError("saved clean validation config changed")
+            elif folder.exists():
+                result = {"outcome": "infrastructure_error", "metrics": {}, "result_dir": str(folder),
+                          "termination": {"reason": "interrupted validation attempt"}}
+            else:
+                publish("validating_clean_baseline", trial={"planner": planner, "role": "clean_validation",
+                                                             "attempt": index + 1, "directory": str(folder)})
+                result = run_episode(base, folder, record_bag=record_bags, control_path=control_path)
+                actual_attempts += 1
+            saved.append(result)
+            validation_root.mkdir(parents=True, exist_ok=True)
+            atomic(validation_path, saved)
+            if result["outcome"] not in SUCCESSES:
+                atomic(root / "clean_baseline_failure.json", {"phase": "clean_validation_failed",
+                                                               "result": result, "attempt": index + 1})
+                return False
+        return True
+
     try:
+        if not validate_clean_baseline():
+            return finish("clean_validation_failed")
         for index in range(len(history), budget // 2):
             round_root = root / f"round_{index + 1:02d}"
             round_root.mkdir(exist_ok=True)
@@ -213,6 +259,12 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
                 atomic(round_root / planner / (role + ".json"), pair[role])
                 if result["outcome"] == "user_stopped":
                     return finish("stopped", decision)
+                if role == "clean" and result["outcome"] not in SUCCESSES:
+                    atomic(round_root / planner / "clean_baseline_failure.json", {
+                        "phase": "unstable_clean_baseline", "decision": decision, "result": pair["clean"],
+                        "message": "Attack flight was not run because its pristine clean control failed.",
+                    })
+                    return finish("unstable_clean_baseline", decision)
                 publish("trial_complete", decision, {"planner": planner, "role": role, "result": result})
                 if pause_seconds:
                     time.sleep(pause_seconds)
@@ -240,13 +292,16 @@ def main():
     parser.add_argument("--review-seconds", type=float, default=5)
     parser.add_argument("--timeout", type=float)
     parser.add_argument("--goal-distance", type=float)
+    parser.add_argument("--clean-validation-runs", choices=(0, 1, 2, 3), type=int, default=2,
+                        help="pristine clean successes required before the paired flight budget (default: 2)")
     parser.add_argument("--qualified-layout", action="append", required=True, metavar="LAYOUT:SEED",
                         help="a layout that has already passed a clean flight, e.g. easy:2 (repeatable)")
     args = parser.parse_args()
     run_adaptive_campaign(args.output, args.policy, args.budget, args.seed, args.planner,
                           args.infrastructure_retries, args.record_bags, args.review_seconds,
                           args.timeout, args.goal_distance,
-                          qualified_layouts=parse_qualified_layouts(args.qualified_layout))
+                          qualified_layouts=parse_qualified_layouts(args.qualified_layout),
+                          clean_validation_runs=args.clean_validation_runs)
 
 
 if __name__ == "__main__":

@@ -82,6 +82,10 @@ docker run --rm --gpus all \
 unrestricted random run showed that geometry validation alone does not make a
 layout suitable for MonoNav; see `OSMO_SMOKE_RESULTS.md`.
 
+The command first runs two pristine clean validation flights. They are recorded
+separately and do not count toward the eight-flight paired budget. If either
+fails, the campaign stops before it can run an unmatched attack flight.
+
 ```bash
 cd /root/AirStack
 python3 tools/ws2_bench/agent_campaign.py \
