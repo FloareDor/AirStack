@@ -145,14 +145,23 @@ def _capture_system(monkeypatch):
     return sent["body"]["messages"][0]["content"]
 
 
-def test_objective_is_absent_by_default(monkeypatch):
+def test_objective_is_stated_by_default(monkeypatch):
+    """An attack-selection agent is told what it is for unless asked otherwise."""
     monkeypatch.delenv("WS2_AGENT_STATE_OBJECTIVE", raising=False)
-    assert "objective" not in _capture_system(monkeypatch).lower()
-
-
-def test_objective_is_stated_when_enabled(monkeypatch):
-    monkeypatch.setenv("WS2_AGENT_STATE_OBJECTIVE", "1")
     system = _capture_system(monkeypatch)
     assert "objective" in system.lower()
     assert "clean control passes" in system
     assert "240 characters" in system, "the length limit must survive"
+
+
+def test_objective_can_be_switched_off_to_reproduce_the_first_arm(monkeypatch):
+    monkeypatch.setenv("WS2_AGENT_STATE_OBJECTIVE", "0")
+    assert "objective" not in _capture_system(monkeypatch).lower()
+
+
+def test_only_an_explicit_zero_disables_it(monkeypatch):
+    for value in ("1", "true", "yes", ""):
+        monkeypatch.setenv("WS2_AGENT_STATE_OBJECTIVE", value)
+        assert agent_policies.objective_is_stated() is (value != "0"), value
+    monkeypatch.setenv("WS2_AGENT_STATE_OBJECTIVE", "0")
+    assert agent_policies.objective_is_stated() is False

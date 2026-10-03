@@ -204,11 +204,7 @@ class OpenAICompatibleIntentProvider:
             "including spaces. Aim for 150. One short sentence each. Replies that exceed "
             "240 characters are rejected and the test run is aborted."
         )
-        # Off by default so the recorded campaigns stay comparable. With the
-        # objective unstated the agent characterised the planner instead of
-        # attacking it: it held delay at the minimum for 10/10 rounds and varied
-        # only the patch, which is the factor measured to have no effect.
-        if os.environ.get("WS2_AGENT_STATE_OBJECTIVE") == "1":
+        if objective_is_stated():
             system += (
                 " Your objective is to find conditions where the attacked flight fails "
                 "while its clean control passes. Prefer settings that have not been tried "
@@ -307,6 +303,17 @@ class AgentSearchPolicy(SearchPolicy):
         decision = _decision(len(history) + 1, self.name, action, "agent_guided_search", intent["reason"], intent["hypothesis"])
         decision["intent"] = intent
         return decision
+
+
+def objective_is_stated():
+    """Whether the agent is told what the campaign is for. On unless disabled.
+
+    Leaving it unstated is what the first agent campaign did, and the agent
+    characterised the planner instead of attacking it: it held delay at the
+    minimum for 10 of 10 rounds and varied only the patch, the factor measured
+    to have no effect. Kept switchable so that arm stays reproducible.
+    """
+    return os.environ.get("WS2_AGENT_STATE_OBJECTIVE", "1") != "0"
 
 
 def policy_from_name(name, seed, provider=None, allowed_actions=None):

@@ -9,7 +9,7 @@ import math
 from pathlib import Path
 import time
 
-from agent_policies import all_actions, policy_from_name
+from agent_policies import all_actions, objective_is_stated, policy_from_name
 from agent_schema import ACTION_SCHEMA_VERSION, action_to_episode, validate_action
 from campaign import clean_twin, verdict
 from conditions import PATCH_POLICY
@@ -67,6 +67,9 @@ def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, g
         "clean_qualified_layouts": [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts],
         "clean_validation_runs": clean_validation_runs,
         "clean_failure_policy": clean_failure_policy,
+        # Recorded because two agent campaigns can otherwise differ only by an
+        # environment variable, leaving no way to tell them apart afterwards.
+        "agent_objective_stated": objective_is_stated() if policy_name == "agent_search" else None,
     }
 
 
