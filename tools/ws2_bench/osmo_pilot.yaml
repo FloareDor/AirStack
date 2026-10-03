@@ -29,10 +29,10 @@ workflow:
   resources:
     default:
       platform: default
-      cpu: 12
+      cpu: 10
       memory: 48Gi
       gpu: 1
       storage: 200Gi
   timeout:
     exec_timeout: 12h
-    queue_timeout: 15m
+    queue_timeout: 12h
