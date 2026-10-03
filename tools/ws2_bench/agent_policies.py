@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from pathlib import Path
 import random
 import urllib.error
@@ -177,37 +178,68 @@ class SearchPolicy:
 class OpenAICompatibleIntentProvider:
     """Small optional provider for an OpenAI-compatible chat-completions endpoint."""
 
-    def __init__(self, endpoint=None, api_key=None, model=None, timeout_s=30):
+    def __init__(self, endpoint=None, api_key=None, model=None, timeout_s=None, attempts=None):
         self.endpoint = endpoint or os.environ.get("WS2_AGENT_ENDPOINT")
         self.api_key = api_key or os.environ.get("WS2_AGENT_API_KEY")
         self.model = model or os.environ.get("WS2_AGENT_MODEL")
-        self.timeout_s = timeout_s
+        self.timeout_s = timeout_s if timeout_s is not None else int(os.environ.get("WS2_AGENT_TIMEOUT_S", "30"))
+        # Only the transport is retried. A malformed intent still fails the
+        # campaign, because that is a result about the model, not a network blip.
+        self.attempts = attempts if attempts is not None else int(os.environ.get("WS2_AGENT_ATTEMPTS", "1"))
+        if self.attempts < 1:
+            raise ValueError("agent provider attempts must be at least 1")
         if not self.endpoint or not self.api_key or not self.model:
             raise ValueError("agent mode requires WS2_AGENT_ENDPOINT, WS2_AGENT_API_KEY, and WS2_AGENT_MODEL")
 
     def propose(self, context):
+        # The schema travels in the user message as data, and json_object mode only
+        # enforces valid JSON, not the schema. Gemini 2.5 Pro overran maxLength on
+        # 'reason' in 2 of 3 sampled replies, which aborts the campaign, so the
+        # length limit is restated here as an instruction.
         system = (
             "You are a WS2 test strategist. Return JSON only. You cannot issue commands, "
             "control a drone, add noise, alter patch colors, or change planner code. "
-            "Choose a high-level hypothesis using the supplied JSON schema."
+            "Choose a high-level hypothesis using the supplied JSON schema. "
+            "Hard limit: 'hypothesis' and 'reason' must each be at most 240 characters, "
+            "including spaces. Aim for 150. One short sentence each. Replies that exceed "
+            "240 characters are rejected and the test run is aborted."
         )
+        # Off by default so the recorded campaigns stay comparable. With the
+        # objective unstated the agent characterised the planner instead of
+        # attacking it: it held delay at the minimum for 10/10 rounds and varied
+        # only the patch, which is the factor measured to have no effect.
+        if os.environ.get("WS2_AGENT_STATE_OBJECTIVE") == "1":
+            system += (
+                " Your objective is to find conditions where the attacked flight fails "
+                "while its clean control passes. Prefer settings that have not been tried "
+                "and that are more severe than ones that already passed."
+            )
         payload = {
             "model": self.model,
             "temperature": 0,
             "messages": [
                 {"role": "system", "content": system},
-                {"role": "user", "content": json.dumps({"context": context, "schema": intent_prompt_schema()})},
+                {"role": "user", "content": json.dumps(
+                    {"context": context,
+                     "schema": intent_prompt_schema(context.get("allowed_layout_tiers"))})},
             ],
             "response_format": {"type": "json_object"},
         }
         request = urllib.request.Request(self.endpoint, data=json.dumps(payload).encode(), method="POST",
                                          headers={"Authorization": "Bearer " + self.api_key,
                                                   "Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
-                body = json.load(response)
-        except (urllib.error.URLError, TimeoutError) as exc:
-            raise RuntimeError(f"agent provider request failed: {exc}") from exc
+        last = None
+        for attempt in range(self.attempts):
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
+                    body = json.load(response)
+                break
+            except (urllib.error.URLError, TimeoutError) as exc:
+                last = exc
+                if attempt + 1 < self.attempts:
+                    time.sleep(2 ** attempt)
+        else:
+            raise RuntimeError(f"agent provider request failed after {self.attempts} attempts: {last}") from last
         try:
             content = body["choices"][0]["message"]["content"]
             return validate_intent(json.loads(content))
@@ -254,6 +286,7 @@ class AgentSearchPolicy(SearchPolicy):
             "remaining_pairs": remaining_pairs,
             "clean_qualified_layouts": sorted({f"{action['layout']}:{action['layout_seed']}"
                                                 for action in self.actions}),
+            "allowed_layout_tiers": sorted({action["layout"] for action in self.actions}),
             "history": [
                 {"round": r["decision"].get("round"), "hypothesis": r["decision"].get("hypothesis"),
                  "action": r["decision"].get("action"), "pairs": r.get("pairs", [])}
@@ -265,7 +298,11 @@ class AgentSearchPolicy(SearchPolicy):
         tested = _tested(history)
         available = [a for a in self._filter_for_intent(self.actions, intent) if action_key(a) not in tested]
         if not available:
-            raise RuntimeError("agent intent has no untried valid actions")
+            tiers = sorted({a["layout"] for a in self.actions})
+            raise RuntimeError(
+                "agent intent has no untried valid actions "
+                f"(intent layouts={intent['layouts']}, delay_band={intent['delay_band']}, "
+                f"patch_mode={intent['patch_mode']}; qualified tiers={tiers})")
         action = max(available, key=lambda x: (self._rank(x, history), action_key(x)))
         decision = _decision(len(history) + 1, self.name, action, "agent_guided_search", intent["reason"], intent["hypothesis"])
         decision["intent"] = intent

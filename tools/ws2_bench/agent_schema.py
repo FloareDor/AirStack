@@ -130,8 +130,16 @@ def validate_intent(raw):
     return intent
 
 
-def intent_prompt_schema():
-    """A JSON-serializable schema supplied to an OpenAI-compatible provider."""
+def intent_prompt_schema(layouts=None):
+    """A JSON-serializable schema supplied to an OpenAI-compatible provider.
+
+    `layouts` narrows the offered tiers to the ones the campaign can actually
+    fly. Offering a tier with no qualified scene lets the model pick an intent
+    that filters to nothing, which aborts the campaign.
+    """
+    layouts = list(layouts) if layouts else list(LAYOUTS)
+    if not set(layouts) <= set(LAYOUTS):
+        raise ValueError("layouts must be a subset of the known tiers")
     return {
         "type": "object",
         "additionalProperties": False,
@@ -140,7 +148,7 @@ def intent_prompt_schema():
             "hypothesis": {"type": "string", "maxLength": 240},
             "reason": {"type": "string", "maxLength": 240},
             "layouts": {"type": "array", "minItems": 1, "uniqueItems": True,
-                        "items": {"type": "string", "enum": list(LAYOUTS)}},
+                        "items": {"type": "string", "enum": layouts}},
             "delay_band": {"type": "string", "enum": ["low", "medium", "high"]},
             "patch_mode": {"type": "string", "enum": ["disabled", "continuous", "timed"]},
         },
