@@ -45,7 +45,7 @@ def parse_qualified_layouts(values):
 
 
 def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
-            qualified_layouts, clean_validation_runs):
+            qualified_layouts, clean_validation_runs, clean_failure_policy):
     mission = defaults(planner)
     if timeout is not None:
         mission["timeout"] = timeout
@@ -66,6 +66,7 @@ def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, g
         "patch_policy": PATCH_POLICY,
         "clean_qualified_layouts": [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts],
         "clean_validation_runs": clean_validation_runs,
+        "clean_failure_policy": clean_failure_policy,
     }
 
 
@@ -86,7 +87,8 @@ def _load_json(path):
 
 def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="mononav", retries=1,
                           record_bags=False, pause_seconds=5, timeout=None, goal_distance=None,
-                          provider=None, qualified_layouts=(("easy", 2),), clean_validation_runs=2):
+                          provider=None, qualified_layouts=(("easy", 2),), clean_validation_runs=2,
+                          clean_failure_policy="halt"):
     """Run one paired campaign after repeated pristine-clean validation.
 
     The scheduled budget counts matched clean/attack flights. Validation and
@@ -102,6 +104,8 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
         raise ValueError("retries must be 0, 1, or 2")
     if clean_validation_runs not in (0, 1, 2, 3):
         raise ValueError("clean_validation_runs must be 0, 1, 2, or 3")
+    if clean_failure_policy not in ("halt", "record"):
+        raise ValueError("clean_failure_policy must be 'halt' or 'record'")
     if not 0 <= pause_seconds <= 60 or not math.isfinite(pause_seconds):
         raise ValueError("pause_seconds must be 0..60")
 
@@ -113,11 +117,21 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
     root.relative_to(RUNTIME.resolve())
     root.mkdir(parents=True, exist_ok=True)
     config = _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
-                     qualified_layouts, clean_validation_runs)
+                     qualified_layouts, clean_validation_runs, clean_failure_policy)
     resolved({"planner": planner, **config["mission"]})
     config_path = root / "config.json"
-    if config_path.exists() and _load_json(config_path) != config:
-        raise ValueError("resume configuration changed")
+    if config_path.exists():
+        previous = _load_json(config_path)
+        # Extending the budget is the normal way to add rounds to a finished
+        # campaign; every flight already on disk stays valid because nothing
+        # else about the configuration moved. Shrinking it is not allowed,
+        # because the recorded rounds would no longer fit the campaign.
+        if {k: v for k, v in previous.items() if k != "budget"} !=            {k: v for k, v in config.items() if k != "budget"}:
+            raise ValueError("resume configuration changed")
+        if config["budget"] < previous["budget"]:
+            raise ValueError(
+                f"resume budget {config['budget']} is below the recorded "
+                f"{previous['budget']}; only increasing the budget is allowed")
     atomic(config_path, config)
 
     global_lock = (RUNTIME / "adaptive.lock").open("w")
@@ -200,8 +214,10 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
             atomic(validation_path, saved)
             if result["outcome"] not in SUCCESSES:
                 atomic(root / "clean_baseline_failure.json", {"phase": "clean_validation_failed",
-                                                               "result": result, "attempt": index + 1})
-                return False
+                                                               "result": result, "attempt": index + 1,
+                                                               "policy": clean_failure_policy})
+                if clean_failure_policy == "halt":
+                    return False
         return True
 
     try:
@@ -260,11 +276,18 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
                 if result["outcome"] == "user_stopped":
                     return finish("stopped", decision)
                 if role == "clean" and result["outcome"] not in SUCCESSES:
+                    halting = clean_failure_policy == "halt"
                     atomic(round_root / planner / "clean_baseline_failure.json", {
                         "phase": "unstable_clean_baseline", "decision": decision, "result": pair["clean"],
-                        "message": "Attack flight was not run because its pristine clean control failed.",
+                        "policy": clean_failure_policy,
+                        "message": ("Attack flight was not run because its pristine clean control failed."
+                                    if halting else
+                                    "Clean control failed; the attack flight still ran so the round "
+                                    "contributes to the measured failure rate. verdict() marks the pair "
+                                    "invalid_clean_baseline so it cannot count as a candidate."),
                     })
-                    return finish("unstable_clean_baseline", decision)
+                    if halting:
+                        return finish("unstable_clean_baseline", decision)
                 publish("trial_complete", decision, {"planner": planner, "role": role, "result": result})
                 if pause_seconds:
                     time.sleep(pause_seconds)
@@ -292,6 +315,10 @@ def main():
     parser.add_argument("--review-seconds", type=float, default=5)
     parser.add_argument("--timeout", type=float)
     parser.add_argument("--goal-distance", type=float)
+    parser.add_argument("--clean-failure-policy", choices=("halt", "record"), default="halt",
+                        help="halt: stop the campaign the first time a clean control fails (default). "
+                             "record: keep flying and score on measured rates, for use when the clean "
+                             "baseline is known to fail at a non-trivial rate.")
     parser.add_argument("--clean-validation-runs", choices=(0, 1, 2, 3), type=int, default=2,
                         help="pristine clean successes required before the paired flight budget (default: 2)")
     parser.add_argument("--qualified-layout", action="append", required=True, metavar="LAYOUT:SEED",
@@ -301,7 +328,8 @@ def main():
                           args.infrastructure_retries, args.record_bags, args.review_seconds,
                           args.timeout, args.goal_distance,
                           qualified_layouts=parse_qualified_layouts(args.qualified_layout),
-                          clean_validation_runs=args.clean_validation_runs)
+                          clean_validation_runs=args.clean_validation_runs,
+                          clean_failure_policy=args.clean_failure_policy)
 
 
 if __name__ == "__main__":
