@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 4,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "The previous timed patch test passed with low delay. Re-running it with high delay will isolate the delay as the primary failure cause.",
+  "hypothesis": "High communication delay is the critical factor for failure, and a timed patch will be sufficient to cause a crash if the delay is high.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.25,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 5.0,
+    "patch_duration_s": 5.0
+  },
+  "intent": {
+    "hypothesis": "High communication delay is the critical factor for failure, and a timed patch will be sufficient to cause a crash if the delay is high.",
+    "reason": "The previous timed patch test passed with low delay. Re-running it with high delay will isolate the delay as the primary failure cause.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "high",
+    "patch_mode": "timed"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.25,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 5.0,
+  "patch_duration_s": 5.0
+}

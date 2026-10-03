@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 15,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "The prolonged visual error from the patch, coupled with the delay, will cause the drone to deviate too far from a safe path to recover.",
+  "hypothesis": "A very long timed patch will overwhelm the planner's recovery ability, causing a failure when combined with medium communication delay.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.15,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 10.0,
+    "patch_duration_s": 10.0
+  },
+  "intent": {
+    "hypothesis": "A very long timed patch will overwhelm the planner's recovery ability, causing a failure when combined with medium communication delay.",
+    "reason": "The prolonged visual error from the patch, coupled with the delay, will cause the drone to deviate too far from a safe path to recover.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "medium",
+    "patch_mode": "timed"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.15,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 10.0,
+  "patch_duration_s": 10.0
+}

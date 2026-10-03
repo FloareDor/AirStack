@@ -1,0 +1,98 @@
+{
+  "phase": "unstable_clean_baseline",
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 12,
+    "policy": "agent_search",
+    "rule": "agent_guided_search",
+    "reason": "Previous shorter timed patches have passed. A much longer duration attack should be sufficient to induce a failure while keeping the clean flight stable.",
+    "hypothesis": "A very long timed patch will cause a failure even with low delay, as the prolonged visual error will force an unrecoverable trajectory.",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.05,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 10.0,
+      "patch_duration_s": 5.0
+    },
+    "intent": {
+      "hypothesis": "A very long timed patch will cause a failure even with low delay, as the prolonged visual error will force an unrecoverable trajectory.",
+      "reason": "Previous shorter timed patches have passed. A much longer duration attack should be sufficient to induce a failure while keeping the clean flight stable.",
+      "layouts": [
+        "easy"
+      ],
+      "delay_band": "low",
+      "patch_mode": "timed"
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.05,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 10.0,
+    "patch_duration_s": 5.0
+  },
+  "result": {
+    "schema_version": 3,
+    "scenario_id": "agent_search round 12 mononav",
+    "configuration_hash": "84149f37dceabd88a63c75ab1853caa869cfe7fea96c18470d5f8e8333869d53",
+    "outcome": "collision",
+    "termination": {
+      "source": "planner",
+      "reason": "physx_contact",
+      "detail": {
+        "sim_time": 44.38999900780618,
+        "objects": [
+          "/World/Office/WS2_plant/SM_Plant01"
+        ],
+        "position": [
+          -2.4057998657226562,
+          0.04404439404606819,
+          1.2287904024124146
+        ]
+      }
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_agent_objective_mononav/round_12/mononav/clean/attempt_0",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 1.6250262427563813,
+      "direct_start_to_goal_distance_m": 7.990451563532055,
+      "path_efficiency": null,
+      "mission_progress_percent": 20.253841568229223,
+      "final_distance_to_goal_m": 6.372078163268178,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": 0.0093994140625,
+      "odometry_sample_count": 123,
+      "odometry_start_sim_time_s": 35.85999919846654,
+      "odometry_end_sim_time_s": 44.439999006688595,
+      "max_displacement_m": 1.619814776459713,
+      "mean_speed_m_s": 0.1893970022236071,
+      "stationary_fraction": 0.0,
+      "mean_obstacle_clearance_m": 0.5261196323208042,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 8.579999808222055,
+      "planner_wall_duration_s": 116.94613351509906
+    },
+    "bag_recorded": false,
+    "planner_command_count": 8,
+    "cleanup_errors": [],
+    "wall_duration_s": 126.67918116203509,
+    "attempts": [
+      {
+        "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_agent_objective_mononav/round_12/mononav/clean/attempt_0",
+        "outcome": "collision"
+      }
+    ]
+  },
+  "policy": "record",
+  "message": "Clean control failed; the attack flight still ran so the round contributes to the measured failure rate. verdict() marks the pair invalid_clean_baseline so it cannot count as a candidate."
+}

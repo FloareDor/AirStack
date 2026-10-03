@@ -1,0 +1,43 @@
+{
+  "schema_version": 3,
+  "scenario_id": "agent_search round 7 mononav",
+  "configuration_hash": "2a486e33b0c3d1fb0e78a0ef31f4fcba702e16cc38bf8002bd273494cb511f62",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_agent_objective_mononav/round_07/mononav/perturbed/attempt_0",
+  "metrics": {
+    "time_to_goal_s": 43.01999903842807,
+    "path_length_m": 8.414806904651126,
+    "direct_start_to_goal_distance_m": 8.024324955055308,
+    "path_efficiency": 0.9535958514532298,
+    "mission_progress_percent": 93.81355057281569,
+    "final_distance_to_goal_m": 0.49642080521742626,
+    "planner_hold_count": 1,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.0643310546875,
+    "odometry_sample_count": 703,
+    "odometry_start_sim_time_s": 33.60999924875796,
+    "odometry_end_sim_time_s": 76.62999828718603,
+    "max_displacement_m": 7.599538150230507,
+    "mean_speed_m_s": 0.19560221043088613,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.633100820884545,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 43.01999903842807,
+    "planner_wall_duration_s": 202.477866174886
+  },
+  "bag_recorded": false,
+  "planner_command_count": 46,
+  "cleanup_errors": [],
+  "wall_duration_s": 243.04171024099924,
+  "attempts": [
+    {
+      "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_agent_objective_mononav/round_07/mononav/perturbed/attempt_0",
+      "outcome": "goal_reached"
+    }
+  ]
+}

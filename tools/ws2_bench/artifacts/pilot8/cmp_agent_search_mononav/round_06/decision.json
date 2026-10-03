@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 6,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "This tests if the previous failure is specific to the 10s start time or a general problem with occlusions appearing mid-flight.",
+  "hypothesis": "The planner's failure is sensitive to when the occlusion begins. An occlusion starting slightly later in the mission will also cause a failure.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.05,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 5.0,
+    "patch_duration_s": 10.0
+  },
+  "intent": {
+    "hypothesis": "The planner's failure is sensitive to when the occlusion begins. An occlusion starting slightly later in the mission will also cause a failure.",
+    "reason": "This tests if the previous failure is specific to the 10s start time or a general problem with occlusions appearing mid-flight.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "low",
+    "patch_mode": "timed"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 5.0,
+  "patch_duration_s": 10.0
+}

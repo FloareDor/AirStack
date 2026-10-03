@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/repeat_attack_d00_p30/attempt_09", "wall_time": 1791006794.9840894, "sequence": 120, "sim_stamp": 44.409999007, "inference_ms": 194.30773193016648, "primitive": 6, "goal_distance": 6.045313876965665, "tsdf_points": 11755, "blocked": false, "depth_source": "zoe"}

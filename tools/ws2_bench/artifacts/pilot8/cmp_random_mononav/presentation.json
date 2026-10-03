@@ -1,0 +1,438 @@
+{
+  "backend": "Seeded random sampling (no noise)",
+  "target_planner": "mononav",
+  "phase": "running",
+  "budget": 40,
+  "completed": 31,
+  "actual_attempts": 11,
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 16,
+    "policy": "random",
+    "rule": "random_untried",
+    "reason": "Sample an untried valid condition.",
+    "hypothesis": "cover the saved layout space",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.05,
+      "patch_enabled": true,
+      "patch_size_m": 0.6,
+      "patch_start_s": 10.0,
+      "patch_duration_s": 5.0
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.05,
+      "patch_enabled": true,
+      "patch_size": 0.6
+    },
+    "patch_start_s": 10.0,
+    "patch_duration_s": 5.0
+  },
+  "trial": {
+    "planner": "mononav",
+    "role": "perturbed",
+    "round": 16,
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.05,
+      "patch_enabled": true,
+      "patch_size": 0.6
+    },
+    "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_random_mononav/round_16/mononav/perturbed/attempt_0"
+  },
+  "history": {
+    "rows": [
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 47.12999894656241,
+        "distance_m": 8.42552780343241,
+        "min_clearance_m": 0.0594482421875,
+        "mean_clearance_m": 0.6214798527261697,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 42.5999990478158,
+        "distance_m": 8.493046954375469,
+        "min_clearance_m": 0.041748046875,
+        "mean_clearance_m": 0.6052301971005721,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 8.429999811574817,
+        "distance_m": 1.719627786268389,
+        "min_clearance_m": 0.0093994140625,
+        "mean_clearance_m": 0.5155839478842305,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 42.86999904178083,
+        "distance_m": 8.411667844145793,
+        "min_clearance_m": 0.0960693359375,
+        "mean_clearance_m": 0.6451476239257129,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 3,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 39.479999117553234,
+        "distance_m": 8.379142222824653,
+        "min_clearance_m": 0.053955078125,
+        "mean_clearance_m": 0.6463207488364362,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 3,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 7.6199998296797276,
+        "distance_m": 1.4463795413991563,
+        "min_clearance_m": 0.0234375,
+        "mean_clearance_m": 0.5709697092611958,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 4,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 8.189999816939235,
+        "distance_m": 1.613909327076066,
+        "min_clearance_m": 0.002685546875,
+        "mean_clearance_m": 0.5182168702066163,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 4,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 7.31999983638525,
+        "distance_m": 1.4108248964910919,
+        "min_clearance_m": 0.0386962890625,
+        "mean_clearance_m": 0.6387569239882173,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 5,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 41.9099990632385,
+        "distance_m": 8.595227161257673,
+        "min_clearance_m": 0.0960693359375,
+        "mean_clearance_m": 0.6212336022084154,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 5,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 43.079999037086964,
+        "distance_m": 8.448687683261472,
+        "min_clearance_m": 0.0374755859375,
+        "mean_clearance_m": 0.6340447215980806,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 6,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 46.649998957291245,
+        "distance_m": 8.643522732880628,
+        "min_clearance_m": 0.0478515625,
+        "mean_clearance_m": 0.6451541618518891,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 6,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 8.699999805539846,
+        "distance_m": 1.7774048959973154,
+        "min_clearance_m": 0.005126953125,
+        "mean_clearance_m": 0.5036147545123922,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 7,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 46.40999896265566,
+        "distance_m": 8.523941681414355,
+        "min_clearance_m": 0.029541015625,
+        "mean_clearance_m": 0.6329782852143261,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 7,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 8.219999816268682,
+        "distance_m": 1.651478023472084,
+        "min_clearance_m": 0.019775390625,
+        "mean_clearance_m": 0.559979960866218,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 8,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 8.069999819621444,
+        "distance_m": 1.5569441486767037,
+        "min_clearance_m": 0.019775390625,
+        "mean_clearance_m": 0.5583164824872212,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 8,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 8.609999807551503,
+        "distance_m": 1.6646303693908702,
+        "min_clearance_m": 0.013671875,
+        "mean_clearance_m": 0.5255069533291594,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 9,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 8.069999819621444,
+        "distance_m": 1.547330689415141,
+        "min_clearance_m": 0.0185546875,
+        "mean_clearance_m": 0.5383348429513244,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 9,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 7.889999823644757,
+        "distance_m": 1.5378946442049033,
+        "min_clearance_m": 0.0252685546875,
+        "mean_clearance_m": 0.5748924574471245,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 10,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 8.729999804869294,
+        "distance_m": 1.8407341973431544,
+        "min_clearance_m": 0.00634765625,
+        "mean_clearance_m": 0.45805500463112114,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 10,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 55.52999875880778,
+        "distance_m": 9.57355623160875,
+        "min_clearance_m": 0.0155029296875,
+        "mean_clearance_m": 0.6618109918941619,
+        "pair_verdict": "invalid_clean_baseline"
+      },
+      {
+        "round": 11,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 45.35999898612499,
+        "distance_m": 8.480302084254365,
+        "min_clearance_m": 0.0618896484375,
+        "mean_clearance_m": 0.6250695526284515,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 11,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 43.79999902099371,
+        "distance_m": 8.577581169138199,
+        "min_clearance_m": 0.0283203125,
+        "mean_clearance_m": 0.6223731890116653,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 12,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 43.40999902971089,
+        "distance_m": 8.438871913036156,
+        "min_clearance_m": 0.0447998046875,
+        "mean_clearance_m": 0.6234194130096752,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 12,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 54.539998780936,
+        "distance_m": 9.724982027733166,
+        "min_clearance_m": 0.1033935546875,
+        "mean_clearance_m": 0.6245209848133251,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 13,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 50.96999886073172,
+        "distance_m": 9.064250825581018,
+        "min_clearance_m": 0.080810546875,
+        "mean_clearance_m": 0.5978977681609586,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 13,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 46.22999896667898,
+        "distance_m": 8.746832817826888,
+        "min_clearance_m": 0.04296875,
+        "mean_clearance_m": 0.6141890934889074,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 14,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 45.77999897673726,
+        "distance_m": 8.662007460236534,
+        "min_clearance_m": 0.0960693359375,
+        "mean_clearance_m": 0.5934966601050541,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 14,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 8.189999816939235,
+        "distance_m": 1.5050231755660803,
+        "min_clearance_m": 0.0057373046875,
+        "mean_clearance_m": 0.5427337758270375,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 15,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 43.13999903574586,
+        "distance_m": 8.518335221261527,
+        "min_clearance_m": 0.066162109375,
+        "mean_clearance_m": 0.6070560460627825,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 15,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 8.549999808892608,
+        "distance_m": 1.6110804757571588,
+        "min_clearance_m": 0.01611328125,
+        "mean_clearance_m": 0.5515704238623903,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 16,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 45.719998978078365,
+        "distance_m": 8.511294577402435,
+        "min_clearance_m": 0.0625,
+        "mean_clearance_m": 0.6375466894915723,
+        "pair_verdict": "incomplete_pair"
+      }
+    ],
+    "groups": {
+      "mononav/clean": {
+        "evaluable": 16,
+        "successes": 11,
+        "collisions": 5,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 0.6875,
+        "collision_rate": 0.3125
+      },
+      "mononav/perturbed": {
+        "evaluable": 15,
+        "successes": 7,
+        "collisions": 8,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 0.4666666666666667,
+        "collision_rate": 0.5333333333333333
+      }
+    }
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_random_mononav",
+  "wall_time": 1791040512.8353527,
+  "mission": {
+    "mission_mode": "goal",
+    "timeout": 180.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.4,
+    "maximum_speed": 0.5,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.3
+  },
+  "profile": "delay_patch"
+}

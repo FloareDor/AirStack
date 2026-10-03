@@ -1,0 +1,33 @@
+{
+  "backend": "agent_search",
+  "label": "Agent-guided deterministic search (no noise)",
+  "action_schema": "ws2_agent_action_v1",
+  "profile": "delay_patch",
+  "noise": "disabled",
+  "budget": 20,
+  "seed": 42,
+  "planners": [
+    "mononav"
+  ],
+  "retries": 1,
+  "record_bags": false,
+  "mission": {
+    "mission_mode": "goal",
+    "timeout": 180.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.4,
+    "maximum_speed": 0.5,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.3
+  },
+  "patch_policy": "original_texture_size_only_v1",
+  "clean_qualified_layouts": [
+    "easy:2"
+  ],
+  "clean_validation_runs": 0,
+  "clean_failure_policy": "record"
+}

@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cmp_agent_objective_mononav/round_05/mononav/clean/attempt_0", "wall_time": 1791021841.2907596, "sequence": 212, "sim_stamp": 77.949998257, "inference_ms": 220.1399828772992, "primitive": 6, "goal_distance": 0.6141003179462088, "tsdf_points": 6837, "blocked": false, "depth_source": "zoe"}

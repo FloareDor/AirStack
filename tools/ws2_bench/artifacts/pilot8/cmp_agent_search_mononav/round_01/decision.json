@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 1,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "This initial test will establish a performance baseline in an ideal environment. By using an easy layout, low delay, and no patches, we can confirm the planner's fundamental capabilities before introducing more complex challenges.",
+  "hypothesis": "The planner can successfully navigate a simple layout with minimal communication latency and no visual occlusions.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.05,
+    "patch_enabled": false,
+    "patch_size_m": 0.6,
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "intent": {
+    "hypothesis": "The planner can successfully navigate a simple layout with minimal communication latency and no visual occlusions.",
+    "reason": "This initial test will establish a performance baseline in an ideal environment. By using an easy layout, low delay, and no patches, we can confirm the planner's fundamental capabilities before introducing more complex challenges.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "low",
+    "patch_mode": "disabled"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": false,
+    "patch_size": 0.6
+  },
+  "patch_start_s": 0.0,
+  "patch_duration_s": 0.0
+}
