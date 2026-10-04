@@ -140,6 +140,17 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
                               'diff_sha256':hashlib.sha256(cmd(['git','-C',str(repo),'diff']).encode()).hexdigest()}
         provenance['worker_image']=json.loads(cmd(['docker','image','inspect',IMAGES[c['planner']]]))[0]['Id']
         provenance['runtime_images']={name:json.loads(cmd(['docker','inspect',name]))[0]['Image'] for name in ['isaac-sim',ROBOT]}
+        # The GPU is part of the build. MonoNav plans against a real-time
+        # depth stream, so a different accelerator can move the clean pass
+        # rate as much as an attack does. Never compare cells whose host
+        # differs. Best effort: a workspace without nvidia-smi still flies.
+        try:
+            gpus=cmd(['nvidia-smi','--query-gpu=name,driver_version,memory.total',
+                      '--format=csv,noheader'],check=False,timeout=20).strip()
+        except (OSError,subprocess.TimeoutExpired):
+            gpus=''
+        provenance['host']={'gpus':[line.strip() for line in gpus.splitlines() if line.strip()] or None,
+                            'cpu_count':os.cpu_count()}
         provenance['runtime_sources']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in HERE.glob('*.py')}
         provenance['layout_catalog_sha256']=sha256_file(HERE/'layouts.json')
         provenance['patch']=json.loads((HERE/'assets/patch_manifest.json').read_text())

@@ -2,10 +2,11 @@
 """Refuse to compare cells that were not flown on the same build.
 
 Every flight writes provenance.json. Two cells are comparable only when the
-worker image and both source trees match across all of their attempts. A
-workspace rebuilds the worker image even at an identical git commit, so cells
-from different workspaces are not comparable by default, and a cell flown
-against a working tree with uncommitted edits is different again.
+worker image, both source trees, and the host GPU match across all of their
+attempts. A workspace rebuilds the worker image even at an identical git
+commit, so cells from different workspaces are not comparable by default, a
+cell flown against a working tree with uncommitted edits is different again,
+and a different accelerator moves the clean pass rate on its own.
 
 Usage:
     python3 check_provenance.py artifacts/pilot9/cell_*
@@ -18,7 +19,11 @@ import sys
 EMPTY_DIFF = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 FIELDS = ("worker_image", "AirStack.head", "AirStack.diff_sha256",
-          "mononav.head", "mononav.diff_sha256")
+          "mononav.head", "mononav.diff_sha256", "host.gpus")
+
+# Flights recorded before host capture existed report host.gpus as None. They
+# stay comparable to each other and are correctly refused against newer cells,
+# because there is no way to confirm they ran on the same accelerator.
 
 
 def dotted(record, path):
@@ -72,16 +77,24 @@ def main(argv=None):
     print("%-42s %-10s %-10s %-10s" % ("build", "worker", "airstack", "mononav"))
     print("-" * 74)
     for index, (build, cells) in enumerate(sorted(everything.items()), 1):
-        worker, _, airstack_diff, _, mononav_diff = build
+        field = dict(zip(FIELDS, build))
+        worker = field["worker_image"]
+        airstack_diff = field["AirStack.diff_sha256"]
+        mononav_diff = field["mononav.diff_sha256"]
+        gpus = field["host.gpus"]
         label = "build %d" % index
         notes = []
         if airstack_diff != EMPTY_DIFF:
             notes.append("AirStack tree DIRTY")
         if mononav_diff != EMPTY_DIFF:
             notes.append("MonoNav tree DIRTY")
+        if gpus == "None":
+            notes.append("GPU NOT RECORDED")
         print("%-42s %-10s %-10s %-10s %s"
               % (label, short(worker), short(airstack_diff), short(mononav_diff),
                  "  ".join(notes)))
+        if gpus != "None":
+            print("    %-38s %s" % ("gpu", gpus))
         for name, count in cells:
             print("    %-38s %d flights" % (name, count))
 
