@@ -3,4 +3,14 @@ assets/*.png
 diagnostic_patch.png
 __pycache__/
 .pytest_cache/
+# Run outputs are ignored by default: a campaign writes hundreds of MB of
+# per-flight traces (events.jsonl, samples.json), camera frames and logs that
+# regenerate from the run.
+#
+# Exception: the pilot-8 campaign summaries under artifacts/pilot8 are tracked
+# on purpose, added with `git add -f`. They are the evidence behind the clean
+# baseline and the three-method comparison, they are ~5 MB of JSON, and they do
+# not regenerate once the OSMO workspace is torn down. Add future evidence the
+# same way, and add only summaries: never events.jsonl, samples.json, *.jpg or
+# *.log.
 artifacts/
