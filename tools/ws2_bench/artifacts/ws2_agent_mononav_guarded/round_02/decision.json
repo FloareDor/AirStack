@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 2,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "The baseline control group passed successfully. Introducing continuous patches on the same easy layout will help isolate the impact of visual occlusion on the planner.",
+  "hypothesis": "Testing the agent's resilience on easy layouts by introducing continuous patch perturbations under low delay to evaluate its visual tracking robustness.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.05,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "intent": {
+    "hypothesis": "Testing the agent's resilience on easy layouts by introducing continuous patch perturbations under low delay to evaluate its visual tracking robustness.",
+    "reason": "The baseline control group passed successfully. Introducing continuous patches on the same easy layout will help isolate the impact of visual occlusion on the planner.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "low",
+    "patch_mode": "continuous"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 0.0,
+  "patch_duration_s": 0.0
+}

@@ -1,0 +1,29 @@
+{
+  "name": "kim_office_stock",
+  "planner": "kim",
+  "height": 1.2,
+  "fault": null,
+  "mission_mode": "avoidance",
+  "timeout": 60.0,
+  "goal_distance": 2.5,
+  "goal_radius": 1.0,
+  "minimum_travel": 3.0,
+  "minimum_displacement": 1.0,
+  "maximum_stationary_fraction": 0.5,
+  "initial_speed": 0.2,
+  "maximum_speed": 0.35,
+  "trajectory_horizon": 2.0,
+  "velocity": 0.4,
+  "condition": {
+    "name": "clean",
+    "layout": "stock",
+    "layout_seed": 0,
+    "seed": 42,
+    "light": 2200.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.0,
+    "patch_enabled": false,
+    "patch_size": 0.8
+  }
+}

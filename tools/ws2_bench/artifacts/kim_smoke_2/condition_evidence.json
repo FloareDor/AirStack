@@ -1,0 +1,145 @@
+{
+  "requested": {
+    "name": "clean",
+    "layout": "stock",
+    "layout_seed": 0,
+    "seed": 42,
+    "light": 2200.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.0,
+    "patch_enabled": false,
+    "patch_size": 0.8
+  },
+  "frame": {
+    "sequence": 11,
+    "stamp": 5.019999887,
+    "target_frame": "map",
+    "camera_frame": "camera_left",
+    "width": 480,
+    "height": 300,
+    "k": [
+      183.99998807907153,
+      0.0,
+      240.0,
+      0.0,
+      183.99998807907153,
+      150.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "t_world_camera": [
+      0.02334554178654269,
+      0.05935853036865607,
+      0.9979637020208532,
+      0.20522068347235237,
+      -0.9997271850965257,
+      0.0021206031469390707,
+      0.023260662528616805,
+      0.0571369533346338,
+      -0.0007355662239364458,
+      -0.99823447541886,
+      0.05939184310630263,
+      -0.020868690502165735,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sensor_disturbance": {
+      "seed": 42,
+      "fixed_delay_s": 0.0,
+      "rgb_noise_stddev": 0.0,
+      "depth_noise_stddev_m": 0.0,
+      "revision": 1
+    },
+    "rgb_noise_rmse": 0.0,
+    "disturbance_revision": 1,
+    "depth_stamp": 5.019999887,
+    "depth_width": 480,
+    "depth_height": 300,
+    "depth_dtype": "float32_le_m",
+    "jpeg_bytes": 23590,
+    "depth_bytes": 151386
+  },
+  "scene": {
+    "sim_time": 5.1099998857825994,
+    "condition": {
+      "name": "clean",
+      "layout": "stock",
+      "layout_seed": 0,
+      "seed": 42,
+      "light": 2200.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.0,
+      "patch_enabled": false,
+      "patch_size": 0.8
+    },
+    "patch_kind": "Rui learned FCRN patch",
+    "patch_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80",
+    "patch_corners_world": [],
+    "realized_layout": {},
+    "position": [
+      -4.003966331481934,
+      -6.771439802832901e-05,
+      0.06175147369503975
+    ],
+    "attitude_xyzw": [
+      8.538787294655303e-06,
+      -0.029373699541311714,
+      0.0003037706165449513,
+      0.9995684535967302
+    ],
+    "velocity": [
+      -6.716311418131227e-07,
+      1.9691181023517856e-06,
+      -4.263321443431778e-06
+    ],
+    "camera": "follow",
+    "oracle": {
+      "available": true,
+      "armed": false,
+      "collision": null,
+      "bodies": [
+        "/World/base_link/body",
+        "/World/base_link/rotor0",
+        "/World/base_link/rotor1",
+        "/World/base_link/rotor2",
+        "/World/base_link/rotor3",
+        "/World/base_link/ZEDCamera"
+      ],
+      "contacts": [
+        "/World/Office/GroundPlane/CollisionMesh",
+        "/World/Office/GroundPlane/CollisionPlane",
+        "/World/Office/SM_Floor_6m12/SM_Floor_6m",
+        "/World/Office/SM_Floor_6m13/SM_Floor_6m"
+      ],
+      "sim_time": 5.1099998857825994,
+      "clearance_m": -0.1883544921875,
+      "clearance_censored": false,
+      "clearance_method": "PhysX mesh distance minus nominal 0.25m sphere (not exact hull)",
+      "clearance_sim_time": 5.084999886341393
+    },
+    "paused": false,
+    "view": {
+      "mode": "follow",
+      "distance": 2.5,
+      "height": 1.5,
+      "azimuth": 180.0
+    },
+    "headless": true,
+    "layout_description": {
+      "library": "stock: 0 plants + 0 columns added; original Office unchanged",
+      "difficulty": "stock",
+      "added_counts": {
+        "plants": 0,
+        "columns": 0
+      },
+      "objects": [],
+      "same_as_previous": false
+    },
+    "active_added_obstacles": []
+  }
+}

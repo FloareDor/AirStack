@@ -1,0 +1,8 @@
+{
+  "provider": "Google Gemini API",
+  "endpoint": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  "model": "gemini-3.5-flash",
+  "commit": "86cc9866292a152309884b3a837fda0a383d3bdb",
+  "preflight_utc": "2026-09-29T22:08:19.496588+00:00",
+  "preflight": "validated OpenAICompatibleIntentProvider proposal; no flight run"
+}

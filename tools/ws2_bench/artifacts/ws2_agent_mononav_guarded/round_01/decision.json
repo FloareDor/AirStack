@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 1,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "Starting with the simplest configuration (easy layout, low delay, disabled patch mode) as there is no history yet.",
+  "hypothesis": "Testing the baseline performance of the agent on easy layouts with low delay and disabled patch mode to establish a control group.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.05,
+    "patch_enabled": false,
+    "patch_size_m": 0.6,
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "intent": {
+    "hypothesis": "Testing the baseline performance of the agent on easy layouts with low delay and disabled patch mode to establish a control group.",
+    "reason": "Starting with the simplest configuration (easy layout, low delay, disabled patch mode) as there is no history yet.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "low",
+    "patch_mode": "disabled"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": false,
+    "patch_size": 0.6
+  },
+  "patch_start_s": 0.0,
+  "patch_duration_s": 0.0
+}

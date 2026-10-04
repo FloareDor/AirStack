@@ -1,0 +1,32 @@
+{
+  "backend": "random",
+  "label": "Seeded random sampling (no noise)",
+  "action_schema": "ws2_agent_action_v1",
+  "profile": "delay_patch",
+  "noise": "disabled",
+  "budget": 8,
+  "seed": 42,
+  "planners": [
+    "kim"
+  ],
+  "retries": 1,
+  "record_bags": false,
+  "mission": {
+    "mission_mode": "avoidance",
+    "timeout": 120.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.2,
+    "maximum_speed": 0.35,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.4
+  },
+  "patch_policy": "original_texture_size_only_v1",
+  "clean_qualified_layouts": [
+    "easy:1"
+  ],
+  "clean_validation_runs": 2
+}

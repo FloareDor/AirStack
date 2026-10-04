@@ -1,0 +1,30 @@
+{
+  "backend": "Seeded random sampling (no noise)",
+  "target_planner": "mononav",
+  "phase": "clean_validation_failed",
+  "budget": 2,
+  "completed": 0,
+  "actual_attempts": 1,
+  "decision": null,
+  "trial": null,
+  "history": {
+    "rows": [],
+    "groups": {}
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_qualify_easy0_retry2",
+  "wall_time": 1790726705.5431125,
+  "mission": {
+    "mission_mode": "goal",
+    "timeout": 180.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.4,
+    "maximum_speed": 0.5,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.3
+  },
+  "profile": "delay_patch"
+}

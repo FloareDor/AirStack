@@ -1,0 +1,40 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 3,
+  "policy": "agent_search",
+  "rule": "agent_guided_search",
+  "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+  "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.15,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "intent": {
+    "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+    "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+    "layouts": [
+      "easy"
+    ],
+    "delay_band": "medium",
+    "patch_mode": "continuous"
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.15,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 0.0,
+  "patch_duration_s": 0.0
+}

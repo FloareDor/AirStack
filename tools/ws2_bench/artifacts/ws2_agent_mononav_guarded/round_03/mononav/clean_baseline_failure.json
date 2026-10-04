@@ -1,0 +1,97 @@
+{
+  "phase": "unstable_clean_baseline",
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 3,
+    "policy": "agent_search",
+    "rule": "agent_guided_search",
+    "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+    "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.15,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 0.0,
+      "patch_duration_s": 0.0
+    },
+    "intent": {
+      "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+      "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+      "layouts": [
+        "easy"
+      ],
+      "delay_band": "medium",
+      "patch_mode": "continuous"
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.15,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "result": {
+    "schema_version": 3,
+    "scenario_id": "agent_search round 3 mononav",
+    "configuration_hash": "b3a5b9b87266991e3019db60786002a3e660034b16f1f7088f8b991569ef4e69",
+    "outcome": "collision",
+    "termination": {
+      "source": "planner",
+      "reason": "physx_contact",
+      "detail": {
+        "sim_time": 32.67499926965684,
+        "objects": [
+          "/World/Office/WS2_plant/SM_Plant01"
+        ],
+        "position": [
+          -2.5032155513763428,
+          0.0399080365896225,
+          1.2501533031463623
+        ]
+      }
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_agent_mononav_guarded/round_03/mononav/clean/attempt_0",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 1.49601835989679,
+      "direct_start_to_goal_distance_m": 7.963930477741863,
+      "path_efficiency": null,
+      "mission_progress_percent": 18.723644610051423,
+      "final_distance_to_goal_m": 6.4727924380979065,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": 0.0234375,
+      "odometry_sample_count": 201,
+      "odometry_start_sim_time_s": 26.109999416396022,
+      "odometry_end_sim_time_s": 32.67999926954508,
+      "max_displacement_m": 1.49266682930848,
+      "mean_speed_m_s": 0.22770447387144702,
+      "stationary_fraction": 0.0,
+      "mean_obstacle_clearance_m": 0.578358550049943,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 6.569999853149056,
+      "planner_wall_duration_s": 159.70673227496445
+    },
+    "bag_recorded": true,
+    "planner_command_count": 17,
+    "cleanup_errors": [],
+    "wall_duration_s": 171.56263229064643,
+    "attempts": [
+      {
+        "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_agent_mononav_guarded/round_03/mononav/clean/attempt_0",
+        "outcome": "collision"
+      }
+    ]
+  },
+  "message": "Attack flight was not run because its pristine clean control failed."
+}

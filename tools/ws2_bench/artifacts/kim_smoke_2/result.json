@@ -1,0 +1,37 @@
+{
+  "schema_version": 3,
+  "scenario_id": "kim_office_stock",
+  "configuration_hash": "19295ebd5479f416cbd9a5ddd56f9b21b79958722a6628b7315a09764edf04db",
+  "outcome": "insufficient_progress",
+  "termination": {
+    "source": "planner",
+    "reason": "simulation_time_budget",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/episodes/kim_smoke_2",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 1.8760015254859888,
+    "direct_start_to_goal_distance_m": null,
+    "path_efficiency": null,
+    "mission_progress_percent": null,
+    "final_distance_to_goal_m": null,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.9884033203125,
+    "odometry_sample_count": 701,
+    "odometry_start_sim_time_s": 86.37999806925654,
+    "odometry_end_sim_time_s": 146.40999672748148,
+    "max_displacement_m": 1.7562889354822036,
+    "mean_speed_m_s": 0.03125106725666985,
+    "stationary_fraction": 0.5725847243297926,
+    "mean_obstacle_clearance_m": 1.0263900032405673,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 60.02999865822494,
+    "planner_wall_duration_s": 280.3156707510352
+  },
+  "bag_recorded": true,
+  "planner_command_count": 165,
+  "cleanup_errors": [],
+  "wall_duration_s": 322.14821947366
+}

@@ -1,0 +1,102 @@
+{
+  "backend": "Seeded random sampling (no noise)",
+  "target_planner": "kim",
+  "phase": "complete",
+  "budget": 2,
+  "completed": 2,
+  "actual_attempts": 4,
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 1,
+    "policy": "random",
+    "rule": "random_untried",
+    "reason": "Sample an untried valid condition.",
+    "hypothesis": "cover the saved layout space",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 1,
+      "delay_s": 0.0,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 10.0,
+      "patch_duration_s": 5.0
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 1,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.0,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 10.0,
+    "patch_duration_s": 5.0
+  },
+  "trial": null,
+  "history": {
+    "rows": [
+      {
+        "round": 1,
+        "planner": "kim",
+        "role": "clean",
+        "outcome": "completed_horizon",
+        "time_s": 120.05999731644988,
+        "distance_m": 15.629824618472494,
+        "min_clearance_m": 0.04541015625,
+        "mean_clearance_m": 0.6145783157005482,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 1,
+        "planner": "kim",
+        "role": "perturbed",
+        "outcome": "completed_horizon",
+        "time_s": 120.02999731712043,
+        "distance_m": 16.284593614296814,
+        "min_clearance_m": 0.139404296875,
+        "mean_clearance_m": 0.7428101165626562,
+        "pair_verdict": "pass"
+      }
+    ],
+    "groups": {
+      "kim/clean": {
+        "evaluable": 1,
+        "successes": 1,
+        "collisions": 0,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 1.0,
+        "collision_rate": 0.0
+      },
+      "kim/perturbed": {
+        "evaluable": 1,
+        "successes": 1,
+        "collisions": 0,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 1.0,
+        "collision_rate": 0.0
+      }
+    }
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_qualify_kim_easy1",
+  "wall_time": 1790755602.1026418,
+  "mission": {
+    "mission_mode": "avoidance",
+    "timeout": 120.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.2,
+    "maximum_speed": 0.35,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.4
+  },
+  "profile": "delay_patch"
+}

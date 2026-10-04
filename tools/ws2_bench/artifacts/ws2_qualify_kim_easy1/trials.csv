@@ -1,0 +1,3 @@
+round,planner,role,outcome,time_s,distance_m,min_clearance_m,mean_clearance_m,pair_verdict
+1,kim,clean,completed_horizon,120.05999731644988,15.629824618472494,0.04541015625,0.6145783157005482,pass
+1,kim,perturbed,completed_horizon,120.02999731712043,16.284593614296814,0.139404296875,0.7428101165626562,pass

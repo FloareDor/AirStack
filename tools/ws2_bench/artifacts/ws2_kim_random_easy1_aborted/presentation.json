@@ -1,0 +1,30 @@
+{
+  "backend": "Seeded random sampling (no noise)",
+  "target_planner": "kim",
+  "phase": "clean_validation_failed",
+  "budget": 8,
+  "completed": 0,
+  "actual_attempts": 1,
+  "decision": null,
+  "trial": null,
+  "history": {
+    "rows": [],
+    "groups": {}
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_kim_random_easy1",
+  "wall_time": 1790783841.0969956,
+  "mission": {
+    "mission_mode": "avoidance",
+    "timeout": 120.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.2,
+    "maximum_speed": 0.35,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.4
+  },
+  "profile": "delay_patch"
+}

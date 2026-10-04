@@ -1,0 +1,76 @@
+[
+  {
+    "schema_version": 3,
+    "scenario_id": "pristine clean validation",
+    "configuration_hash": "513398a67a52bd6d5ae50029a94ac240a8cba5beaa17bc7a0a1d59d8aa594d9a",
+    "outcome": "completed_horizon",
+    "termination": {
+      "source": "planner",
+      "reason": "simulation_time_budget",
+      "detail": null
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_qualify_kim_easy1/clean_validation/attempt_0",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 18.84727779986023,
+      "direct_start_to_goal_distance_m": null,
+      "path_efficiency": null,
+      "mission_progress_percent": null,
+      "final_distance_to_goal_m": null,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": 0.3084716796875,
+      "odometry_sample_count": 1502,
+      "odometry_start_sim_time_s": 73.38999835960567,
+      "odometry_end_sim_time_s": 193.44999567605555,
+      "max_displacement_m": 14.447566761193032,
+      "mean_speed_m_s": 0.15698216076236654,
+      "stationary_fraction": 0.3255287009063444,
+      "mean_obstacle_clearance_m": 0.9558394173274691,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 120.05999731644988,
+      "planner_wall_duration_s": 359.4466701261699
+    },
+    "bag_recorded": true,
+    "planner_command_count": 329,
+    "cleanup_errors": [],
+    "wall_duration_s": 404.5089010540396
+  },
+  {
+    "schema_version": 3,
+    "scenario_id": "pristine clean validation",
+    "configuration_hash": "513398a67a52bd6d5ae50029a94ac240a8cba5beaa17bc7a0a1d59d8aa594d9a",
+    "outcome": "completed_horizon",
+    "termination": {
+      "source": "planner",
+      "reason": "simulation_time_budget",
+      "detail": null
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_qualify_kim_easy1/clean_validation/attempt_1",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 20.166084563203245,
+      "direct_start_to_goal_distance_m": null,
+      "path_efficiency": null,
+      "mission_progress_percent": null,
+      "final_distance_to_goal_m": null,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": -0.0089111328125,
+      "odometry_sample_count": 1430,
+      "odometry_start_sim_time_s": 72.99999836832285,
+      "odometry_end_sim_time_s": 193.05999568477273,
+      "max_displacement_m": 11.85453141397975,
+      "mean_speed_m_s": 0.1679667250870429,
+      "stationary_fraction": 0.2279688676876726,
+      "mean_obstacle_clearance_m": 0.7677436153749297,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 120.05999731644988,
+      "planner_wall_duration_s": 349.5322852078825
+    },
+    "bag_recorded": true,
+    "planner_command_count": 330,
+    "cleanup_errors": [],
+    "wall_duration_s": 393.30219099111855
+  }
+]

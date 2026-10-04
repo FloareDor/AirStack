@@ -1,0 +1,31 @@
+{
+  "schema_version": "ws2_agent_action_v1",
+  "round": 4,
+  "policy": "random",
+  "rule": "random_untried",
+  "reason": "Sample an untried valid condition.",
+  "hypothesis": "cover the saved layout space",
+  "action": {
+    "layout": "easy",
+    "layout_seed": 2,
+    "delay_s": 0.0,
+    "patch_enabled": true,
+    "patch_size_m": 0.9,
+    "patch_start_s": 5.0,
+    "patch_duration_s": 5.0
+  },
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.0,
+    "patch_enabled": true,
+    "patch_size": 0.9
+  },
+  "patch_start_s": 5.0,
+  "patch_duration_s": 5.0
+}

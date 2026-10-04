@@ -1,0 +1,144 @@
+{
+  "backend": "Agent-guided deterministic search (no noise)",
+  "target_planner": "mononav",
+  "phase": "unstable_clean_baseline",
+  "budget": 8,
+  "completed": 5,
+  "actual_attempts": 7,
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 3,
+    "policy": "agent_search",
+    "rule": "agent_guided_search",
+    "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+    "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.15,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 0.0,
+      "patch_duration_s": 0.0
+    },
+    "intent": {
+      "hypothesis": "Testing the agent's performance under medium delay and continuous patch perturbations on easy layouts to evaluate the combined impact of latency and visual noise.",
+      "reason": "The agent successfully handled low delay with continuous patches. Increasing delay to medium will help identify if latency compounds the tracking errors introduced by the patch.",
+      "layouts": [
+        "easy"
+      ],
+      "delay_band": "medium",
+      "patch_mode": "continuous"
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.15,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "trial": null,
+  "history": {
+    "rows": [
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 37.469999162480235,
+        "distance_m": 8.435371721863751,
+        "min_clearance_m": 0.072265625,
+        "mean_clearance_m": 0.6425453350962019,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 37.9499991517514,
+        "distance_m": 8.477263453068733,
+        "min_clearance_m": 0.0771484375,
+        "mean_clearance_m": 0.6460667787333251,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 50.03999888151884,
+        "distance_m": 9.046219726542748,
+        "min_clearance_m": 0.1168212890625,
+        "mean_clearance_m": 0.6564386674254347,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 41.36999907530844,
+        "distance_m": 8.787071812831977,
+        "min_clearance_m": 0.0081787109375,
+        "mean_clearance_m": 0.6823350271511285,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 3,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "collision",
+        "time_s": 6.569999853149056,
+        "distance_m": 1.49601835989679,
+        "min_clearance_m": 0.0234375,
+        "mean_clearance_m": 0.578358550049943,
+        "pair_verdict": "incomplete_pair"
+      }
+    ],
+    "groups": {
+      "mononav/clean": {
+        "evaluable": 3,
+        "successes": 2,
+        "collisions": 1,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 0.6666666666666666,
+        "collision_rate": 0.3333333333333333
+      },
+      "mononav/perturbed": {
+        "evaluable": 2,
+        "successes": 2,
+        "collisions": 0,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 1.0,
+        "collision_rate": 0.0
+      }
+    }
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_agent_mononav_guarded",
+  "wall_time": 1790722095.165728,
+  "mission": {
+    "mission_mode": "goal",
+    "timeout": 180.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.4,
+    "maximum_speed": 0.5,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.3
+  },
+  "profile": "delay_patch"
+}

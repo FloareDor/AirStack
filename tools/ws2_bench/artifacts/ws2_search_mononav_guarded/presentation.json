@@ -1,0 +1,168 @@
+{
+  "backend": "Deterministic result-guided search (no noise)",
+  "target_planner": "mononav",
+  "phase": "complete",
+  "budget": 8,
+  "completed": 8,
+  "actual_attempts": 10,
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 4,
+    "policy": "search",
+    "rule": "confirm_failure",
+    "reason": "Repeat the same clean-pass/attack-fail condition once.",
+    "hypothesis": "reproduce the candidate failure",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.25,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 5.0,
+      "patch_duration_s": 5.0
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.25,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 5.0,
+    "patch_duration_s": 5.0
+  },
+  "trial": null,
+  "history": {
+    "rows": [
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 38.549999138340354,
+        "distance_m": 8.387273038893106,
+        "min_clearance_m": 0.0869140625,
+        "mean_clearance_m": 0.6222453432788181,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 1,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "planner_stopped",
+        "time_s": 35.69999920204282,
+        "distance_m": 4.218548784726794,
+        "min_clearance_m": 0.0869140625,
+        "mean_clearance_m": 0.6486149635635504,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 45.47999898344278,
+        "distance_m": 8.471294953335123,
+        "min_clearance_m": 0.0631103515625,
+        "mean_clearance_m": 0.6400977061732148,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 2,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 38.549999138340354,
+        "distance_m": 8.541918176992908,
+        "min_clearance_m": 0.052734375,
+        "mean_clearance_m": 0.6476240937348006,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 3,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 35.759999200701714,
+        "distance_m": 8.332220001970873,
+        "min_clearance_m": 0.02587890625,
+        "mean_clearance_m": 0.606595391395108,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 3,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "collision",
+        "time_s": 7.259999837726355,
+        "distance_m": 1.6072346552862875,
+        "min_clearance_m": 0.0130615234375,
+        "mean_clearance_m": 0.5369449331740702,
+        "pair_verdict": "autonomy_failure"
+      },
+      {
+        "round": 4,
+        "planner": "mononav",
+        "role": "clean",
+        "outcome": "goal_reached",
+        "time_s": 41.24999907799065,
+        "distance_m": 8.546745862098952,
+        "min_clearance_m": 0.1156005859375,
+        "mean_clearance_m": 0.6059843306107955,
+        "pair_verdict": "pass"
+      },
+      {
+        "round": 4,
+        "planner": "mononav",
+        "role": "perturbed",
+        "outcome": "goal_reached",
+        "time_s": 41.81999906525016,
+        "distance_m": 8.577515952763651,
+        "min_clearance_m": 0.0289306640625,
+        "mean_clearance_m": 0.6361840575121055,
+        "pair_verdict": "pass"
+      }
+    ],
+    "groups": {
+      "mononav/clean": {
+        "evaluable": 4,
+        "successes": 4,
+        "collisions": 0,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 1.0,
+        "collision_rate": 0.0
+      },
+      "mononav/perturbed": {
+        "evaluable": 4,
+        "successes": 2,
+        "collisions": 1,
+        "infrastructure_errors": 0,
+        "operator_stopped": 0,
+        "success_rate": 0.5,
+        "collision_rate": 0.25
+      }
+    }
+  },
+  "output": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_search_mononav_guarded",
+  "wall_time": 1790714401.223289,
+  "mission": {
+    "mission_mode": "goal",
+    "timeout": 180.0,
+    "goal_distance": 8.0,
+    "goal_radius": 0.5,
+    "minimum_travel": 3.0,
+    "minimum_displacement": 1.0,
+    "maximum_stationary_fraction": 0.5,
+    "initial_speed": 0.4,
+    "maximum_speed": 0.5,
+    "trajectory_horizon": 2.0,
+    "velocity": 0.3
+  },
+  "profile": "delay_patch"
+}

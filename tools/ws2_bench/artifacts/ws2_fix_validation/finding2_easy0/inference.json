@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_fix_validation/finding2_easy0", "wall_time": 1790837641.533215, "sequence": 141, "sim_stamp": 52.029998837, "inference_ms": 205.16823790967464, "primitive": 6, "goal_distance": 8.485224821011865, "tsdf_points": 4408, "blocked": true, "depth_source": "zoe"}
