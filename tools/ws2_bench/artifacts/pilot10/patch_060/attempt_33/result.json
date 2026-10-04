@@ -1,0 +1,16 @@
+{
+  "schema_version": 3,
+  "scenario_id": "continuous patch 0.6",
+  "configuration_hash": "00153756bb19816581f6db40d4bc8993155d42ab6d21baa38497be2175c388a6",
+  "outcome": "infrastructure_error",
+  "termination": {
+    "source": "startup",
+    "reason": "Command '['docker', 'exec', 'airstack-robot-desktop-1', 'bash', '-lc', 'sws && python3 /tmp/ws2_ros_control.py \"$1\"', 'ws2', '{\"disturbance_seed\": 101, \"rgb_noise_stddev\": 0.0, \"depth_noise_stddev_m\": 0.0, \"fixed_sensor_delay_s\": 0.0}']' returned non-zero exit status 1.",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/patch_060/attempt_33",
+  "metrics": {},
+  "bag_recorded": false,
+  "cleanup_errors": [],
+  "wall_duration_s": 69.12806674698368
+}

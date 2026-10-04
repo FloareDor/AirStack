@@ -1,0 +1,37 @@
+{
+  "schema_version": 3,
+  "scenario_id": "clean control, first half",
+  "configuration_hash": "48602956d2f8054bd018c7af528632608d1e6aa43de0517dca990facbe70fbd3",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/clean_first/attempt_29",
+  "metrics": {
+    "time_to_goal_s": 40.97999908402562,
+    "path_length_m": 8.614762073105785,
+    "direct_start_to_goal_distance_m": 8.025168253870197,
+    "path_efficiency": 0.9315600576972141,
+    "mission_progress_percent": 93.8550262603143,
+    "final_distance_to_goal_m": 0.493144481765916,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.1009521484375,
+    "odometry_sample_count": 643,
+    "odometry_start_sim_time_s": 35.82999919913709,
+    "odometry_end_sim_time_s": 76.80999828316271,
+    "max_displacement_m": 7.666598291448688,
+    "mean_speed_m_s": 0.21021869852759217,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.6543214052348325,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 40.97999908402562,
+    "planner_wall_duration_s": 189.58720169914886
+  },
+  "bag_recorded": false,
+  "planner_command_count": 52,
+  "cleanup_errors": [],
+  "wall_duration_s": 228.4399435929954
+}

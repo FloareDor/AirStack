@@ -1,0 +1,37 @@
+{
+  "schema_version": 3,
+  "scenario_id": "continuous patch 0.3",
+  "configuration_hash": "7efcc6b9b26fb660e78648a21c40d96b1e8865bddeade3842d294c759e028c61",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/patch_030/attempt_17",
+  "metrics": {
+    "time_to_goal_s": 39.53999911621213,
+    "path_length_m": 8.622073191796945,
+    "direct_start_to_goal_distance_m": 8.004235096537641,
+    "path_efficiency": 0.9283422813149956,
+    "mission_progress_percent": 93.87871843273894,
+    "final_distance_to_goal_m": 0.48996176756459914,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.0533447265625,
+    "odometry_sample_count": 650,
+    "odometry_start_sim_time_s": 34.53999922797084,
+    "odometry_end_sim_time_s": 74.07999834418297,
+    "max_displacement_m": 7.691331253184602,
+    "mean_speed_m_s": 0.21805951908232937,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.6574735279691056,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 39.53999911621213,
+    "planner_wall_duration_s": 193.4230596772395
+  },
+  "bag_recorded": false,
+  "planner_command_count": 54,
+  "cleanup_errors": [],
+  "wall_duration_s": 238.02247456088662
+}
