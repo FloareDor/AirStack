@@ -132,6 +132,12 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             shutil.move(RUNTIME/'flight_guard.json',out/'previous_guard.json')
         for f in ['scene_status.json','scene_reply.json','scene_command.json']:(RUNTIME/f).unlink(missing_ok=True)
         provenance={}
+        # When this flight started, in wall clock. Not part of the build
+        # fingerprint, so check_provenance.py must never include it: it varies
+        # per flight and would split every cell. It exists because on
+        # 2026-10-04 the only way to reconstruct which cells were contemporary
+        # was file mtimes, and that is not evidence.
+        provenance['started_at_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')
         # Record only the selected worker's source. Requiring the other
         # planner checkout makes a MonoNav-only or Kim-only campaign fail
         # before the simulator starts on a fresh workspace.
