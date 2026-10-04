@@ -66,6 +66,67 @@ Do not quote this as "larger patches are worse". The usable claim is that the
 attack does not need a large patch, and that whatever threshold exists lies
 below 0.3 m. Finding it needs a sweep at 0.1, 0.15 and 0.2 m.
 
+## The timed-patch cell is NOT usable, and here is why
+
+After the paired run finished, the workspace had three idle hours, so a timed
+0.9 m cell was flown to settle the question pilot-9 left at p = 0.072. It
+returned 24/35 = 0.686, against 5/50 for the same patch left on continuously.
+
+That looked decisive. It is not, because a patch that beats the clean control
+is a confound, not a discovery. A third clean cell flown immediately after it
+returned 12/16 = 0.750.
+
+Cell order, by result file timestamp (UTC):
+
+| cell            | window      | rate  |
+|-----------------|-------------|-------|
+| clean_first     | 06:35-08:02 | 0.433 |
+| patch 0.9 m     | 08:05-10:03 | 0.100 |
+| patch 0.6 m     | 10:07-11:33 | 0.176 |
+| patch 0.3 m     | 11:36-13:04 | 0.171 |
+| clean_last      | 13:06-14:33 | 0.400 |
+| patch 0.9 timed | 15:15-17:03 | 0.686 |
+| clean_mid       | 17:07-17:52 | 0.750 |
+
+The clean rate is flat at 0.43 and 0.40 through 14:33, then sits at 0.75 after
+15:15. Against a time-adjacent control the timed cell shows nothing:
+
+| contrast                           | p      |
+|------------------------------------|--------|
+| timed vs clean_mid                 | 0.749  |
+| timed vs clean_first and clean_last | 0.019 |
+
+The entire apparent effect is the choice of control. Do not quote the timed
+cell against anything. `clean_mid` is kept because it is the evidence that
+caught it.
+
+## What separates the two halves
+
+The attack cells ran inside one `run_paired_cells.sh` invocation from 06:35 to
+14:33. The timed cell ran in a second invocation started at 15:15, which
+restarted the simulator and the robot stack. Wall-clock drift and process
+restart are not separable here, and `clean_mid` used a third seed, so seed is
+not excluded either. What is certain is that cells from different runner
+invocations did not agree, inside one workspace and one build.
+
+`check_provenance.py` cannot catch this. The build fingerprint is identical
+across all seven cells and it correctly reports one build. Recording a runner
+session identifier is the obvious next guard.
+
+## Why the main result survives
+
+The three attack cells ran strictly between clean_first and clean_last, both
+at roughly 0.42, and those two agree at p = 1.000. The dose cells are bracketed
+by controls flown before and after them in the same invocation, so the
+0.417 against 0.143 contrast stands.
+
+The timed cell was flown after clean_last with no control before it in the same
+regime. It is unbracketed, which is exactly the gap that invalidates it.
+
+The lesson is narrower than it looks: two controls bracketing the region you
+sampled cannot detect a change outside that region. The drift check passed and
+still missed this.
+
 ## What this run cost
 
 The first launch flew all 180 flights in four minutes, every one an

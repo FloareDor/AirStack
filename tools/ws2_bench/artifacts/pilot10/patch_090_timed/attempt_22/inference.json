@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/patch_090_timed/attempt_22", "wall_time": 1791131239.5193815, "sequence": 225, "sim_stamp": 83.019998144, "inference_ms": 179.57891477271914, "primitive": 7, "goal_distance": 0.6210923346322094, "tsdf_points": 3716, "blocked": false, "depth_source": "zoe"}
