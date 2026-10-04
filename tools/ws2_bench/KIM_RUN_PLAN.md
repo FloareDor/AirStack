@@ -96,6 +96,17 @@ git clone --recursive https://github.com/engcang/Collision-avoidance.git /root/C
 `download_models.sh` fetches the FCRN checkpoint. `save_model/D3QN_V_3_single.h5`
 is already tracked in the repository (`BACKUP.md:52`).
 
+**`unzip` must be installed first.** Without it `download_models.sh` downloads
+450 MB, verifies the archive, then dies on line 22 with
+`unzip: command not found` and leaves `NYU_FCRN-checkpoint` empty. On
+`ws2-pilot-11` that killed the whole setup script. The runbook's apt line now
+installs it. Verify three files, not a directory:
+
+```bash
+ls /root/Collision-avoidance/airstack_models/NYU_FCRN-checkpoint/
+# NYU_FCRN.ckpt.data-00000-of-00001  NYU_FCRN.ckpt.index  NYU_FCRN.ckpt.meta
+```
+
 `run_kim_paired.sh` refuses to fly if either model is absent, for the same
 reason the MonoNav driver does.
 

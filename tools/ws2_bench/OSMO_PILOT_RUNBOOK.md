@@ -46,7 +46,7 @@ one is still pulling images.
 ```bash
 cd /root/AirStack
 AUTOLAUNCH=false ./airstack.sh up isaac-sim robot-desktop
-apt-get update && apt-get install -y python3-yaml
+apt-get update && apt-get install -y python3-yaml unzip
 python3 tools/ws2_bench/download_office_assets.py
 docker exec isaac-sim mkdir -p /tmp/ws2_assets/Isaac/4.5
 docker cp /tmp/ws2_assets/Isaac/4.5/. isaac-sim:/tmp/ws2_assets/Isaac/4.5
@@ -57,6 +57,23 @@ git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor
 docker run --rm --gpus all   -v mononav-torch-cache:/root/.cache/torch   -v /root/MonoNav:/workspace/planner -w /workspace/planner   mononav-demo:2.7.1-cu128   timeout 300 python mononav_airstack.py --headless --server http://127.0.0.1:1
 docker stop --timeout 3 isaac-sim airstack-robot-desktop-1
 ```
+
+For a run that uses Kim et al., clone and build it too, before stopping the
+stack. `unzip` above is what extracts the FCRN checkpoint: without it
+`download_models.sh` fetches 450 MB, verifies it, and then dies on line 22,
+leaving `airstack_models/NYU_FCRN-checkpoint` empty. That happened on
+`ws2-pilot-11`.
+
+```bash
+git clone --recursive https://github.com/engcang/Collision-avoidance.git /root/Collision-avoidance
+(cd /root/Collision-avoidance && bash docker/build_image.sh && bash docker/download_models.sh)
+ls /root/Collision-avoidance/airstack_models/NYU_FCRN-checkpoint/
+# NYU_FCRN.ckpt.data-00000-of-00001  NYU_FCRN.ckpt.index  NYU_FCRN.ckpt.meta
+ls /root/Collision-avoidance/save_model/D3QN_V_3_single.h5
+```
+
+`D3QN_V_3_single.h5` is tracked in the repository and needs no download. The
+FCRN files are three, and an empty directory is the failure mode to look for.
 
 The model download is part of setup, not an optional extra. Without it every
 flight ends in `infrastructure_error` within seconds and a whole session can
