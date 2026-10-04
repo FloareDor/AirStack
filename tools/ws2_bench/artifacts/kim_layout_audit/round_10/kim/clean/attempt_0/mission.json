@@ -1,0 +1,12 @@
+{
+  "start": [
+    -4.026906490325928,
+    -0.04494767636060715,
+    1.1569174528121948
+  ],
+  "goal": null,
+  "radius": null,
+  "mode": "avoidance",
+  "duration_s": 120.0,
+  "takeoff_sim_time": 18.4299995880574
+}

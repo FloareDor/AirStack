@@ -10,7 +10,13 @@ from conditions import DIFFICULTY_COUNTS
 
 ACTION_SCHEMA_VERSION = "ws2_agent_action_v1"
 INTENT_SCHEMA_VERSION = "ws2_agent_intent_v1"
-LAYOUTS = tuple(DIFFICULTY_COUNTS)
+# conditions.validate() also accepts furnished_a/furnished_b, which are the
+# two SIMPLEST families in layouts.json (6 and 7 objects per variant, versus
+# 11 for easy). Deriving the action space from DIFFICULTY_COUNTS alone hid
+# them from every agent policy, confining 'let the agent pick a layout' to
+# the three hardest families. 'stock' stays out: it is the no-layout
+# baseline, not a scene the agent should be able to choose.
+LAYOUTS = ("furnished_a", "furnished_b", *DIFFICULTY_COUNTS)
 DELAYS = (0.0, 0.05, 0.15, 0.25)
 PATCH_SIZES = (0.3, 0.6, 0.9)
 PATCH_STARTS = (0.0, 5.0, 10.0)

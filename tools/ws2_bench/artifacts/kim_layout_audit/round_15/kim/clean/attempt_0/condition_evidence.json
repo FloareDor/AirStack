@@ -1,0 +1,513 @@
+{
+  "requested": {
+    "name": "clean",
+    "layout": "hard",
+    "layout_seed": 4,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.0,
+    "patch_enabled": false,
+    "patch_size": 0.6
+  },
+  "frame": {
+    "sequence": 12,
+    "stamp": 5.019999887,
+    "target_frame": "map",
+    "camera_frame": "camera_left",
+    "width": 480,
+    "height": 300,
+    "k": [
+      183.99998807907153,
+      0.0,
+      240.0,
+      0.0,
+      183.99998807907153,
+      150.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "t_world_camera": [
+      0.02027056490240642,
+      0.05845711125824987,
+      0.9980840998342162,
+      0.20254841711658203,
+      -0.9997943627066617,
+      0.000605990457370531,
+      0.02026980699329628,
+      0.0758619735596503,
+      0.0005800849224376625,
+      -0.9982897369596193,
+      0.058457374065010836,
+      -0.0318795194534089,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sensor_disturbance": {
+      "seed": 42,
+      "fixed_delay_s": 0.0,
+      "rgb_noise_stddev": 0.0,
+      "depth_noise_stddev_m": 0.0,
+      "revision": 1
+    },
+    "rgb_noise_rmse": 0.0,
+    "disturbance_revision": 1,
+    "depth_stamp": 5.019999887,
+    "depth_width": 480,
+    "depth_height": 300,
+    "depth_dtype": "float32_le_m",
+    "jpeg_bytes": 24625,
+    "depth_bytes": 202824
+  },
+  "scene": {
+    "sim_time": 5.079999886453152,
+    "condition": {
+      "name": "clean",
+      "layout": "hard",
+      "layout_seed": 4,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.0,
+      "patch_enabled": false,
+      "patch_size": 0.6
+    },
+    "patch_kind": "Rui learned FCRN patch",
+    "patch_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80",
+    "patch_corners_world": [
+      [
+        0.565916895866394,
+        -0.1600842922925949,
+        0.8999999761581421
+      ],
+      [
+        0.565916895866394,
+        0.4399156868457794,
+        0.8999999761581421
+      ],
+      [
+        0.565916895866394,
+        0.4399156868457794,
+        1.5
+      ],
+      [
+        0.565916895866394,
+        -0.1600842922925949,
+        1.5
+      ]
+    ],
+    "realized_layout": {
+      "move": [
+        -1.1889450774808301,
+        -0.7032555731736743,
+        0
+      ],
+      "plant": [
+        -3.0974159014578677,
+        3.500300948283475,
+        0
+      ],
+      "column": [
+        -2.1599153964184605,
+        -22.91853701209066,
+        0
+      ],
+      "plant_2": [
+        -5.75053562024249,
+        12.456149315605337,
+        0
+      ],
+      "column_2": [
+        -0.16965562889682673,
+        -22.810132616135736,
+        0
+      ],
+      "plant_3": [
+        -0.2405113858215664,
+        5.82760929469247,
+        0
+      ],
+      "column_3": [
+        0.3904875190689543,
+        -25.691344482022558,
+        0
+      ],
+      "plant_4": [
+        -0.057824935417317036,
+        7.560433639429499,
+        0
+      ],
+      "column_4": [
+        -5.445683568299857,
+        -23.37363663275117,
+        0
+      ],
+      "plant_5": [
+        -7.5749745976661575,
+        12.542459793578244,
+        0
+      ],
+      "column_5": [
+        -0.2541407811790668,
+        -20.839381920309812,
+        0
+      ],
+      "seed": 4,
+      "generation_seed": 1013,
+      "difficulty": "hard",
+      "added_counts": {
+        "plants": 5,
+        "columns": 5
+      },
+      "source_sha256": "32b83ba60d0b12d953ed693bb1c2ab8c51332defc4bbb8240eced5ad2e2ce8d0",
+      "validation": "USD bounds: no overlaps, floor support, protected spawn/8m-goal; coarse 0.35m-radius route exists. Learned-planner success unverified.",
+      "protected_regions_source_m": [
+        [
+          [
+            -0.8,
+            -4.8,
+            -0.1
+          ],
+          [
+            0.8,
+            -3.2,
+            2.2
+          ]
+        ],
+        [
+          [
+            -0.8,
+            3.2,
+            -0.1
+          ],
+          [
+            0.8,
+            4.8,
+            2.2
+          ]
+        ]
+      ],
+      "added_bounds_source_m": {
+        "move": [
+          [
+            1.9769198274440285,
+            3.987675603683998,
+            -3.1581138203562605e-07
+          ],
+          [
+            3.518527876248128,
+            5.292594328951842,
+            1.7549590623946982
+          ]
+        ],
+        "plant": [
+          [
+            0.12811132613730258,
+            -2.5425509099408563,
+            -3.1581138203562605e-07
+          ],
+          [
+            1.6697193749414017,
+            -1.2376321846730116,
+            1.7549590623946982
+          ]
+        ],
+        "column": [
+          [
+            -0.6494616649364402,
+            0.5719169101262196,
+            -4.454589443888842e-08
+          ],
+          [
+            0.3696302617479703,
+            1.59100883681063,
+            2.9999999329447746
+          ]
+        ],
+        "plant_2": [
+          [
+            -2.52500839264732,
+            6.413297457381006,
+            -3.1581138203562605e-07
+          ],
+          [
+            -0.9834003438432211,
+            7.718216182648851,
+            1.7549590623946982
+          ]
+        ],
+        "column_2": [
+          [
+            1.3407981025851936,
+            0.6803213060811437,
+            -4.454589443888842e-08
+          ],
+          [
+            2.359890029269604,
+            1.6994132327655542,
+            2.9999999329447746
+          ]
+        ],
+        "plant_3": [
+          [
+            2.985015841773604,
+            -0.2152425635318611,
+            -3.1581138203562605e-07
+          ],
+          [
+            4.526623890577703,
+            1.0896761617359836,
+            1.7549590623946982
+          ]
+        ],
+        "column_3": [
+          [
+            1.9009412505509746,
+            -2.2008905598056785,
+            -4.454589443888842e-08
+          ],
+          [
+            2.920033177235385,
+            -1.181798633121268,
+            2.9999999329447746
+          ]
+        ],
+        "plant_4": [
+          [
+            3.1677022921778533,
+            1.517581781205168,
+            -3.1581138203562605e-07
+          ],
+          [
+            4.709310340981952,
+            2.8225005064730126,
+            1.7549590623946982
+          ]
+        ],
+        "column_4": [
+          [
+            -3.9352298368178364,
+            0.11681728946570757,
+            -4.454589443888842e-08
+          ],
+          [
+            -2.916137910133426,
+            1.135909216150118,
+            2.9999999329447746
+          ]
+        ],
+        "plant_5": [
+          [
+            -4.349447370070987,
+            6.499607935353913,
+            -3.1581138203562605e-07
+          ],
+          [
+            -2.807839321266888,
+            7.804526660621757,
+            1.7549590623946982
+          ]
+        ],
+        "column_5": [
+          [
+            1.2563129503029535,
+            2.6510720019070675,
+            -4.454589443888842e-08
+          ],
+          [
+            2.275404876987364,
+            3.670163928591478,
+            2.9999999329447746
+          ]
+        ]
+      }
+    },
+    "position": [
+      -4.004311561584473,
+      -7.464105146937072e-05,
+      0.06175127625465393
+    ],
+    "attitude_xyzw": [
+      1.1561584343440665e-05,
+      -0.029373677972486578,
+      0.0004085783253167349,
+      0.9995684168542194
+    ],
+    "velocity": [
+      -7.64972298838984e-07,
+      2.3692830382060492e-06,
+      -5.036590664531104e-06
+    ],
+    "camera": "follow",
+    "oracle": {
+      "available": true,
+      "armed": false,
+      "collision": null,
+      "bodies": [
+        "/World/base_link/body",
+        "/World/base_link/rotor0",
+        "/World/base_link/rotor1",
+        "/World/base_link/rotor2",
+        "/World/base_link/rotor3",
+        "/World/base_link/ZEDCamera"
+      ],
+      "contacts": [
+        "/World/Office/GroundPlane/CollisionMesh",
+        "/World/Office/GroundPlane/CollisionPlane",
+        "/World/Office/SM_Floor_6m12/SM_Floor_6m",
+        "/World/Office/SM_Floor_6m13/SM_Floor_6m"
+      ],
+      "sim_time": 5.079999886453152,
+      "clearance_m": -0.1883544921875,
+      "clearance_censored": false,
+      "clearance_method": "PhysX mesh distance minus nominal 0.25m sphere (not exact hull)",
+      "clearance_sim_time": 4.979999888688326
+    },
+    "paused": false,
+    "view": {
+      "mode": "follow",
+      "distance": 2.5,
+      "height": 1.5,
+      "azimuth": 180.0
+    },
+    "headless": true,
+    "layout_description": {
+      "library": "hard: 5 plants + 5 columns added; one existing plant moved",
+      "difficulty": "hard",
+      "added_counts": {
+        "plants": 5,
+        "columns": 5
+      },
+      "objects": [
+        {
+          "name": "Existing plant",
+          "operation": "move",
+          "offset_from_source_world_m": [
+            -0.703,
+            1.189,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 1",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            3.5,
+            3.097,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -22.919,
+            2.16,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 2",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            12.456,
+            5.751,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 2",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -22.81,
+            0.17,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 3",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            5.828,
+            0.241,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 3",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -25.691,
+            -0.39,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 4",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            7.56,
+            0.058,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 4",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -23.374,
+            5.446,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 5",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            12.542,
+            7.575,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 5",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -20.839,
+            0.254,
+            0
+          ],
+          "shift_from_previous_m": null
+        }
+      ],
+      "same_as_previous": false
+    },
+    "active_added_obstacles": [
+      "plant",
+      "column",
+      "plant_2",
+      "plant_3",
+      "plant_4",
+      "plant_5",
+      "column_2",
+      "column_3",
+      "column_4",
+      "column_5"
+    ]
+  }
+}

@@ -1,0 +1,401 @@
+{
+  "requested": {
+    "name": "clean",
+    "layout": "medium",
+    "layout_seed": 3,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": true,
+    "patch_size": 0.6
+  },
+  "frame": {
+    "sequence": 12,
+    "stamp": 5.049999887,
+    "target_frame": "map",
+    "camera_frame": "camera_left",
+    "width": 480,
+    "height": 300,
+    "k": [
+      183.99998807907153,
+      0.0,
+      240.0,
+      0.0,
+      183.99998807907153,
+      150.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "t_world_camera": [
+      0.0233100139446758,
+      0.057760058495055666,
+      0.9980583243941945,
+      0.20123306277410874,
+      -0.9997282505237817,
+      0.0010856723948529101,
+      0.023286185177273655,
+      0.0696534639622855,
+      0.00026144704671787755,
+      -0.9983299038685054,
+      0.05776966926807636,
+      -0.018928900373654713,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sensor_disturbance": {
+      "seed": 42,
+      "fixed_delay_s": 0.05,
+      "rgb_noise_stddev": 0.0,
+      "depth_noise_stddev_m": 0.0,
+      "revision": 1
+    },
+    "rgb_noise_rmse": 0.0,
+    "disturbance_revision": 1,
+    "depth_stamp": 5.019999887,
+    "depth_width": 480,
+    "depth_height": 300,
+    "depth_dtype": "float32_le_m",
+    "jpeg_bytes": 28379,
+    "depth_bytes": 175369
+  },
+  "scene": {
+    "sim_time": 5.199999883770943,
+    "condition": {
+      "name": "clean",
+      "layout": "medium",
+      "layout_seed": 3,
+      "seed": 42,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.05,
+      "patch_enabled": false,
+      "patch_size": 0.6
+    },
+    "patch_kind": "Rui learned FCRN patch",
+    "patch_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80",
+    "patch_corners_world": [
+      [
+        1.8183170557022095,
+        -1.3245435953140259,
+        0.8999999761581421
+      ],
+      [
+        1.8183170557022095,
+        -0.724543571472168,
+        0.8999999761581421
+      ],
+      [
+        1.8183170557022095,
+        -0.724543571472168,
+        1.5
+      ],
+      [
+        1.8183170557022095,
+        -1.3245435953140259,
+        1.5
+      ]
+    ],
+    "realized_layout": {
+      "move": [
+        -1.792159922807611,
+        -1.122839087675838,
+        0
+      ],
+      "plant": [
+        -3.9072751584667946,
+        3.2237555686044708,
+        0
+      ],
+      "column": [
+        -0.9954561450738586,
+        -21.66613683184772,
+        0
+      ],
+      "plant_2": [
+        -0.21133339661958317,
+        3.9745430973087723,
+        0
+      ],
+      "column_2": [
+        -4.830130587668627,
+        -16.34519861101797,
+        0
+      ],
+      "plant_3": [
+        -2.7335170913319606,
+        6.010261984255054,
+        0
+      ],
+      "column_3": [
+        -3.1413374115509747,
+        -22.490895112298197,
+        0
+      ],
+      "seed": 3,
+      "generation_seed": 3,
+      "difficulty": "medium",
+      "added_counts": {
+        "plants": 3,
+        "columns": 3
+      },
+      "source_sha256": "32b83ba60d0b12d953ed693bb1c2ab8c51332defc4bbb8240eced5ad2e2ce8d0",
+      "validation": "USD bounds: no overlaps, floor support, protected spawn/8m-goal; coarse 0.35m-radius route exists. Learned-planner success unverified.",
+      "protected_regions_source_m": [
+        [
+          [
+            -0.8,
+            -4.8,
+            -0.1
+          ],
+          [
+            0.8,
+            -3.2,
+            2.2
+          ]
+        ],
+        [
+          [
+            -0.8,
+            3.2,
+            -0.1
+          ],
+          [
+            0.8,
+            4.8,
+            2.2
+          ]
+        ]
+      ],
+      "added_bounds_source_m": {
+        "move": [
+          [
+            1.3737049821172476,
+            3.5680920891818344,
+            -3.1581138203562605e-07
+          ],
+          [
+            2.915313030921347,
+            4.873010814449678,
+            1.7549590623946982
+          ]
+        ],
+        "plant": [
+          [
+            -0.6817479308716243,
+            -2.8190962896198606,
+            -3.1581138203562605e-07
+          ],
+          [
+            0.8598601179324747,
+            -1.514177564352016,
+            1.7549590623946982
+          ]
+        ],
+        "column": [
+          [
+            0.5149975864081617,
+            1.82431709036916,
+            -4.454589443888842e-08
+          ],
+          [
+            1.5340895130925722,
+            2.8434090170535704,
+            2.9999999329447746
+          ]
+        ],
+        "plant_2": [
+          [
+            3.014193830975587,
+            -2.068308760915559,
+            -3.1581138203562605e-07
+          ],
+          [
+            4.555801879779686,
+            -0.7633900356477143,
+            1.7549590623946982
+          ]
+        ],
+        "column_2": [
+          [
+            -3.319676856186607,
+            7.145255311198909,
+            -4.454589443888842e-08
+          ],
+          [
+            -2.3005849295021963,
+            8.16434723788332,
+            2.9999999329447746
+          ]
+        ],
+        "plant_3": [
+          [
+            0.49201013626320966,
+            -0.03258987396927715,
+            -3.1581138203562605e-07
+          ],
+          [
+            2.0336181850673087,
+            1.2723288512985675,
+            1.7549590623946982
+          ]
+        ],
+        "column_3": [
+          [
+            -1.6308836800689543,
+            0.9995588099186818,
+            -4.454589443888842e-08
+          ],
+          [
+            -0.6117917533845438,
+            2.0186507366030924,
+            2.9999999329447746
+          ]
+        ]
+      }
+    },
+    "position": [
+      -4.003968238830566,
+      -6.355914956657216e-05,
+      0.06175116077065468
+    ],
+    "attitude_xyzw": [
+      7.539322280750626e-06,
+      -0.02937370179964544,
+      0.000269811526395697,
+      0.9995684632817726
+    ],
+    "velocity": [
+      -1.8442425471221213e-06,
+      3.879230916936649e-06,
+      -9.382284588355105e-06
+    ],
+    "camera": "overview",
+    "oracle": {
+      "available": true,
+      "armed": false,
+      "collision": null,
+      "bodies": [
+        "/World/base_link/body",
+        "/World/base_link/rotor0",
+        "/World/base_link/rotor1",
+        "/World/base_link/rotor2",
+        "/World/base_link/rotor3",
+        "/World/base_link/ZEDCamera"
+      ],
+      "contacts": [
+        "/World/Office/GroundPlane/CollisionMesh",
+        "/World/Office/GroundPlane/CollisionPlane",
+        "/World/Office/SM_Floor_6m12/SM_Floor_6m",
+        "/World/Office/SM_Floor_6m13/SM_Floor_6m"
+      ],
+      "sim_time": 5.199999883770943,
+      "clearance_m": -0.1883544921875,
+      "clearance_censored": false,
+      "clearance_method": "PhysX mesh distance minus nominal 0.25m sphere (not exact hull)",
+      "clearance_sim_time": 5.18999988399446
+    },
+    "paused": false,
+    "view": {
+      "mode": "overview",
+      "distance": 2.5,
+      "height": 1.5,
+      "azimuth": 180.0
+    },
+    "headless": true,
+    "layout_description": {
+      "library": "medium: 3 plants + 3 columns added; one existing plant moved",
+      "difficulty": "medium",
+      "added_counts": {
+        "plants": 3,
+        "columns": 3
+      },
+      "objects": [
+        {
+          "name": "Existing plant",
+          "operation": "move",
+          "offset_from_source_world_m": [
+            -1.123,
+            1.792,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 1",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            3.224,
+            3.907,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -21.666,
+            0.995,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 2",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            3.975,
+            0.211,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 2",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -16.345,
+            4.83,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 3",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            6.01,
+            2.734,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column 3",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -22.491,
+            3.141,
+            0
+          ],
+          "shift_from_previous_m": null
+        }
+      ],
+      "same_as_previous": false
+    },
+    "active_added_obstacles": [
+      "plant",
+      "column",
+      "plant_2",
+      "plant_3",
+      "column_2",
+      "column_3"
+    ]
+  }
+}

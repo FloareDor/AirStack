@@ -10,7 +10,7 @@ from pathlib import Path
 import time
 
 from agent_policies import all_actions, objective_is_stated, policy_from_name
-from agent_schema import ACTION_SCHEMA_VERSION, action_to_episode, validate_action
+from agent_schema import LAYOUTS, ACTION_SCHEMA_VERSION, action_to_episode, validate_action
 from campaign import clean_twin, verdict
 from conditions import PATCH_POLICY
 from episode import RUNTIME, atomic, fingerprint, resolved, run_episode
@@ -36,8 +36,11 @@ def parse_qualified_layouts(values):
             seed = int(seed_text)
         except (AttributeError, ValueError) as exc:
             raise ValueError("qualified layouts must use layout:seed, for example easy:2") from exc
-        if layout not in ("easy", "medium", "hard") or not 0 <= seed <= 7:
-            raise ValueError("qualified layouts must use easy|medium|hard and seed 0..7")
+        # Validate against the agent's own action space, not a second
+        # hardcoded copy of it. The two drifted apart and cost a campaign.
+        if layout not in LAYOUTS or not 0 <= seed <= 7:
+            raise ValueError("qualified layouts must use %s and seed 0..7"
+                             % "|".join(LAYOUTS))
         qualified.add((layout, seed))
     if not qualified:
         raise ValueError("at least one clean-qualified layout is required")
