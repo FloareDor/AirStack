@@ -27,62 +27,84 @@ rejects it. `SUCCESSES` in `mission.py:4` already counts both, so the pass rate
 is computed correctly, but any hand analysis that greps for `goal_reached` will
 silently score Kim as zero.
 
-## Kim has no qualified layout, and that is the first blocker
+## Superseded: the fixed-layout design, and why it was dropped
 
-Everything flown so far:
+This plan originally qualified a layout and then flew 168 flights on it, seven
+control blocks alternating with seven attack blocks. `run_kim_paired.sh` still
+implements that and is kept as a fallback. It was not used, for two reasons
+found on `ws2-pilot-11`.
+
+**Kim flies at about 7 minutes per flight.** Measured from provenance
+`started_at_utc`: 19:33 and 19:40 UTC, steady state rather than startup, and
+2.8 times MonoNav despite a shorter timeout, so per-flight overhead dominates.
+168 flights needs 20 hours. A 12 hour window cannot hold it, and the 24-flight
+qualification alone would have cost 2.8 hours of an 11.4 hour remainder.
+
+**The qualified-layout gate was standing in for pairing.**
+`agent_campaign.py:250` already flies both arms of every candidate,
+`clean_twin(candidate)` and `candidate`, in the same layout, the same build,
+seconds apart. The gate exists for the unpaired case, where an attack flight is
+compared against a baseline flown elsewhere and an unflyable layout is
+indistinguishable from a successful attack. With pairing that failure mode is
+gone, so the gate is a budget heuristic, not a correctness gate. At 7 minutes a
+flight it is a heuristic that costs more than it saves.
+
+A pair whose clean arm fails is then a scored outcome, "this layout is
+unflyable", rather than contaminated data. Under the default
+`--clean-failure-policy halt` that same event aborted an earlier Kim run on one
+collision (`ws2_kim_random_easy1_aborted`).
+
+## The run that was actually flown
+
+```bash
+python3 tools/ws2_bench/agent_campaign.py     --policy random --planner kim --budget 80 --seed 42     --qualified-layout easy:0 ... --qualified-layout hard:7     --clean-failure-policy record --clean-validation-runs 0     --review-seconds 0     --output robot/ros_ws/ws2_runtime/campaigns/kim_random_paired
+```
+
+All 24 layouts across `easy`, `medium` and `hard`. 80 flights is 40 matched
+pairs, about 9.3 hours. No code change was needed: `--qualified-layout` is
+repeatable and `--clean-failure-policy record` already existed. We had been
+passing a one-element list to a filter built to take many.
+
+**Analyse by pair, not by flight.** The attack worked where the clean arm
+passed and the perturbed arm failed. McNemar over the discordant pairs. This is
+immune to the three confounds that cost results on 2026-10-04: cross-build
+(both arms, one workspace), time drift (both arms, adjacent), and layout
+difficulty (both arms, same scene).
+
+The tradeoff is real and worth stating: 40 pairs spread over 24 layouts gives
+less power per layout than 168 flights on one. That buys an unbiased read on
+whether the patch works on its matched target across the actual scene space,
+instead of a precise answer about one office with three objects in it.
+
+## Kim had no qualified layout, and now does not need one
+
+Everything flown before this run:
 
 | set | flights | outcomes |
 |---|---|---|
 | ws2_qualify_kim_easy1 | 4 | 4 completed_horizon |
 | ws2_kim_random_easy1_aborted | 1 | 1 collision, on clean validation |
 | kim_smoke_2 | 1 | 1 insufficient_progress |
+| kim_qual_easy1 (pilot-11, abandoned) | 1 | 1 collision, clean |
 
-`easy:1` passed 4 for 4 once and then killed a run by colliding on a clean
-validation flight. Six flights cannot qualify a layout.
-
-**Phase 1** flies clean blocks of 12 on `easy:1` and `easy:2` and picks the one
-whose clean rate leaves room for an attack to show. A layout that is already
-near the floor cannot demonstrate anything, which is the mistake I nearly made
-with MonoNav this morning when 13 flights read 0.15.
-
-Budget: 24 flights, about an hour.
-
-## Phase 2 interleaves the controls
-
-`run_kim_paired.sh` alternates control and attack blocks of 12, seven of each,
-168 flights. Every attack block has a control block on both sides of it.
-
-This is the direct fix for what pilot-10 got wrong. That run put a clean cell
-first and last, they agreed at p = 1.000, and a third clean cell flown later
-came back 0.750 against their 0.42. The timed-patch cell flown in between
-inherited the shift and read as a large effect that `check_drift.py` now shows
-is not there. Controls at the ends cannot see a change outside the region they
-bracket.
-
-Verify after the run, not before quoting anything:
-
-```bash
-python3 tools/ws2_bench/check_provenance.py artifacts/kim/*/     # same build
-python3 tools/ws2_bench/check_drift.py artifacts/kim/kim_clean_* # stable baseline
-```
-
-`check_drift.py` exits 1 if the control blocks disagree more than chance
-explains. If it does, pool only adjacent blocks and say so.
+`easy:1` passed 4 for 4 once, then collided on a clean flight twice in separate
+runs. Six flights never qualified it, and under the paired design that question
+no longer gates the run.
 
 ## Budget
 
-A 12 hour window, minus roughly 2 hours of setup because Kim needs its own
-repository, image build and two model downloads.
+Measured on `ws2-pilot-11`: about 7 minutes per Kim flight, against 2.5 for
+MonoNav. Plan from the measurement, not from the timeout, because per-flight
+overhead dominates both.
 
 | phase | flights | time |
 |---|---|---|
-| qualification | 24 | ~1.0 h |
-| paired campaign | 168 | ~7.0 h |
+| setup (Kim repo, image, two models) | | ~2.0 h |
+| paired campaign, 40 pairs | 80 | ~9.3 h |
 | copy out | | 0.5 h |
 
-About 8.5 hours of a 10 hour flying budget, leaving real margin. Kim's 120 s
-timeout is shorter than MonoNav's 180 s, so per-flight cost should be at or
-below the 2.5 minutes pilot-10 averaged.
+That is most of a 12 hour window and leaves little slack, so copy cells down as
+they complete rather than at the end. The OSMO task filesystem is ephemeral.
 
 ## Setup additions over the MonoNav runbook
 
@@ -113,7 +135,7 @@ reason the MonoNav driver does.
 ## Pre-submit checklist
 
 - [ ] Kim image built and both models present
-- [ ] `KIM_LAYOUT_SEED` set from phase 1, not guessed
+- [ ] All 24 layout selectors passed, not a one-element list
 - [ ] GPU recorded in provenance (`host.gpus` non-null; added 2026-10-04)
 - [ ] Driver launched once, under `nohup`, for the whole campaign
 - [ ] Nothing written into the AirStack tree after the first flight
