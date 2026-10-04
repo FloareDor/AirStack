@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cell_ranker_modal/attempt_06", "wall_time": 1791080881.6405103, "sequence": 246, "sim_stamp": 90.999997965, "inference_ms": 189.10404108464718, "primitive": 5, "goal_distance": 0.41944698042842876, "tsdf_points": 13752, "blocked": false, "depth_source": "zoe"}

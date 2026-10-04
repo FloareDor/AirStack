@@ -1,0 +1,47 @@
+{
+  "schema_version": 3,
+  "scenario_id": "patch 0.9 timed start10 dur5, no delay",
+  "configuration_hash": "93f5ea2156900479f094e3590edec7d4ed125fdc304a386a13d682c73b3967e6",
+  "outcome": "collision",
+  "termination": {
+    "source": "planner",
+    "reason": "physx_contact",
+    "detail": {
+      "sim_time": 47.85999893024564,
+      "objects": [
+        "/World/Office/WS2_plant/SM_Plant01"
+      ],
+      "position": [
+        -2.354897975921631,
+        0.030092010274529457,
+        1.2198467254638672
+      ]
+    }
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cell_patch_timed/attempt_28",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 1.6545366926511984,
+    "direct_start_to_goal_distance_m": 7.962500430386346,
+    "path_efficiency": null,
+    "mission_progress_percent": 20.6082108709579,
+    "final_distance_to_goal_m": 6.321571551091397,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.013671875,
+    "odometry_sample_count": 117,
+    "odometry_start_sim_time_s": 38.829999132081866,
+    "odometry_end_sim_time_s": 47.889998929575086,
+    "max_displacement_m": 1.6416538500399696,
+    "mean_speed_m_s": 0.18261994808310994,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.4882161727804222,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 9.05999979749322,
+    "planner_wall_duration_s": 113.38038513436913
+  },
+  "bag_recorded": false,
+  "planner_command_count": 8,
+  "cleanup_errors": [],
+  "wall_duration_s": 123.1195229422301
+}

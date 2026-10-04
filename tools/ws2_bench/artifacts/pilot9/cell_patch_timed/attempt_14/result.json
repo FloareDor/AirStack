@@ -1,0 +1,16 @@
+{
+  "schema_version": 3,
+  "scenario_id": "patch 0.9 timed start10 dur5, no delay",
+  "configuration_hash": "93f5ea2156900479f094e3590edec7d4ed125fdc304a386a13d682c73b3967e6",
+  "outcome": "infrastructure_error",
+  "termination": {
+    "source": "startup",
+    "reason": "Command '['docker', 'exec', 'airstack-robot-desktop-1', 'bash', '-lc', 'sws && python3 /tmp/ws2_ros_control.py \"$1\"', 'ws2', '{\"disturbance_seed\": 42, \"rgb_noise_stddev\": 0.0, \"depth_noise_stddev_m\": 0.0, \"fixed_sensor_delay_s\": 0.0}']' returned non-zero exit status 1.",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cell_patch_timed/attempt_14",
+  "metrics": {},
+  "bag_recorded": false,
+  "cleanup_errors": [],
+  "wall_duration_s": 63.96373379230499
+}

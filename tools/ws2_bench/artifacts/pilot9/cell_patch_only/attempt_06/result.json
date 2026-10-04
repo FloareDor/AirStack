@@ -1,0 +1,37 @@
+{
+  "schema_version": 3,
+  "scenario_id": "patch only, no delay",
+  "configuration_hash": "1a625f79d1e073adad9ee50438bd84c8aa81048251829c40d1effd9be88867df",
+  "outcome": "planner_stopped",
+  "termination": {
+    "source": "planner",
+    "reason": "planner_terminal",
+    "detail": "1356 active blocks; map retained, consider reducing --tsdf-local-radius\nframe=74 seq=210 primitive=6 tsdf_points=40662 tsdf_blocks=91356 blocked=True speckles=0/9 zoe=0.181s bridge={'accepted': False, 'reason': 'holding recovery 10 (1.0/2.0s)'}\nTSDF sliding window pre-prune: blocks=90389, pruned=967\nTSDF sliding window post-prune: blocks=90771, pruned=30689\nRECOVERY 11/12: blocked yaw scan, yaw_step=25.0 deg\nframe=75 seq=211 primitive=6 tsdf_points=39661 tsdf_blocks=90771 blocked=True speckles=0/585 zoe=0.176s bridge={'accepted': True, 'visualized': True, 'waypoint_count': 17, 'trajectory_mode': 'override'}\nTSDF sliding window pre-prune: blocks=86920, pruned=3851\nTSDF sliding window post-prune: blocks=86924, pruned=33150\nframe=76 seq=213 primitive=6 tsdf_points=38561 tsdf_blocks=86924 blocked=True speckles=0/351 zoe=0.179s bridge={'accepted': False, 'reason': 'holding recovery 11 (1.0/2.0s)'}\nTSDF sliding window pre-prune: blocks=85382, pruned=1542\nTSDF sliding window post-prune: blocks=85382, pruned=32096\nRECOVERY 12/12: blocked yaw scan, yaw_step=25.0 deg\nframe=77 seq=215 primitive=6 tsdf_points=37034 tsdf_blocks=85382 blocked=True speckles=0/471 zoe=0.175s bridge={'accepted': True, 'visualized': True, 'waypoint_count': 17, 'trajectory_mode': 'override'}\nTSDF sliding window pre-prune: blocks=83665, pruned=1717\nTSDF sliding window post-prune: blocks=83804, pruned=27229\nMission stopping (no central safe primitive after 12 yaw scans) at goal distance 4.22 m: {'success': True}\n"
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/cell_patch_only/attempt_06",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 4.996443261558828,
+    "direct_start_to_goal_distance_m": 8.012102149680874,
+    "path_efficiency": null,
+    "mission_progress_percent": 51.483627840002065,
+    "final_distance_to_goal_m": 3.887181296778368,
+    "planner_hold_count": 3,
+    "planner_recovery_count": 12,
+    "minimum_obstacle_clearance_m": 0.0765380859375,
+    "odometry_sample_count": 564,
+    "odometry_start_sim_time_s": 34.77999922260642,
+    "odometry_end_sim_time_s": 80.67999819666147,
+    "max_displacement_m": 4.209530188157009,
+    "mean_speed_m_s": 0.10885497545180915,
+    "stationary_fraction": 0.3723404255319149,
+    "mean_obstacle_clearance_m": 0.5205937803181169,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 45.89999897405505,
+    "planner_wall_duration_s": 160.5673489216715
+  },
+  "bag_recorded": false,
+  "planner_command_count": 34,
+  "cleanup_errors": [],
+  "wall_duration_s": 195.29376845993102
+}
