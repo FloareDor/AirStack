@@ -14,12 +14,46 @@ set -u
 CAMPAIGNS=/root/AirStack/robot/ros_ws/ws2_runtime/campaigns
 COMMON="--planner mononav --layout easy --layout-seed 2 --delay-s 0.0"
 
+# Preflight. A missing depth model does not fail loudly: it fails every flight
+# in seconds with infrastructure_error, so a whole run can burn out before
+# anyone looks. On 2026-10-04 that cost 180 flights. Check once, warm the cache
+# if needed, and refuse to fly if it is still absent.
+WEIGHTS=ZoeD_M12_N.pt
+have_weights () {
+    docker run --rm -v mononav-torch-cache:/c alpine         test -f "/c/hub/checkpoints/$WEIGHTS" 2>/dev/null
+}
+if ! have_weights; then
+    echo "[$(date +%H:%M)] depth model missing, warming the cache"
+    docker run --rm --gpus all         -v mononav-torch-cache:/root/.cache/torch         -v /root/MonoNav:/workspace/planner -w /workspace/planner         mononav-demo:2.7.1-cu128         timeout 300 python mononav_airstack.py --headless --server http://127.0.0.1:1         > /root/warm.log 2>&1
+fi
+if ! have_weights; then
+    echo "[$(date +%H:%M)] ABORT: $WEIGHTS still missing. Every flight would be an"
+    echo "infrastructure_error. Fix the model cache before flying."
+    exit 1
+fi
+echo "[$(date +%H:%M)] depth model present"
+
 cell () {
     local name=$1; shift
-    if [ -f "$CAMPAIGNS/$name/summary.json" ] \
-       && grep -q '"complete": true' "$CAMPAIGNS/$name/summary.json" 2>/dev/null; then
-        echo "[$(date +%H:%M)] $name already complete, skipping"
-        return 0
+    # "complete" is not enough: a cell whose every flight was an
+    # infrastructure_error writes a complete summary holding no usable data,
+    # and skipping it would silently keep the hole.
+    if [ -f "$CAMPAIGNS/$name/summary.json" ]; then
+        local usable
+        usable=$(python3 -c '
+import json, sys
+try:
+    o = json.load(open(sys.argv[1])).get("outcomes", {})
+except Exception:
+    print(0); raise SystemExit
+print(sum(n for k, n in o.items() if k != "infrastructure_error"))
+' "$CAMPAIGNS/$name/summary.json" 2>/dev/null || echo 0)
+        if grep -q '"complete": true' "$CAMPAIGNS/$name/summary.json" 2>/dev/null            && [ "${usable:-0}" -gt 0 ]; then
+            echo "[$(date +%H:%M)] $name already complete, skipping"
+            return 0
+        fi
+        echo "[$(date +%H:%M)] $name has no usable flights, re-flying"
+        rm -rf "$CAMPAIGNS/$name"
     fi
     echo "[$(date +%H:%M)] starting $name"
     python3 tools/ws2_bench/repeat_check.py --output "$CAMPAIGNS/$name" $COMMON "$@"

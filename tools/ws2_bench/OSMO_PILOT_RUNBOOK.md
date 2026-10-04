@@ -54,7 +54,17 @@ docker exec airstack-robot-desktop-1 bash -lc 'bws'
 docker exec airstack-robot-desktop-1 bash -lc 'bws --packages-select mononav_bridge'
 git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor/MonoNav.git /root/MonoNav
 (cd /root/MonoNav && bash docker/build_image.sh)
+docker run --rm --gpus all   -v mononav-torch-cache:/root/.cache/torch   -v /root/MonoNav:/workspace/planner -w /workspace/planner   mononav-demo:2.7.1-cu128   timeout 300 python mononav_airstack.py --headless --server http://127.0.0.1:1
 docker stop --timeout 3 isaac-sim airstack-robot-desktop-1
+```
+
+The model download is part of setup, not an optional extra. Without it every
+flight ends in `infrastructure_error` within seconds and a whole session can
+burn out unattended. Confirm it before flying anything:
+
+```bash
+docker run --rm -v mononav-torch-cache:/c alpine   sha256sum /c/hub/checkpoints/ZoeD_M12_N.pt
+# c97f94c4d53c5b788af46c5da0462262aebb37ea116fd70014bcbba93146c33b
 ```
 
 The image pull can take several minutes. Check progress without starting another
@@ -64,9 +74,9 @@ copy:
 docker ps --format '{{.Names}} {{.Status}}'
 ```
 
-The campaign downloads the MonoNav depth model if it is missing. To make that
-happen before the first flight, warm the shared model cache after building the
-image:
+The warm-cache step above is what populates the shared model cache. It is
+listed in the setup block rather than here because reading the block alone used
+to leave the model missing.
 
 ```bash
 docker run --rm --gpus all \
