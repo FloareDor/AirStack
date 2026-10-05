@@ -1,0 +1,12 @@
+{
+  "backend": "random",
+  "flight_budget": 16,
+  "seed": 77,
+  "planners": [
+    "kim"
+  ],
+  "infrastructure_retries": 1,
+  "patch_policy": "original_texture_size_only_v1",
+  "profile": "patch",
+  "difficulty": "easy"
+}

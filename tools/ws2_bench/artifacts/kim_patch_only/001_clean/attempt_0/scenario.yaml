@@ -1,0 +1,26 @@
+name: random_77_001
+planner: kim
+height: 1.2
+fault: null
+mission_mode: avoidance
+timeout: 120.0
+goal_distance: 8.0
+goal_radius: 0.5
+minimum_travel: 3.0
+minimum_displacement: 1.0
+maximum_stationary_fraction: 0.5
+initial_speed: 0.2
+maximum_speed: 0.35
+trajectory_horizon: 2.0
+velocity: 0.4
+condition:
+  name: clean
+  layout: easy
+  layout_seed: 3
+  seed: 624795184
+  light: 1667.0689996837132
+  rgb_noise: 0.0
+  depth_noise: 0.0
+  delay: 0.0
+  patch_enabled: false
+  patch_size: 0.8518376091959508
