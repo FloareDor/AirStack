@@ -1,0 +1,16 @@
+{
+  "schema_version": 3,
+  "scenario_id": "random round 7 kim",
+  "configuration_hash": "19fca2b9a7a4c9f9df676dc7674626edde65778318ecc37ac3412032f70090d1",
+  "outcome": "infrastructure_error",
+  "termination": {
+    "source": "startup",
+    "reason": "Command '['docker', 'exec', 'airstack-robot-desktop-1', 'bash', '-lc', 'sws && python3 /tmp/ws2_ros_control.py \"$1\"', 'ws2', '{\"disturbance_seed\": 43, \"rgb_noise_stddev\": 0.0, \"depth_noise_stddev_m\": 0.0, \"fixed_sensor_delay_s\": 0.0}']' returned non-zero exit status 1.",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/kim_flyable/round_07/kim/perturbed/attempt_0",
+  "metrics": {},
+  "bag_recorded": false,
+  "cleanup_errors": [],
+  "wall_duration_s": 71.26880428893492
+}

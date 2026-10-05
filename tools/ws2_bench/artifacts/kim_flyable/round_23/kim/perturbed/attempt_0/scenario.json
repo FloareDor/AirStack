@@ -1,0 +1,31 @@
+{
+  "name": "random round 23 kim",
+  "planner": "kim",
+  "height": 1.2,
+  "fault": null,
+  "mission_mode": "avoidance",
+  "timeout": 120.0,
+  "goal_distance": 8.0,
+  "goal_radius": 0.5,
+  "minimum_travel": 3.0,
+  "minimum_displacement": 1.0,
+  "maximum_stationary_fraction": 0.5,
+  "initial_speed": 0.2,
+  "maximum_speed": 0.35,
+  "trajectory_horizon": 2.0,
+  "velocity": 0.4,
+  "condition": {
+    "name": "clean",
+    "layout": "easy",
+    "layout_seed": 3,
+    "seed": 43,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": true,
+    "patch_size": 0.6
+  },
+  "patch_start_s": 5.0,
+  "patch_duration_s": 5.0
+}

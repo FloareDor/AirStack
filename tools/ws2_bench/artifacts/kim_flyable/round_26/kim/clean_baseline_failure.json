@@ -1,0 +1,89 @@
+{
+  "phase": "unstable_clean_baseline",
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 26,
+    "policy": "random",
+    "rule": "random_untried",
+    "reason": "Sample an untried valid condition.",
+    "hypothesis": "cover the saved layout space",
+    "action": {
+      "layout": "furnished_a",
+      "layout_seed": 7,
+      "delay_s": 0.15,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 0.0,
+      "patch_duration_s": 0.0
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "furnished_a",
+      "layout_seed": 7,
+      "seed": 43,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.15,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 0.0,
+    "patch_duration_s": 0.0
+  },
+  "result": {
+    "schema_version": 3,
+    "scenario_id": "random round 26 kim",
+    "configuration_hash": "c32ece1c8726494006fb3fafb63870f5b319906503a5c93f180ae8d1b960997d",
+    "outcome": "collision",
+    "termination": {
+      "source": "planner",
+      "reason": "physx_contact",
+      "detail": {
+        "sim_time": 176.32499605882913,
+        "objects": [
+          "/World/Office/SM_Plant7_463/SM_Plant01"
+        ],
+        "position": [
+          3.4060604572296143,
+          -1.849014163017273,
+          1.1806361675262451
+        ]
+      }
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/kim_flyable/round_26/kim/clean/attempt_0",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 26.352848724111585,
+      "direct_start_to_goal_distance_m": null,
+      "path_efficiency": null,
+      "mission_progress_percent": null,
+      "final_distance_to_goal_m": null,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": -0.112060546875,
+      "odometry_sample_count": 1158,
+      "odometry_start_sim_time_s": 75.39999831467867,
+      "odometry_end_sim_time_s": 176.34999605827034,
+      "max_displacement_m": 14.853899399016598,
+      "mean_speed_m_s": 0.261048532076708,
+      "stationary_fraction": 0.0,
+      "mean_obstacle_clearance_m": 0.7112892910417441,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 100.94999774359167,
+      "planner_wall_duration_s": 308.1634178669192
+    },
+    "bag_recorded": false,
+    "planner_command_count": 279,
+    "cleanup_errors": [],
+    "wall_duration_s": 318.6220790389925,
+    "attempts": [
+      {
+        "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/kim_flyable/round_26/kim/clean/attempt_0",
+        "outcome": "collision"
+      }
+    ]
+  },
+  "policy": "record",
+  "message": "Clean control failed; the attack flight still ran so the round contributes to the measured failure rate. verdict() marks the pair invalid_clean_baseline so it cannot count as a candidate."
+}

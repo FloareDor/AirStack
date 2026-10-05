@@ -1,0 +1,81 @@
+{
+  "phase": "unstable_clean_baseline",
+  "decision": {
+    "schema_version": "ws2_agent_action_v1",
+    "round": 27,
+    "policy": "random",
+    "rule": "random_untried",
+    "reason": "Sample an untried valid condition.",
+    "hypothesis": "cover the saved layout space",
+    "action": {
+      "layout": "easy",
+      "layout_seed": 2,
+      "delay_s": 0.25,
+      "patch_enabled": true,
+      "patch_size_m": 0.9,
+      "patch_start_s": 10.0,
+      "patch_duration_s": 5.0
+    },
+    "condition": {
+      "name": "clean",
+      "layout": "easy",
+      "layout_seed": 2,
+      "seed": 43,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.25,
+      "patch_enabled": true,
+      "patch_size": 0.9
+    },
+    "patch_start_s": 10.0,
+    "patch_duration_s": 5.0
+  },
+  "result": {
+    "schema_version": 3,
+    "scenario_id": "random round 27 kim",
+    "configuration_hash": "b5e74fb5d27c8fb1dd042c155a617eed7a3803054fc99a3b2799250d4cea0803",
+    "outcome": "insufficient_progress",
+    "termination": {
+      "source": "planner",
+      "reason": "simulation_time_budget",
+      "detail": null
+    },
+    "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/kim_flyable/round_27/kim/clean/attempt_0",
+    "metrics": {
+      "time_to_goal_s": null,
+      "path_length_m": 11.389492895326425,
+      "direct_start_to_goal_distance_m": null,
+      "path_efficiency": null,
+      "mission_progress_percent": null,
+      "final_distance_to_goal_m": null,
+      "planner_hold_count": 0,
+      "planner_recovery_count": 0,
+      "minimum_obstacle_clearance_m": 0.310302734375,
+      "odometry_sample_count": 1407,
+      "odometry_start_sim_time_s": 75.18999831937253,
+      "odometry_end_sim_time_s": 195.27999563515186,
+      "max_displacement_m": 10.137964328158033,
+      "mean_speed_m_s": 0.09484131193189638,
+      "stationary_fraction": 0.656618939964833,
+      "mean_obstacle_clearance_m": 0.9666331489176087,
+      "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+      "mission_duration_sim_s": 120.08999731577933,
+      "planner_wall_duration_s": 348.4381078700535
+    },
+    "bag_recorded": false,
+    "planner_command_count": 331,
+    "cleanup_errors": [
+      "landing: docker exited 1: Sourcing /root/AirStack/robot/ros_ws/install/local_setup.bash\nSourcing /root/AirStack/robot/ros_ws/install/local_setup.bash\nTraceback (most recent call last):\n  File \"/tmp/ws2_flight_action.py\", line 71, in <module>\n    r=await_future(h.get_result_async(),120)\n      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ws2_flight_action.py\", line 31, in await_future\n    if Path('/root/AirStack/robot/ros_ws/ws2_runtime/flight_guard.json').exists():raise RuntimeError('simulator flight guard stopped physics')\n                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: simulator flight guard stopped physics\n"
+    ],
+    "wall_duration_s": 379.1274408833124,
+    "attempts": [
+      {
+        "directory": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/kim_flyable/round_27/kim/clean/attempt_0",
+        "outcome": "insufficient_progress"
+      }
+    ]
+  },
+  "policy": "record",
+  "message": "Clean control failed; the attack flight still ran so the round contributes to the measured failure rate. verdict() marks the pair invalid_clean_baseline so it cannot count as a candidate."
+}

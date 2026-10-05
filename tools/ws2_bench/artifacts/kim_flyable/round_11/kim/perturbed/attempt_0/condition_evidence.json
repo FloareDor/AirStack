@@ -1,0 +1,219 @@
+{
+  "requested": {
+    "name": "clean",
+    "layout": "furnished_a",
+    "layout_seed": 2,
+    "seed": 43,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.05,
+    "patch_enabled": true,
+    "patch_size": 0.6
+  },
+  "frame": {
+    "sequence": 11,
+    "stamp": 4.569999897,
+    "target_frame": "map",
+    "camera_frame": "camera_left",
+    "width": 480,
+    "height": 300,
+    "k": [
+      183.99998807907153,
+      0.0,
+      240.0,
+      0.0,
+      183.99998807907153,
+      150.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "t_world_camera": [
+      0.023476495150434595,
+      0.058764172602024434,
+      0.9979958046975206,
+      0.21533747485447965,
+      -0.9997239519550598,
+      0.0004464025023778184,
+      0.023490862312043725,
+      0.06177421026293947,
+      0.0009349132628955759,
+      -0.9982717930219234,
+      0.058758430833247166,
+      -0.018356043023375852,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sensor_disturbance": {
+      "seed": 43,
+      "fixed_delay_s": 0.05,
+      "rgb_noise_stddev": 0.0,
+      "depth_noise_stddev_m": 0.0,
+      "revision": 1
+    },
+    "rgb_noise_rmse": 0.0,
+    "disturbance_revision": 1,
+    "depth_stamp": 4.569999897,
+    "depth_width": 480,
+    "depth_height": 300,
+    "depth_dtype": "float32_le_m",
+    "jpeg_bytes": 26637,
+    "depth_bytes": 169396
+  },
+  "scene": {
+    "sim_time": 4.659999895840883,
+    "condition": {
+      "name": "clean",
+      "layout": "furnished_a",
+      "layout_seed": 2,
+      "seed": 43,
+      "light": 1800.0,
+      "rgb_noise": 0.0,
+      "depth_noise": 0.0,
+      "delay": 0.05,
+      "patch_enabled": false,
+      "patch_size": 0.6
+    },
+    "patch_kind": "Rui learned FCRN patch",
+    "patch_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80",
+    "patch_corners_world": [
+      [
+        1.289176106452942,
+        0.4557293653488159,
+        0.8999999761581421
+      ],
+      [
+        1.289176106452942,
+        1.0557293891906738,
+        0.8999999761581421
+      ],
+      [
+        1.289176106452942,
+        1.0557293891906738,
+        1.5
+      ],
+      [
+        1.289176106452942,
+        0.4557293653488159,
+        1.5
+      ]
+    ],
+    "realized_layout": {
+      "move": [
+        -2.8302560096821567,
+        -0.4935033656116512,
+        0
+      ],
+      "plant": [
+        -2.020721748201029,
+        3.8481864192797306,
+        0
+      ],
+      "column": [
+        -2.775729056370732,
+        -22.195277775052016,
+        0
+      ],
+      "validation": "CPU composition and coarse AABB only; flight/contact validation pending",
+      "seed": 2,
+      "source_sha256": "32b83ba60d0b12d953ed693bb1c2ab8c51332defc4bbb8240eced5ad2e2ce8d0"
+    },
+    "position": [
+      -4.004302978515625,
+      -7.482524233637378e-05,
+      0.061751365661621094
+    ],
+    "attitude_xyzw": [
+      1.1615409144339032e-05,
+      -0.02937367610327605,
+      0.0004092572011435793,
+      0.9995684166308004
+    ],
+    "velocity": [
+      1.4363761238200823e-06,
+      -2.350699787712074e-06,
+      -7.331813094424433e-07
+    ],
+    "camera": "follow",
+    "oracle": {
+      "available": true,
+      "armed": false,
+      "collision": null,
+      "bodies": [
+        "/World/base_link/body",
+        "/World/base_link/rotor0",
+        "/World/base_link/rotor1",
+        "/World/base_link/rotor2",
+        "/World/base_link/rotor3",
+        "/World/base_link/ZEDCamera"
+      ],
+      "contacts": [
+        "/World/Office/GroundPlane/CollisionMesh",
+        "/World/Office/GroundPlane/CollisionPlane",
+        "/World/Office/SM_Floor_6m12/SM_Floor_6m",
+        "/World/Office/SM_Floor_6m13/SM_Floor_6m"
+      ],
+      "sim_time": 4.659999895840883,
+      "clearance_m": -0.1883544921875,
+      "clearance_censored": false,
+      "clearance_method": "PhysX mesh distance minus nominal 0.25m sphere (not exact hull)",
+      "clearance_sim_time": 4.559999898076057
+    },
+    "paused": false,
+    "view": {
+      "mode": "follow",
+      "distance": 2.5,
+      "height": 1.5,
+      "azimuth": 180.0
+    },
+    "headless": true,
+    "layout_description": {
+      "library": "legacy: 1 plants + 1 columns added; one existing plant moved",
+      "difficulty": "legacy",
+      "added_counts": {
+        "plants": 1,
+        "columns": 1
+      },
+      "objects": [
+        {
+          "name": "Existing plant",
+          "operation": "move",
+          "offset_from_source_world_m": [
+            -0.494,
+            2.83,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added plant 1",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            3.848,
+            2.021,
+            0
+          ],
+          "shift_from_previous_m": null
+        },
+        {
+          "name": "Added column",
+          "operation": "duplicate",
+          "offset_from_source_world_m": [
+            -22.195,
+            2.776,
+            0
+          ],
+          "shift_from_previous_m": null
+        }
+      ],
+      "same_as_previous": false
+    },
+    "active_added_obstacles": [
+      "plant",
+      "column"
+    ]
+  }
+}

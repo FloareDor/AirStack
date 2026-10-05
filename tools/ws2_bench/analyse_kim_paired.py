@@ -105,6 +105,17 @@ print("--- patch arm vs delay-only arm ---")
 report("patch enabled", [r for r in rows if r["patch"]])
 report("delay only", [r for r in rows if not r["patch"]])
 
+# The decisive split. Most perturbed arms change BOTH the patch and the sensor
+# delay, so a difference there cannot be attributed to the learned patch. Only
+# pairs whose perturbed arm has delay == 0 isolate the patch, and only pairs
+# with no patch isolate the delay. Reporting the combined arm alone would let a
+# delay effect be written up as a white-box patch result.
+print("")
+print("--- attribution: what actually differs ---")
+report("patch only (delay=0)", [r for r in rows if r["patch"] and not r["delay"]])
+report("delay only (no patch)", [r for r in rows if not r["patch"] and r["delay"]])
+report("patch + delay", [r for r in rows if r["patch"] and r["delay"]])
+
 print("")
 print("--- continuous vs timed patch ---")
 report("continuous", [r for r in rows if r["patch"] and not r["start"] and not r["dur"]])
