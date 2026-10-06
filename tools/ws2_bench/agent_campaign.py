@@ -47,7 +47,7 @@ def parse_qualified_layouts(values):
     return tuple(sorted(qualified))
 
 
-def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
+def _config(policy_name, budget, seed, planner, retries, record_bags, frame_interval, timeout, goal_distance,
             qualified_layouts, clean_validation_runs, clean_failure_policy):
     mission = defaults(planner)
     if timeout is not None:
@@ -65,6 +65,7 @@ def _config(policy_name, budget, seed, planner, retries, record_bags, timeout, g
         "planners": [planner],
         "retries": retries,
         "record_bags": record_bags,
+        "frame_interval_s": frame_interval,
         "mission": mission,
         "patch_policy": PATCH_POLICY,
         "clean_qualified_layouts": [f"{layout}:{layout_seed}" for layout, layout_seed in qualified_layouts],
@@ -92,7 +93,7 @@ def _load_json(path):
 
 
 def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="mononav", retries=1,
-                          record_bags=False, pause_seconds=5, timeout=None, goal_distance=None,
+                          record_bags=False, frame_interval=0.0, pause_seconds=5, timeout=None, goal_distance=None,
                           provider=None, qualified_layouts=(("easy", 2),), clean_validation_runs=2,
                           clean_failure_policy="halt"):
     """Run one paired campaign after repeated pristine-clean validation.
@@ -122,7 +123,7 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
     root = Path(output).resolve()
     root.relative_to(RUNTIME.resolve())
     root.mkdir(parents=True, exist_ok=True)
-    config = _config(policy_name, budget, seed, planner, retries, record_bags, timeout, goal_distance,
+    config = _config(policy_name, budget, seed, planner, retries, record_bags, frame_interval, timeout, goal_distance,
                      qualified_layouts, clean_validation_runs, clean_failure_policy)
     resolved({"planner": planner, **config["mission"]})
     config_path = root / "config.json"
@@ -213,7 +214,8 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
             else:
                 publish("validating_clean_baseline", trial={"planner": planner, "role": "clean_validation",
                                                              "attempt": index + 1, "directory": str(folder)})
-                result = run_episode(base, folder, record_bag=record_bags, control_path=control_path)
+                result = run_episode(base, folder, record_bag=record_bags, control_path=control_path,
+                                     frame_interval_s=frame_interval)
                 actual_attempts += 1
             saved.append(result)
             validation_root.mkdir(parents=True, exist_ok=True)
@@ -269,7 +271,8 @@ def run_adaptive_campaign(output, policy_name, budget=8, seed=42, planner="monon
                                   "termination": {"reason": "interrupted attempt"}}
                     else:
                         folder.parent.mkdir(parents=True, exist_ok=True)
-                        result = run_episode(trial, folder, record_bag=record_bags, control_path=control_path)
+                        result = run_episode(trial, folder, record_bag=record_bags, control_path=control_path,
+                                             frame_interval_s=frame_interval)
                     attempts.append({"directory": str(folder), "outcome": result["outcome"]})
                     actual_attempts += 1
                     if result["outcome"] != "infrastructure_error":
@@ -318,6 +321,9 @@ def main():
     parser.add_argument("--planner", choices=("mononav", "kim"), required=True)
     parser.add_argument("--infrastructure-retries", choices=(0, 1, 2), type=int, default=1)
     parser.add_argument("--record-bags", action="store_true")
+    parser.add_argument("--frame-interval", type=float, default=0.0, metavar="SECONDS",
+                        help="save the planner input as a JPEG this often in sim time. "
+                             "A few MB per flight, against 5 GB for a bag. 0 disables.")
     parser.add_argument("--review-seconds", type=float, default=5)
     parser.add_argument("--timeout", type=float)
     parser.add_argument("--goal-distance", type=float)
@@ -331,7 +337,7 @@ def main():
                         help="a layout that has already passed a clean flight, e.g. easy:2 (repeatable)")
     args = parser.parse_args()
     run_adaptive_campaign(args.output, args.policy, args.budget, args.seed, args.planner,
-                          args.infrastructure_retries, args.record_bags, args.review_seconds,
+                          args.infrastructure_retries, args.record_bags, args.frame_interval, args.review_seconds,
                           args.timeout, args.goal_distance,
                           qualified_layouts=parse_qualified_layouts(args.qualified_layout),
                           clean_validation_runs=args.clean_validation_runs,

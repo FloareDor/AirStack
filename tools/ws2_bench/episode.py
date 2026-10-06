@@ -3,7 +3,7 @@ import argparse,datetime,fcntl,hashlib,json,math,os,re,shutil,subprocess,time,ur
 from pathlib import Path
 import yaml
 from conditions import validate
-from run_conditions import RUNTIME,HERE,bridge_url,apply,scene_command
+from run_conditions import RUNTIME,HERE,bridge_url,apply,scene_command,get_frame
 from ravi_metrics import summarize
 from mission import defaults,motion_metrics,horizon_outcome
 from operator_control import request,UserStop
@@ -86,7 +86,7 @@ def worker_command(c,run_id=''):
                    '--tsdf-weight-threshold','0.5']
     return command
 
-def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag=True,control_path=None):
+def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag=True,control_path=None,frame_interval_s=0.):
     c=resolved(raw);out=Path(output).resolve()
     # Artifact/bag paths must remain inside the shared runtime mount.
     out.relative_to(RUNTIME.resolve());out.mkdir(parents=True,exist_ok=False)
@@ -101,9 +101,14 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
     result={'schema_version':3,'scenario_id':c['name'],'configuration_hash':fingerprint(c),'outcome':'infrastructure_error',
             'termination':{'source':'runner','reason':'not_started'},'result_dir':str(out),'metrics':{}}
     samples=[];goal=None;reached=None;commands=0;worker=None;bag=None;airborne=False;recording=False;mission_start=None
+    # Periodic planner-input frames. A full bag of one 8-pair run is 41 GB and
+    # never leaves the cluster; the same flight as JPEG frames is a few MB and
+    # is the only footage anyone has actually wanted to look at.
+    frames_dir=None;last_frame_sim=None;frames_written=0
     phase='preflight';started=time.monotonic();workerlog=None
     (RUNTIME/'inference').mkdir(exist_ok=True)
     result['bag_recorded']=False
+    result['frames_written']=0
     event('starting')
     def terminate(outcome,reason,detail=None):
         result.update(outcome=outcome,termination={'source':phase,'reason':reason,'detail':detail})
@@ -287,6 +292,16 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
                     sample={'sim_time_s':t,'position_m':s['position'],'clearance_m':oracle['clearance_m'],
                             'clearance_censored':oracle['clearance_censored']}
                     samples.append(sample);event('sample',**sample)
+                if frame_interval_s>0 and (last_frame_sim is None or t-last_frame_sim>=frame_interval_s):
+                    try:
+                        meta,jpeg=get_frame(url)
+                        if frames_dir is None:
+                            frames_dir=out/'frames';frames_dir.mkdir(exist_ok=True)
+                        (frames_dir/('%08.2f.jpg'%max(0.,t-mission_start))).write_bytes(jpeg)
+                        last_frame_sim=t;frames_written+=1;result['frames_written']=frames_written
+                    except Exception as error:
+                        # Footage is never worth failing a flight for.
+                        event('frame_capture_failed',detail=str(error));last_frame_sim=t
                 if goal is not None and math.dist(s['position'],goal)<=c['goal_radius']:
                     reached=len(samples)-1;terminate('goal_reached','goal_region');break
                 if t-mission_start>=c['timeout']:terminate(horizon_outcome(c,samples),'simulation_time_budget');break
@@ -357,8 +372,10 @@ if __name__=='__main__':
     p.add_argument('--resolve-only',action='store_true')
     p.add_argument('--wait-for-recording',action='store_true',help='Wait on ground for Enter before starting bag/takeoff')
     p.add_argument('--camera',choices=['overview','follow'],default='overview')
+    p.add_argument('--frame-interval',type=float,default=0.,metavar='SECONDS',
+                   help='save the planner input as a JPEG this often in sim time; 0 disables')
     a=p.parse_args();c=resolved(yaml.safe_load(a.scenario.read_text()))
     if a.resolve_only:print(yaml.safe_dump(c,sort_keys=False))
     else:
         output=a.output or RUNTIME/'episodes'/datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        print(json.dumps(run_episode(c,output,a.wait_for_recording,a.camera),indent=2))
+        print(json.dumps(run_episode(c,output,a.wait_for_recording,a.camera,frame_interval_s=a.frame_interval),indent=2))
