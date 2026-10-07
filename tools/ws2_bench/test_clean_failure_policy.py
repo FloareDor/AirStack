@@ -74,12 +74,12 @@ def _src_module():
 def test_config_records_whether_the_agent_was_told_the_objective(monkeypatch):
     """Two agent campaigns must not differ only by an unrecorded env var."""
     monkeypatch.delenv("WS2_AGENT_STATE_OBJECTIVE", raising=False)
-    on = agent_campaign._config("agent_search", 20, 42, "mononav", 1, False, None, None,
+    on = agent_campaign._config("agent_search", 20, 42, "mononav", 1, False, 0.0, None, None,
                                 (("easy", 2),), 0, "record")
     assert on["agent_objective_stated"] is True
 
     monkeypatch.setenv("WS2_AGENT_STATE_OBJECTIVE", "0")
-    off = agent_campaign._config("agent_search", 20, 42, "mononav", 1, False, None, None,
+    off = agent_campaign._config("agent_search", 20, 42, "mononav", 1, False, 0.0, None, None,
                                  (("easy", 2),), 0, "record")
     assert off["agent_objective_stated"] is False
     assert on != off, "the two arms must be distinguishable from their config alone"
@@ -88,6 +88,6 @@ def test_config_records_whether_the_agent_was_told_the_objective(monkeypatch):
 def test_non_agent_policies_record_no_objective_flag(monkeypatch):
     monkeypatch.delenv("WS2_AGENT_STATE_OBJECTIVE", raising=False)
     for policy in ("random", "search"):
-        cfg = agent_campaign._config(policy, 20, 42, "mononav", 1, False, None, None,
+        cfg = agent_campaign._config(policy, 20, 42, "mononav", 1, False, 0.0, None, None,
                                      (("easy", 2),), 0, "record")
         assert cfg["agent_objective_stated"] is None, policy

@@ -48,7 +48,7 @@ def test_adaptive_dashboard_command_is_no_noise_and_has_no_difficulty_selector(t
     monkeypatch.setenv('WS2_AGENT_ENDPOINT','https://example.invalid/chat/completions')
     monkeypatch.setenv('WS2_AGENT_API_KEY','test')
     monkeypatch.setenv('WS2_AGENT_MODEL','test')
-    argv=adaptive_command({'planner':'mononav','budget':8,'policy':'agent_search'},tmp_path)
+    argv=adaptive_command({'planner':'mononav','budget':8,'policy':'agent_search','qualified_layouts':['easy:2']},tmp_path)
     assert argv[:4][-2:]==['--policy','agent_search']
     assert '--profile' not in argv and '--difficulty' not in argv
     assert argv[argv.index('--planner')+1]=='mononav'

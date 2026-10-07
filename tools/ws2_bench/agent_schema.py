@@ -114,6 +114,8 @@ def validate_intent(raw):
     allowed = {"hypothesis", "reason", "layouts", "delay_band", "patch_mode"}
     if raw.keys() - allowed:
         raise ValueError(f"unknown intent fields: {raw.keys() - allowed}")
+    if allowed - raw.keys():
+        raise ValueError(f"missing intent fields: {allowed - raw.keys()}")
     intent = {
         "hypothesis": "explore an untested valid scene",
         "reason": "cover a new valid condition",

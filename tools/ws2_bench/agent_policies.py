@@ -15,6 +15,16 @@ from agent_schema import (ACTION_SCHEMA_VERSION, DELAYS, INTENT_SCHEMA_VERSION, 
 from mission import SUCCESSES
 
 
+def provider_from_name(name=None, audit_dir=None):
+    name = name or os.environ.get("WS2_AGENT_PROVIDER", "openai")
+    if name == "claude":
+        from claude_provider import ClaudeSubscriptionProvider
+        return ClaudeSubscriptionProvider(audit_dir=audit_dir)
+    if name == "openai":
+        return OpenAICompatibleIntentProvider()
+    raise ValueError("provider must be claude or openai")
+
+
 def all_actions():
     actions = []
     for layout in LAYOUTS:
@@ -197,7 +207,7 @@ class OpenAICompatibleIntentProvider:
         # 'reason' in 2 of 3 sampled replies, which aborts the campaign, so the
         # length limit is restated here as an instruction.
         system = (
-            "You are a WS2 test strategist. Return JSON only. You cannot issue commands, "
+            "You are a WS2 test strategist. Return JSON only. All generated text must be English. You cannot issue commands, "
             "control a drone, add noise, alter patch colors, or change planner code. "
             "Choose a high-level hypothesis using the supplied JSON schema. "
             "Hard limit: 'hypothesis' and 'reason' must each be at most 240 characters, "
@@ -250,6 +260,7 @@ class AgentSearchPolicy(SearchPolicy):
         super().__init__(seed, allowed_actions)
         self.provider = provider
         self.intent_log = []
+        self.campaign_context = {}
 
     @staticmethod
     def _filter_for_intent(actions, intent):
@@ -278,6 +289,7 @@ class AgentSearchPolicy(SearchPolicy):
                              "Repeat the same clean-pass/attack-fail condition once.",
                              "reproduce the candidate failure")
         context = {
+            **self.campaign_context,
             "intent_schema_version": INTENT_SCHEMA_VERSION,
             "remaining_pairs": remaining_pairs,
             "clean_qualified_layouts": sorted({f"{action['layout']}:{action['layout_seed']}"
@@ -289,6 +301,24 @@ class AgentSearchPolicy(SearchPolicy):
                 for r in history
             ],
         }
+        if getattr(self.provider, "chooses_action", False):
+            tested = _tested(history)
+            available = {action_key(a): a for a in self.actions if action_key(a) not in tested}
+            if not available:
+                raise RuntimeError("agent exhausted the allowed action space")
+            context["action_space"] = {key: sorted({a[key] for a in self.actions}) for key in
+                                       ("layout", "layout_seed", "delay_s", "patch_size_m",
+                                        "patch_start_s", "patch_duration_s")}
+            context["available_action_keys"] = list(available)
+            from claude_provider import validate_proposal
+            proposal = validate_proposal(self.provider.propose(context))
+            key = action_key(proposal["action"])
+            if key not in available:
+                raise ValueError("agent selected an unavailable or previously tested action")
+            decision = _decision(len(history) + 1, self.name, available[key], "llm_selected_configuration",
+                                 proposal["reason"], proposal["hypothesis"])
+            decision["llm_call_id"] = getattr(self.provider, "last_call_id", None)
+            return decision
         intent = validate_intent(self.provider.propose(context))
         self.intent_log.append(intent)
         tested = _tested(history)
@@ -322,5 +352,5 @@ def policy_from_name(name, seed, provider=None, allowed_actions=None):
     if name == "search":
         return SearchPolicy(seed, allowed_actions)
     if name == "agent_search":
-        return AgentSearchPolicy(seed, provider or OpenAICompatibleIntentProvider(), allowed_actions)
+        return AgentSearchPolicy(seed, provider or provider_from_name(), allowed_actions)
     raise ValueError("policy must be random, search, or agent_search")

@@ -25,26 +25,59 @@ def feedback_command(payload,output):
 
 def adaptive_command(payload,output):
     """Build the saved-layout, no-noise adaptive campaign command."""
-    if not isinstance(payload,dict) or set(payload)-{'planner','budget','timeout','goal_distance','policy'} or payload.get('planner') not in ('mononav','kim'):
+    if not isinstance(payload,dict) or set(payload)-{'planner','budget','timeout','goal_distance','policy','provider','qualified_layouts','clean_validation_runs','infrastructure_retries','clean_failure_policy','action_space'} or payload.get('planner') not in ('mononav','kim'):
         raise ValueError('Select one target model: mononav or kim')
     policy=payload.get('policy','search')
+    action_space=payload.get('action_space','saved')
+    if action_space not in ('saved','expanded'):raise ValueError('Unknown action space')
     budget=payload.get('budget',8);timeout=payload.get('timeout',defaults(payload['planner'])['timeout'])
     distance=payload.get('goal_distance',8)
     if policy not in ('random','search','agent_search'):raise ValueError('Invalid adaptive policy')
-    if policy=='agent_search' and not all(os.environ.get(key) for key in ('WS2_AGENT_ENDPOINT','WS2_AGENT_API_KEY','WS2_AGENT_MODEL')):
+    provider=payload.get('provider',os.environ.get('WS2_AGENT_PROVIDER','openai'))
+    if provider not in ('claude','openai'):raise ValueError('Provider must be claude or openai')
+    if action_space=='expanded' and policy=='agent_search' and provider!='claude':raise ValueError('Expanded agent mode requires Claude')
+    if policy=='agent_search' and provider=='openai' and not all(os.environ.get(key) for key in ('WS2_AGENT_ENDPOINT','WS2_AGENT_API_KEY','WS2_AGENT_MODEL')):
         raise ValueError('Agent mode needs WS2_AGENT_ENDPOINT, WS2_AGENT_API_KEY, and WS2_AGENT_MODEL')
+    if policy=='agent_search' and provider=='claude':
+        from claude_provider import ClaudeSubscriptionProvider
+        try:ClaudeSubscriptionProvider().check_auth()
+        except (RuntimeError,OSError,subprocess.TimeoutExpired) as exc:raise ValueError(str(exc)) from None
     if isinstance(budget,bool) or not isinstance(budget,int) or not 2<=budget<=100 or budget%2:raise ValueError('Flight budget must be even, 2..100')
     if any(isinstance(x,bool) or not isinstance(x,(int,float)) or not math.isfinite(x) for x in [timeout,distance]):raise ValueError('Invalid numeric mission settings')
     if not 60<=timeout<=600 or not 2<=distance<=30:raise ValueError('Duration60..600 seconds, goal2..30 metres')
-    return [sys.executable,str(HERE/'agent_campaign.py'),'--policy',policy,
+    from agent_campaign import parse_qualified_layouts
+    layouts=payload.get('qualified_layouts')
+    if action_space=='saved':
+        if not isinstance(layouts,list) or not layouts:raise ValueError('Enter clean-checked layout:seed values, e.g. easy:2')
+        qualified=parse_qualified_layouts(layouts)
+    else:qualified=()
+    validations=payload.get('clean_validation_runs',2)
+    retries=payload.get('infrastructure_retries',1)
+    clean_policy=payload.get('clean_failure_policy','halt')
+    if type(validations) is not int or validations not in (0,1,2,3):raise ValueError('Extra clean checks must be 0..3')
+    if type(retries) is not int or retries not in (0,1,2):raise ValueError('Infrastructure retries must be 0..2')
+    if clean_policy not in ('halt','record'):raise ValueError('Invalid clean failure policy')
+    command=[sys.executable,str(HERE/'agent_campaign.py'),'--policy',policy,
             '--budget',str(budget),'--planner',payload['planner'],'--timeout',str(timeout),
-            '--goal-distance',str(distance),'--output',str(output)]
+            '--goal-distance',str(distance),'--output',str(output),
+            '--clean-validation-runs',str(validations),'--infrastructure-retries',str(retries),
+            '--clean-failure-policy',clean_policy,'--action-space',action_space]
+    for layout,seed in qualified:command+=['--qualified-layout',f'{layout}:{seed}']
+    if policy=='agent_search':command+=['--provider',provider]
+    return command
 
 def campaign_root():
     value={'output':str(job_output)} if job_output is not None and job is not None and job.poll() is None else read_json(RUNTIME/'live_campaign.json') or {}
     if not value.get('output'):raise ValueError('No campaign yet')
     from pathlib import Path
     root=Path(value['output']).resolve();root.relative_to((RUNTIME/'campaigns').resolve())
+    return root
+
+def comparison_root():
+    from pathlib import Path
+    current=read_json(RUNTIME/'live_comparison.json') or {}
+    if not current.get('output'):raise ValueError('No comparison yet')
+    root=Path(current['output']).resolve();root.relative_to((RUNTIME/'campaigns').resolve())
     return root
 
 def set_view(payload):
@@ -82,18 +115,38 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/':self.send((HERE/'presentation.html').read_bytes(),'text/html; charset=utf-8')
             elif path=='/state':
                 campaign=read_json(RUNTIME/'live_campaign.json')
-                try:report=read_json(campaign_root()/'vulnerability_report.json');control=read_json(campaign_root()/'operator_control.json')
-                except ValueError:report=None;control=None
+                comparison=read_json(RUNTIME/'live_comparison.json')
+                try:
+                    compare_root=comparison_root();comparison_report=read_json(compare_root/'comparison.json');comparison_protocol=read_json(compare_root/'protocol.json')
+                except ValueError:comparison_report=None;comparison_protocol=None
+                try:
+                    root=campaign_root();report=read_json(root/'vulnerability_report.json');control=read_json(root/'operator_control.json')
+                    llm_analysis=read_json(root/'llm_analysis.json');campaign_error=read_json(root/'campaign_error.json')
+                    campaign_config=read_json(root/'config.json')
+                except ValueError:report=None;control=None;llm_analysis=None;campaign_error=None;campaign_config=None
                 self.send({'campaign':campaign,'episode':read_json(RUNTIME/'live_episode.json'),
                            'running':active(),'read_only':MONITOR,
                            'view':read_json(RUNTIME/'live_view.json'),'view_settings':read_json(RUNTIME/'view_settings.json'),
                            'scene':read_json(RUNTIME/'scene_status.json'),'analysis':report,'control':control,
+                           'llm_analysis':llm_analysis,'campaign_error':campaign_error,
+                           'campaign_config':campaign_config,
+                           'comparison':comparison,'comparison_report':comparison_report,'comparison_protocol':comparison_protocol,
                            'inference':{m:read_json(RUNTIME/'inference'/(m+'.json')) for m in ['mononav','kim']}})
             elif path=='/scene.jpg':self.send((RUNTIME/'live_view.jpg').read_bytes(),'image/jpeg')
             elif path in ['/report','/report.md','/report.json']:
                 ext={'/report':'html','/report.md':'md','/report.json':'json'}[path]
                 self.send((campaign_root()/('vulnerability_report.'+ext)).read_bytes(),
                           'text/html; charset=utf-8' if ext=='html' else 'text/plain; charset=utf-8')
+            elif path in ['/llm-report','/llm-report.md','/llm-report.json']:
+                ext={'/llm-report':'html','/llm-report.md':'md','/llm-report.json':'json'}[path]
+                self.send((campaign_root()/('llm_analysis.'+ext)).read_bytes(),
+                          'text/html; charset=utf-8' if ext=='html' else 'text/plain; charset=utf-8')
+            elif path in ['/comparison','/comparison.md','/comparison.json']:
+                ext={'/comparison':'html','/comparison.md':'md','/comparison.json':'json'}[path]
+                self.send((comparison_root()/('comparison.'+ext)).read_bytes(),
+                          'text/html; charset=utf-8' if ext=='html' else 'text/plain; charset=utf-8')
+            elif path=='/llm-calls':
+                self.send([read_json(p) for p in sorted((campaign_root()/'llm_calls').glob('*.json'),key=lambda p:p.stat().st_mtime)[-4:]])
             elif path in ['/inference/mononav.jpg','/inference/kim.jpg']:
                 self.send((RUNTIME/path.lstrip('/')).read_bytes(),'image/jpeg')
             else:self.send({'error':'not found'},status=404)
