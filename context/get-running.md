@@ -96,6 +96,39 @@ travelled with `depth_ok=True` while the ungated twin reached the goal. Do not
 raise it again until the check is a frustum/depth test. The degenerate-depth
 gate is unaffected and stays on.
 
+### the Office assets do not survive a container recreation
+
+`docker cp` puts the 910 Office files inside the `isaac-sim` container's own
+`/tmp`, not in a volume. `./airstack.sh up` after a `down`, or after the pod
+OOM-kills the sim, **recreates** the container and drops all of them. Isaac Sim
+then cannot load `office.usd`, `scene_status.json` is never written, and every
+episode fails 360s later with `fresh simulator/oracle/camera readiness timed
+out` — which looks like a slow sim, not a missing file. An episode's own
+stop/start preserves the files; only recreation loses them.
+
+Check and repair with:
+
+```bash
+docker exec isaac-sim sh -c 'find /tmp/ws2_assets -type f | wc -l'   # expect 910
+docker exec isaac-sim mkdir -p /tmp/ws2_assets/Isaac/4.5
+docker cp /tmp/ws2_assets/Isaac/4.5/. isaac-sim:/tmp/ws2_assets/Isaac/4.5
+```
+
+Any script that cycles the sim must re-copy afterwards and verify `office.usd`
+is present before flying.
+
+### the pod runs out of memory
+
+`osmo_pilot.yaml` requests `memory: 48Gi`. A six-flight MonoNav campaign
+OOM-killed both `isaac-sim` and `airstack-robot-desktop-1` (exit 137) with a
+`python3` at 26.7 GB resident. `docker inspect` reports `OOMKilled: false`,
+because the kill comes from the pod cgroup rather than a container limit, so
+check `dmesg | grep -i 'oom-kill\|out of memory'` instead. Long campaigns
+should be split into chunks with a sim cycle between them, and the containers
+checked with `docker ps` before each chunk. This is the most likely cause of
+the long run of `FAILED_EXEC_TIMEOUT` workflows: a dead sim makes a campaign
+block until the 12h `exec_timeout` expires.
+
 The full ROS build is slow on a clean workspace. Wait for it to finish before
 starting an episode. Its normal warnings are not failures. The Office download
 should contain 910 files and `office.usd` should exist under
