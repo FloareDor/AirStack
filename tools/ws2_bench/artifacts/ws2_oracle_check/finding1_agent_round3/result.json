@@ -1,0 +1,61 @@
+{
+  "schema_version": 3,
+  "scenario_id": "finding1_agent_round3 oracle check",
+  "configuration_hash": "3b076014b3a52893820e26e36e393a6f3882f2b547da02e764570be724745e4b",
+  "outcome": "collision",
+  "termination": {
+    "source": "planner",
+    "reason": "physx_contact",
+    "detail": {
+      "sim_time": 42.35499905329198,
+      "objects": [
+        "/World/Office/WS2_plant/SM_Plant01"
+      ],
+      "position": [
+        -2.526859760284424,
+        0.05022187903523445,
+        1.2388668060302734
+      ],
+      "drone_position": [
+        -2.526859760284424,
+        0.05022187903523445,
+        1.2388668060302734
+      ],
+      "clearance_at_contact_m": 0.024658203125,
+      "surface_distance_at_contact_m": 0.274658203125,
+      "clearance_censored_at_contact": false,
+      "measured_hull_radius_m": 0.3482276960663908
+    }
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_oracle_check/finding1_agent_round3",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 1.5379827789251028,
+    "direct_start_to_goal_distance_m": 7.99478714357775,
+    "path_efficiency": null,
+    "mission_progress_percent": 19.144345041198665,
+    "final_distance_to_goal_m": 6.464237507501835,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.024658203125,
+    "odometry_sample_count": 135,
+    "odometry_start_sim_time_s": 34.569999227300286,
+    "odometry_end_sim_time_s": 42.429999051615596,
+    "max_displacement_m": 1.5334358776922146,
+    "mean_speed_m_s": 0.19567211365161546,
+    "stationary_fraction": 0.0,
+    "clearance_at_contact_m": 0.024658203125,
+    "surface_distance_at_contact_m": 0.274658203125,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.5820000335460401,
+    "minimum_surface_distance_m": 0.274658203125,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included. Not a safety margin: most collisions report a positive value, and sphere overlap misses thin foliage.",
+    "mission_duration_sim_s": 7.8599998243153095,
+    "planner_wall_duration_s": 138.31839432567358
+  },
+  "bag_recorded": true,
+  "frames_written": 0,
+  "planner_command_count": 11,
+  "cleanup_errors": [],
+  "wall_duration_s": 152.4819714780897
+}

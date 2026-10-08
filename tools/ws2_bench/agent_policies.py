@@ -74,13 +74,13 @@ def _pair_score(pair):
         # corridor that is merely tight does not outrank a condition the attack
         # actually degraded.
         #
-        # This is a gradient where pass/fail gives none. It is NOT a measure of
-        # how close the flight came to colliding: on 2026-10-08, 12 of 14
-        # collisions reported a positive clearance, and the plant collisions
-        # reported +0.12 while physics reported contact, because a sphere
-        # overlap test misses thin leaf triangles. Foliage is the dominant
-        # collision object, so a search tuned only on this will steer away from
-        # the failures that matter. See WS2_CLEARANCE_IS_NOT_A_SAFETY_MARGIN.md.
+        # This is a gradient where pass/fail gives none. It is not, as reported,
+        # a measure of how close the flight came to colliding: the drone's
+        # measured hull is 0.348m while the reported margin subtracts 0.25m, so
+        # a real contact reads as about +0.098 and 12 of 14 collisions on
+        # 2026-10-08 reported a positive clearance. That is a calibration
+        # error of a known size, not a blind spot, and the paired difference
+        # cancels it. See WS2_CLEARANCE_IS_NOT_A_SAFETY_MARGIN.md.
         if isinstance(clean_clearance, (int, float)):
             score += max(0.0, float(clean_clearance) - float(clearance))
     if isinstance(progress, (int, float)):
