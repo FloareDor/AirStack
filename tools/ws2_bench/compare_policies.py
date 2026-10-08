@@ -100,6 +100,7 @@ def report_study(root):
                  'CLI dollar values are list-price estimates, not a subscription invoice.',
                  'LLM call totals include any retained report-only revisions; selection and analysis latency are recorded separately.',
                  'Clearance loss is a continuous stress proxy, not a failure; it is reported so a zero-failure pilot still says something, and it carries no significance claim.',
+                 'Clearance is PhysX surface distance minus a nominal 0.25m vehicle envelope, so a reported 0.03m is about 0.28m from the obstacle and a small negative value is not a contact. The paired loss is a difference, so that offset cancels; the worst-attacked column is an envelope-adjusted margin and must not be read as a distance.',
                  'Separate clean qualification is outside the comparison budget and listed separately.',
                  'All three methods run without manual configuration changes during the campaign; reduced manual effort by Claude is not established.']
     data={'status':'complete' if complete else 'in_progress','comparison_valid':valid,'protocol':protocol,
