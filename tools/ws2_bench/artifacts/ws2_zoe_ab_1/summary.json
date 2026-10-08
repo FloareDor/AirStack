@@ -1,0 +1,44 @@
+[
+  {
+    "case": "finding1_agent_round3",
+    "arm": "zoe_gate_on",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "exit": 0
+  },
+  {
+    "case": "finding1_agent_round3",
+    "arm": "zoe_gate_off",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "exit": 0
+  },
+  {
+    "case": "finding1_random_round2",
+    "arm": "zoe_gate_on",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "exit": 0
+  },
+  {
+    "case": "finding1_random_round2",
+    "arm": "zoe_gate_off",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "exit": 0
+  },
+  {
+    "case": "finding2_easy0",
+    "arm": "zoe_gate_on",
+    "repeat": 0,
+    "outcome": "collision",
+    "exit": 0
+  },
+  {
+    "case": "finding2_easy0",
+    "arm": "zoe_gate_off",
+    "repeat": 0,
+    "outcome": "collision",
+    "exit": 0
+  }
+]

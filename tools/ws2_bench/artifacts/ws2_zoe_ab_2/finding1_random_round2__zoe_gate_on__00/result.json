@@ -1,0 +1,38 @@
+{
+  "schema_version": 3,
+  "scenario_id": "finding1_random_round2 zoe_gate_on",
+  "configuration_hash": "713bbd7f17924c907200066845e86aca30b5cec1e82a946a4ebf522c637b8a98",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_zoe_ab_2/finding1_random_round2__zoe_gate_on__00",
+  "metrics": {
+    "time_to_goal_s": 41.00999908335507,
+    "path_length_m": 8.463114627753601,
+    "direct_start_to_goal_distance_m": 7.97954907170957,
+    "path_efficiency": 0.942861986713704,
+    "mission_progress_percent": 93.80847488827894,
+    "final_distance_to_goal_m": 0.49405578457700267,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.036865234375,
+    "odometry_sample_count": 679,
+    "odometry_start_sim_time_s": 32.10999928228557,
+    "odometry_end_sim_time_s": 73.11999836564064,
+    "max_displacement_m": 7.621646891468519,
+    "mean_speed_m_s": 0.2063671011197015,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.6418716441826308,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 41.00999908335507,
+    "planner_wall_duration_s": 193.43846685811877
+  },
+  "bag_recorded": true,
+  "frames_written": 0,
+  "planner_command_count": 47,
+  "cleanup_errors": [],
+  "wall_duration_s": 235.27913281694055
+}
