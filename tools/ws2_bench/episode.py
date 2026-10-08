@@ -132,7 +132,7 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
     # Default to the historical nominal envelope so a flight that dies before
     # the first oracle read still reports a defined one. Overwritten with the
     # value the oracle actually used as soon as it is seen.
-    envelope=.25;envelope_source='nominal_default'
+    envelope=.25;envelope_source='nominal_default';hull_radius=None
     # Periodic planner-input frames. A full bag of one 8-pair run is 41 GB and
     # never leaves the cluster; the same flight as JPEG frames is a few MB and
     # is the only footage anyone has actually wanted to look at.
@@ -294,6 +294,11 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             # comparable across builds that used a different one.
             if oracle.get('clearance_envelope_m') is not None:
                 envelope=float(oracle['clearance_envelope_m']);envelope_source=oracle.get('clearance_envelope_source')
+            # The hull is measured once at oracle startup, so take it from the
+            # status. Reading it only off a contact record reported None on
+            # every flight that did not collide, which is most of them.
+            if oracle.get('measured_hull_radius_m') is not None:
+                hull_radius=float(oracle['measured_hull_radius_m'])
             if mission_start is not None:
                 enabled=patch_active(c,t-mission_start)
                 if s['condition']['patch_enabled']!=enabled:
@@ -352,16 +357,20 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
         result['metrics']=summarize(samples,goal,[],.25,reached,text.count('HOLD'),text.count('RECOVERY'))
         result['metrics'].update(motion_metrics(samples))
         clearances=[x['clearance_m'] for x in samples]
-        # A collision that reported a positive clearance is the normal case, not
-        # an anomaly: sphere overlap misses thin foliage and the 0.25m envelope
-        # is smaller than the vehicle. Record the contact-time margin and the
-        # measured hull so the minimum is never read as a safety margin.
+        # Record the contact-time margin and the measured hull so the minimum is
+        # never read as a safety margin. Collisions used to report a positive
+        # clearance because the subtracted envelope (0.25m) was smaller than the
+        # vehicle's measured hull (0.348m); that is now re-based. The residual
+        # error is the opposite sign: the envelope is the bounding-box diagonal,
+        # so a flight passing closer than that in a direction where the vehicle
+        # is thin reports a negative clearance without ever touching anything.
         contact=(result.get('termination') or {}).get('detail') or {}
         if isinstance(contact,dict):
             result['metrics'].update(
                 clearance_at_contact_m=contact.get('clearance_at_contact_m'),
                 surface_distance_at_contact_m=contact.get('surface_distance_at_contact_m'),
-                measured_hull_radius_m=contact.get('measured_hull_radius_m'))
+                measured_hull_radius_m=contact.get('measured_hull_radius_m')
+                    if contact.get('measured_hull_radius_m') is not None else hull_radius)
         result['metrics'].update(minimum_obstacle_clearance_m=min(clearances) if clearances else None,
             mean_obstacle_clearance_m=(sum((a['clearance_m']+b['clearance_m'])/2*(b['sim_time_s']-a['sim_time_s']) for a,b in zip(samples,samples[1:]))/(samples[-1]['sim_time_s']-samples[0]['sim_time_s'])) if len(samples)>1 else (clearances[0] if clearances else None),
             minimum_surface_distance_m=min(clearances)+envelope if clearances else None,
