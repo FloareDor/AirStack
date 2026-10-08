@@ -14,13 +14,20 @@ import yaml
 
 HERE=Path(__file__).resolve().parent
 CASES=['finding1_agent_round3','finding1_random_round2','finding2_easy0']
-ARMS={'gates_on':{'max_unmapped_gap':.35,'zoe_degenerate_min_correspondence':.12},
-      'gates_off':{'max_unmapped_gap':0.,'zoe_degenerate_min_correspondence':0.}}
+# Only the degenerate-depth gate is compared. The unmapped-gap gate is held at
+# 0 in both arms because the first run of this script showed it grounds the
+# planner: it rejects open space for being open, so an arm with it on measures
+# that, not the depth fix. See mission.defaults('mononav').
+ARMS={'zoe_gate_on':{'max_unmapped_gap':0.,'zoe_degenerate_min_correspondence':.12},
+      'zoe_gate_off':{'max_unmapped_gap':0.,'zoe_degenerate_min_correspondence':0.}}
 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--repeats',type=int,default=1)
+    # One flight per arm cannot separate the fix from run-to-run variation:
+    # these scenarios do not reproduce their own collisions every time, which
+    # is the weakness this comparison exists to remove.
+    p.add_argument('--repeats',type=int,default=3)
     a=p.parse_args()
     a.output.mkdir(parents=True,exist_ok=True)
     rows=[]

@@ -17,12 +17,22 @@ def defaults(planner):
         return dict(mission_mode='avoidance',timeout=120.,goal_distance=8.,goal_radius=.5,
                     minimum_travel=3.,minimum_displacement=1.,maximum_stationary_fraction=.5,initial_speed=.2,maximum_speed=.35,
                     trajectory_horizon=2.,velocity=.4)
-    # The two depth-confidence gates are MonoNav-only and default to the
-    # planner's own defaults. Setting either to 0 flies the pre-fix behaviour,
-    # where unreadable depth and unmapped space both scored as clear.
+    # Both depth-confidence gates are MonoNav-only. Setting either to 0 flies
+    # the pre-fix behaviour for that gate.
+    #
+    # max_unmapped_gap is off, because the 2026-10-08 A/B showed it grounds the
+    # planner rather than protecting it. It asks that every trajectory point lie
+    # within the gap of a weighted voxel, but Open3D allocates blocks only in
+    # the +/-trunc band around an observed surface (8 * 3/64 m = 0.375 m), so
+    # 'near a mapped voxel' means 'near a wall'. Together with min_dist2obs=0.5
+    # that admits only a 0.5 m < d < 0.725 m shell, and the open centre of a
+    # 0.9 m corridor is rejected as unmapped for being open. Both gated flights
+    # stopped at under 0.3 m travelled with depth_ok=True, while the ungated
+    # twin reached the goal. Re-enable only once the test is a frustum/depth
+    # check for 'have we observed this point', which is the intended meaning.
     return dict(mission_mode='goal',timeout=180.,goal_distance=8.,goal_radius=.5,
                 minimum_travel=3.,minimum_displacement=1.,maximum_stationary_fraction=.5,initial_speed=.4,maximum_speed=.5,
-                trajectory_horizon=2.,velocity=.3,max_unmapped_gap=.35,zoe_degenerate_min_correspondence=.12)
+                trajectory_horizon=2.,velocity=.3,max_unmapped_gap=0.,zoe_degenerate_min_correspondence=.12)
 
 def motion_metrics(samples):
     if not samples:return {'max_displacement_m':0.,'mean_speed_m_s':0.,'stationary_fraction':None}

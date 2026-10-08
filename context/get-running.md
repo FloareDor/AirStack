@@ -87,6 +87,15 @@ checkout rejects the flags and the flight fails instead of quietly flying the
 version that scored unreadable depth as clear. An existing workspace needs
 `(cd /root/MonoNav && git pull --ff-only)` and an image rebuild.
 
+`--max-unmapped-gap` now defaults to 0, which disables it. The 2026-10-08 A/B
+found it grounds the planner instead of protecting it: it requires every
+trajectory point to sit near a weighted voxel, but Open3D allocates blocks only
+in the +/-0.375 m band around an observed surface, so the open centre of a
+corridor is rejected for being open. Both gated flights stopped under 0.3 m
+travelled with `depth_ok=True` while the ungated twin reached the goal. Do not
+raise it again until the check is a frustum/depth test. The degenerate-depth
+gate is unaffected and stays on.
+
 The full ROS build is slow on a clean workspace. Wait for it to finish before
 starting an episode. Its normal warnings are not failures. The Office download
 should contain 910 files and `office.usd` should exist under
