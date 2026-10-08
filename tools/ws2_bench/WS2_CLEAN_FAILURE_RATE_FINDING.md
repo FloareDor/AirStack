@@ -67,5 +67,32 @@ should be re-measured with more flights before being quoted as a number. What
 is solid is the qualitative point: the clean failure rate is high enough to
 dominate small paired campaigns, and it was never being measured.
 
+## Update: the full 18-flight A/B confirms it
+
+The comparison finished with 18 flights and no infrastructure errors.
+
+| arm | collisions | median progress |
+|---|---|---|
+| `zoe_gate_off` | 4/9 | 93.7% |
+| `zoe_gate_on` | 5/9 | 23.2% |
+
+Fisher exact two-sided p = 1.000. The gated arm collided slightly more, and
+`depth_ok` was true on every frame of every flight, so the gate never fired
+and the split is noise by construction. That makes it a useful calibration:
+**at nine flights per arm a one-flight difference arises by chance alone**, so
+any campaign reporting an effect at that margin is reporting nothing.
+
+Per scenario the deterministic and stochastic cases separate cleanly:
+
+| scenario | gate off | gate on |
+|---|---|---|
+| `finding1_agent_round3` | 0/3 | 1/3 |
+| `finding1_random_round2` | 1/3 | 1/3 |
+| `finding2_easy0` | 3/3 | 3/3 |
+
+Counting every flight flown in this workspace, `finding2_easy0` collided
+**11 of 11**.
+
 Evidence: `artifacts/ws2_gate_validation/`, `artifacts/ws2_zoe_ab_1/`,
-`artifacts/ws2_zoe_ab_2/`.
+`artifacts/ws2_zoe_ab_2/`, `artifacts/ws2_zoe_ab_3/`,
+`artifacts/zoe_ab_pooled.json`.

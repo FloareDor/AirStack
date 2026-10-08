@@ -1,0 +1,59 @@
+{
+  "flights": 18,
+  "per_arm": {
+    "zoe_gate_off": {
+      "n": 9,
+      "goal": 5,
+      "collision": 4,
+      "planner_stopped": 0,
+      "median_progress_percent": 93.74
+    },
+    "zoe_gate_on": {
+      "n": 9,
+      "goal": 4,
+      "collision": 5,
+      "planner_stopped": 0,
+      "median_progress_percent": 23.24
+    }
+  },
+  "per_case": {
+    "finding1_agent_round3": {
+      "zoe_gate_off": [
+        "goal_reached",
+        "goal_reached",
+        "goal_reached"
+      ],
+      "zoe_gate_on": [
+        "goal_reached",
+        "collision",
+        "goal_reached"
+      ]
+    },
+    "finding1_random_round2": {
+      "zoe_gate_off": [
+        "goal_reached",
+        "collision",
+        "goal_reached"
+      ],
+      "zoe_gate_on": [
+        "goal_reached",
+        "goal_reached",
+        "collision"
+      ]
+    },
+    "finding2_easy0": {
+      "zoe_gate_off": [
+        "collision",
+        "collision",
+        "collision"
+      ],
+      "zoe_gate_on": [
+        "collision",
+        "collision",
+        "collision"
+      ]
+    }
+  },
+  "infrastructure_errors": 0,
+  "verdict": "zoe_gate_off: 4/9 collisions, zoe_gate_on: 5/9. A difference this small at this sample size is not significant; treat it as a lead."
+}
