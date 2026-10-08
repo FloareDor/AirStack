@@ -80,3 +80,29 @@ def test_clearance_columns_tolerate_a_run_without_metrics(tmp_path):
     root=tmp_path/'random';write(root,'history.json',history())
     result=method_result(root)
     assert result['median_clearance_loss_m'] is None and result['clearance_pairs']==0
+
+
+def envelope_history(clean_env,attacked_env):
+    return [{'decision':{'round':i,'action':reference_action()},'pairs':[{
+        role:{'outcome':'goal_reached','wall_duration_s':2.,
+              'metrics':{'minimum_obstacle_clearance_m':.05,'clearance_envelope_m':env}}
+        for role,env in [('clean',clean_env),('perturbed',attacked_env)]}]} for i in (1,2)]
+
+def test_mixed_clearance_envelopes_are_flagged(tmp_path):
+    protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['t']}
+    write(tmp_path,'protocol.json',protocol)
+    for name,env in [('random',.25),('search',.3482),('agent_search',.3482)]:
+        write(tmp_path/name,'config.json',{});write(tmp_path/name,'history.json',envelope_history(env,env))
+    report=report_study(tmp_path)
+    assert report['mixed_clearance_envelopes']
+    assert report['clearance_envelopes_m']==[.25,.3482]
+    assert any('different vehicle envelopes' in s for s in report['limitations'])
+
+def test_one_envelope_is_not_flagged(tmp_path):
+    protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['t']}
+    write(tmp_path,'protocol.json',protocol)
+    for name in protocol['order']:
+        write(tmp_path/name,'config.json',{});write(tmp_path/name,'history.json',envelope_history(.3482,.3482))
+    report=report_study(tmp_path)
+    assert not report['mixed_clearance_envelopes']
+    assert not any('different vehicle envelopes' in s for s in report['limitations'])

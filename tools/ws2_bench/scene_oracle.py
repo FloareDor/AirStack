@@ -22,8 +22,20 @@ class SceneOracle:
         # compared against something real: on 2026-10-08 twelve of fourteen
         # collisions reported a positive clearance because this was assumed.
         self.hull_radius=self.measure_hull(stage)
+        # Subtract what the vehicle actually spans, not an assumed 0.25m. With
+        # the nominal radius a genuine contact read as about +0.098, so most
+        # collisions reported a positive margin. The measured hull is the
+        # farthest extent, so this is the conservative end of an anisotropic
+        # range: a head-on body contact happens nearer 0.25m and will now read
+        # negative before it touches. That direction is the safe one for a
+        # margin. A measurement outside a plausible band is not trusted, since
+        # a stray bound on the drone subtree would silently wreck the metric.
+        self.envelope=self.radius;self.envelope_source='nominal'
+        if isinstance(self.hull_radius,float) and .1<=self.hull_radius<=1.:
+            self.envelope=self.hull_radius;self.envelope_source='measured_hull'
         self.status={'available':True,'armed':False,'collision':None,'bodies':self.bodies,
-            'nominal_envelope_m':self.radius,'measured_hull_radius_m':self.hull_radius}
+            'nominal_envelope_m':self.radius,'measured_hull_radius_m':self.hull_radius,
+            'clearance_envelope_m':self.envelope,'clearance_envelope_source':self.envelope_source}
 
     def measure_hull(self,stage):
         """Farthest extent of the drone's own colliders from its root origin.
@@ -70,15 +82,17 @@ class SceneOracle:
         return bool(found)
 
     def clearance(self,point,maximum=5.):
-        # Query the actual triangle colliders, not just three box bounds. The
-        # sphere is a nominal vehicle envelope, not the exact collision hull.
-        if not self.overlap(point,maximum):return maximum-self.radius,True
+        # Query the actual triangle colliders, not just three box bounds.
+        # self.envelope is the measured hull where it could be measured, so a
+        # value at or below zero means the vehicle's outermost extent is in
+        # contact. Add clearance_envelope_m back to recover surface distance.
+        if not self.overlap(point,maximum):return maximum-self.envelope,True
         lo,hi=0.,maximum
         for _ in range(13):
             mid=(lo+hi)/2
             if self.overlap(point,mid):hi=mid
             else:lo=mid
-        return lo-self.radius,False
+        return lo-self.envelope,False
 
     def update(self,t,position):
         if position[2]>.3:self.armed=True
@@ -99,16 +113,18 @@ class SceneOracle:
             self.collision={'sim_time':t,'objects':sorted(contacts),
                 'position':list(map(float,position)),'drone_position':list(map(float,position)),
                 'clearance_at_contact_m':contact_clearance,
-                'surface_distance_at_contact_m':None if contact_clearance is None else contact_clearance+self.radius,
+                'surface_distance_at_contact_m':None if contact_clearance is None else contact_clearance+self.envelope,
                 'clearance_censored_at_contact':contact_censored,
-                'measured_hull_radius_m':self.hull_radius}
+                'measured_hull_radius_m':self.hull_radius,
+                'clearance_envelope_m':self.envelope,'clearance_envelope_source':self.envelope_source}
         self.status.update(armed=self.armed,contacts=sorted(contacts),collision=self.collision,sim_time=t)
         if t-self.last_clearance>=.1:
             distance,censored=self.clearance(position)
             self.status.update(clearance_m=distance,clearance_censored=censored,
-                surface_distance_m=distance+self.radius,
-                clearance_method='PhysX mesh distance minus nominal 0.25m sphere (not exact hull); '
-                    'a positive value is NOT a safety margin and sphere overlap misses thin foliage',
+                surface_distance_m=distance+self.envelope,
+                clearance_method=f'PhysX mesh distance minus a {self.envelope:.4f}m vehicle envelope '
+                    f'({self.envelope_source}); zero means the outermost extent is in contact. The hull is '
+                    'anisotropic, so this is the conservative end of a range and a head-on contact reads negative.',
                 clearance_sim_time=t)
             self.last_clearance=t
         return self.status

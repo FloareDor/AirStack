@@ -129,6 +129,10 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
     result={'schema_version':3,'scenario_id':c['name'],'configuration_hash':fingerprint(c),'outcome':'infrastructure_error',
             'termination':{'source':'runner','reason':'not_started'},'result_dir':str(out),'metrics':{}}
     samples=[];goal=None;reached=None;commands=0;worker=None;bag=None;airborne=False;recording=False;mission_start=None
+    # Default to the historical nominal envelope so a flight that dies before
+    # the first oracle read still reports a defined one. Overwritten with the
+    # value the oracle actually used as soon as it is seen.
+    envelope=.25;envelope_source='nominal_default'
     # Periodic planner-input frames. A full bag of one 8-pair run is 41 GB and
     # never leaves the cluster; the same flight as JPEG frames is a few MB and
     # is the only footage anyone has actually wanted to look at.
@@ -285,6 +289,11 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             if operator_check(True):
                 last_advance=time.monotonic();deadline=time.monotonic()+120
             s=state();h=health(url);t=s['sim_time'];oracle=s['oracle']
+            # Carry the envelope the oracle actually subtracted. It is the
+            # measured hull where measurable, so clearance values are not
+            # comparable across builds that used a different one.
+            if oracle.get('clearance_envelope_m') is not None:
+                envelope=float(oracle['clearance_envelope_m']);envelope_source=oracle.get('clearance_envelope_source')
             if mission_start is not None:
                 enabled=patch_active(c,t-mission_start)
                 if s['condition']['patch_enabled']!=enabled:
@@ -355,9 +364,11 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
                 measured_hull_radius_m=contact.get('measured_hull_radius_m'))
         result['metrics'].update(minimum_obstacle_clearance_m=min(clearances) if clearances else None,
             mean_obstacle_clearance_m=(sum((a['clearance_m']+b['clearance_m'])/2*(b['sim_time_s']-a['sim_time_s']) for a,b in zip(samples,samples[1:]))/(samples[-1]['sim_time_s']-samples[0]['sim_time_s'])) if len(samples)>1 else (clearances[0] if clearances else None),
-            minimum_surface_distance_m=min(clearances)+.25 if clearances else None,
-            clearance_method='PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included. '
-                'Not a safety margin: most collisions report a positive value, and sphere overlap misses thin foliage.',
+            minimum_surface_distance_m=min(clearances)+envelope if clearances else None,
+            clearance_envelope_m=envelope,clearance_envelope_source=envelope_source,
+            clearance_method=f'PhysX collider distance minus a {envelope:.4f}m vehicle envelope ({envelope_source}); '
+                'ground/ceiling included. Zero means the vehicle outermost extent is in contact. Values are not '
+                'comparable across builds using a different envelope; add clearance_envelope_m back for surface distance.',
             mission_duration_sim_s=None if mission_start is None else s['sim_time']-mission_start,
             planner_wall_duration_s=time.monotonic()-started)
         if result['outcome']!='goal_reached':result['metrics']['path_efficiency']=None
