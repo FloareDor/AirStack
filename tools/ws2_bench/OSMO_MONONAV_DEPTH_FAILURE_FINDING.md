@@ -157,3 +157,58 @@ Two further notes from the same run:
 
 Evidence: `artifacts/ws2_gate_validation/` (per-flight `result.json`,
 `summary.json`, worker logs).
+
+## Addendum, 2026-10-08: the Finding 1 gate was measured and carries no signal
+
+The degenerate-depth gate never fired in 490 frames across the six-flight A/B,
+including flights that collided, so it was neither confirmed nor refuted. The
+detector computed its edge-correspondence value and logged only the verdict,
+which made the gate unobservable; MonoNav `b8e5377` now logs the value, the
+threshold, and the strong-edge pixel count.
+
+Three flights of `finding2_easy0` with the gate on, 174 frames, all three
+collided into `/World/Office/WS2_plant/SM_Plant01`:
+
+| | probe_0 | probe_1 | probe_2 |
+|---|---|---|---|
+| correspondence min | 0.294 | 0.269 | 0.296 |
+| median | 0.407 | 0.382 | 0.388 |
+| max | 0.546 | 0.563 | 0.494 |
+| frames below the 0.12 threshold | 0/74 | 0/71 | 0/29 |
+| smallest margin above threshold | 2.4x | 2.2x | 2.5x |
+| `zoe_edges` median | 46046 | 46041 | 46044 |
+
+Three candidate explanations for the silence, and what the data says:
+
+- **Opting out on low texture.** Ruled out. `min_edge_pixels` is 300 and these
+  frames carry about 46,000 strong RGB edge pixels, so every frame was
+  evaluated.
+- **Mistuned threshold.** Ruled out. The smallest value seen is 0.269, more
+  than twice the threshold. This is not a near miss.
+- **The statistic carries no signal.** Supported. The correspondence does not
+  dip at the failure: the last five frames before contact are 0.354-0.442,
+  0.383-0.468 and 0.300-0.312, at or above each flight's own median. Frames
+  driving into the plant look like frames flying down an empty corridor.
+
+That is a stronger result than mistuning. Firing on the worst collision frame
+needs a threshold above 0.269, while healthy frames in the same flights reach
+0.563, so **no threshold separates the two**. Raising it to catch the collision
+would reject most good frames; 0.12 catches nothing.
+
+A whole-frame edge-correspondence statistic cannot detect a depth failure
+confined to one object. The gate's own docstring names the intended target as
+"a close column/plant", which is exactly a localized failure, so the
+implementation does not match its stated purpose.
+
+What would: a spatially local test. Either per-region correspondence, so a
+block of the image that disagrees with its RGB raises a flag regardless of the
+rest of the frame, or a per-primitive check that compares the depth measured
+along a candidate trajectory against what the TSDF predicts there. Both are
+local by construction. Neither has been implemented or flown.
+
+The gate is left on at 0.12, because it demonstrably changes nothing and
+removing it would be an unreviewed behaviour change, but it should not be
+described as a mitigation for this failure.
+
+Evidence: `artifacts/ws2_corr_probe/` (per-flight `result.json`, `worker.log`
+with `zoe_corr` on every frame).
