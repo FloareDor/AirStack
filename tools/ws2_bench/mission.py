@@ -17,9 +17,12 @@ def defaults(planner):
         return dict(mission_mode='avoidance',timeout=120.,goal_distance=8.,goal_radius=.5,
                     minimum_travel=3.,minimum_displacement=1.,maximum_stationary_fraction=.5,initial_speed=.2,maximum_speed=.35,
                     trajectory_horizon=2.,velocity=.4)
+    # The two depth-confidence gates are MonoNav-only and default to the
+    # planner's own defaults. Setting either to 0 flies the pre-fix behaviour,
+    # where unreadable depth and unmapped space both scored as clear.
     return dict(mission_mode='goal',timeout=180.,goal_distance=8.,goal_radius=.5,
                 minimum_travel=3.,minimum_displacement=1.,maximum_stationary_fraction=.5,initial_speed=.4,maximum_speed=.5,
-                trajectory_horizon=2.,velocity=.3)
+                trajectory_horizon=2.,velocity=.3,max_unmapped_gap=.35,zoe_degenerate_min_correspondence=.12)
 
 def motion_metrics(samples):
     if not samples:return {'max_displacement_m':0.,'mean_speed_m_s':0.,'stationary_fraction':None}

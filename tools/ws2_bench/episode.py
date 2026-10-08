@@ -30,6 +30,14 @@ def resolved(raw):
             v=c[key]
             if isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) or not 0<=v<=300:
                 raise ValueError(key+' must be 0..300 simulation seconds')
+    # MonoNav-only; absent from Kim's defaults, so guarded rather than in the
+    # shared range table below.
+    for key,lo,hi in [('max_unmapped_gap',0,2),('zoe_degenerate_min_correspondence',0,1)]:
+        if key in c:
+            v=c[key]
+            if isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) or not lo<=v<=hi:
+                raise ValueError(key+' out of range')
+            c[key]=float(v)
     for key,lo,hi in [('height',.6,1.6),('goal_distance',.5,30),('goal_radius',.1,1),('timeout',.1,600),
                       ('minimum_travel',0,100),('minimum_displacement',0,30),('maximum_stationary_fraction',0,1),('initial_speed',0,.7),
                       ('maximum_speed',.1,.7),('trajectory_horizon',.5,3),('velocity',.1,.7)]:
@@ -83,7 +91,9 @@ def worker_command(c,run_id=''):
                    '--velocity',str(c['velocity']),'--goal-distance',str(c['goal_distance']),'--goal-radius',str(c['goal_radius']),
                    '--min-tsdf-points','1000','--tsdf-local-radius','3','--tsdf-device','CPU:0',
                    '--execute-extreme-primitives',
-                   '--tsdf-weight-threshold','0.5']
+                   '--tsdf-weight-threshold','0.5',
+                   '--max-unmapped-gap',str(c['max_unmapped_gap']),
+                   '--zoe-degenerate-min-correspondence',str(c['zoe_degenerate_min_correspondence'])]
     return command
 
 def verify_runtime_mounts():
