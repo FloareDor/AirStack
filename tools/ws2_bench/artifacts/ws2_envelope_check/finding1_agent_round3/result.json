@@ -1,0 +1,65 @@
+{
+  "schema_version": 3,
+  "scenario_id": "finding1_agent_round3 oracle check",
+  "configuration_hash": "3b076014b3a52893820e26e36e393a6f3882f2b547da02e764570be724745e4b",
+  "outcome": "collision",
+  "termination": {
+    "source": "planner",
+    "reason": "physx_contact",
+    "detail": {
+      "sim_time": 41.66499906871468,
+      "objects": [
+        "/World/Office/WS2_plant/SM_Plant01"
+      ],
+      "position": [
+        -2.5561797618865967,
+        -0.0023686743807047606,
+        1.2870532274246216
+      ],
+      "drone_position": [
+        -2.5561797618865967,
+        -0.0023686743807047606,
+        1.2870532274246216
+      ],
+      "clearance_at_contact_m": -0.04793472731639081,
+      "surface_distance_at_contact_m": 0.30029296875,
+      "clearance_censored_at_contact": false,
+      "measured_hull_radius_m": 0.3482276960663908,
+      "clearance_envelope_m": 0.3482276960663908,
+      "clearance_envelope_source": "measured_hull"
+    }
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_envelope_check/finding1_agent_round3",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 1.434856377212048,
+    "direct_start_to_goal_distance_m": 7.954170764663037,
+    "path_efficiency": null,
+    "mission_progress_percent": 17.91469345920596,
+    "final_distance_to_goal_m": 6.529205454951875,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": -0.04610367262889081,
+    "odometry_sample_count": 126,
+    "odometry_start_sim_time_s": 34.35999923199415,
+    "odometry_end_sim_time_s": 41.6799990683794,
+    "max_displacement_m": 1.425802339876126,
+    "mean_speed_m_s": 0.19601863514803114,
+    "stationary_fraction": 0.0,
+    "clearance_at_contact_m": -0.04793472731639081,
+    "surface_distance_at_contact_m": 0.30029296875,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.47739411209511023,
+    "minimum_surface_distance_m": 0.3021240234375,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_method": "PhysX collider distance minus a 0.3482m vehicle envelope (measured_hull); ground/ceiling included. Zero means the vehicle outermost extent is in contact. Values are not comparable across builds using a different envelope; add clearance_envelope_m back for surface distance.",
+    "mission_duration_sim_s": 7.31999983638525,
+    "planner_wall_duration_s": 136.66519299149513
+  },
+  "bag_recorded": true,
+  "frames_written": 0,
+  "planner_command_count": 10,
+  "cleanup_errors": [],
+  "wall_duration_s": 150.66974651254714
+}

@@ -13,6 +13,7 @@ workspace and build:
 | scenario | collisions | rate | sequence |
 |---|---|---|---|
 | `finding1_agent_round3` | 1/5 | 20% | goal, goal, goal, goal, collision |
+(superseded below: 3/9, about 33%, once every flight in the workspace is counted)
 | `finding1_random_round2` | 1/5 | 20% | goal, goal, goal, collision, goal |
 | `finding2_easy0` | 5/5 | **100%** | collision ×5 |
 
@@ -58,6 +59,27 @@ It collides on every flight, in a clean condition, against
 bug and needs no statistics at all — it needs a cause. It is by far the most
 tractable target in this project right now, and it is unaffected by either
 depth-confidence gate.
+
+## Update: more flights raised the rate for one scenario
+
+Counting every clean-condition flight of `finding1_agent_round3` in this
+workspace, in order:
+
+```
+goal, goal, goal, goal, collision, goal, goal, collision, collision
+```
+
+That is **3 of 9, about 33%**, not the 1 of 5 above. The 20% figure in the
+table was from the first five flights and was too low, which is exactly the
+instability the closing section warned about. The qualitative claim is
+unchanged and if anything stronger: at 33% the chance that at least one of
+four clean controls fails on its own is 80%, not 59%.
+
+The last two flights both collided, which looked like drift away from an
+earlier good run. It is not evidence of drift: two in a row at a 33% base rate
+happens about 11% of the time. Reading a short run of failures as a trend is
+the same mistake this document describes elsewhere, and the data does not
+support it.
 
 ## What this does not say
 
