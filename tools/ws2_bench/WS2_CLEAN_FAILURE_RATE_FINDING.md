@@ -67,7 +67,10 @@ should be re-measured with more flights before being quoted as a number. What
 is solid is the qualitative point: the clean failure rate is high enough to
 dominate small paired campaigns, and it was never being measured.
 
-## Update: the full 18-flight A/B confirms it
+## Update: what the full 18-flight A/B adds
+
+It does not confirm the 20% figure, which still rests on five flights per
+scenario. It adds nine more flights per arm and, more usefully, a noise floor.
 
 The comparison finished with 18 flights and no infrastructure errors.
 
