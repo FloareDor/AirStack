@@ -1,0 +1,1 @@
+{"planner": "mononav", "run_id": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_plant_probe/flight", "wall_time": 1791469758.5010161, "sequence": 126, "sim_stamp": 47.979998927, "inference_ms": 198.30845668911934, "primitive": 5, "goal_distance": 6.371636220350984, "tsdf_points": 14876, "blocked": false, "depth_source": "zoe"}

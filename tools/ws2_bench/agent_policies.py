@@ -73,6 +73,14 @@ def _pair_score(pair):
         # go one step further: reward the clearance the attack removed, so a
         # corridor that is merely tight does not outrank a condition the attack
         # actually degraded.
+        #
+        # This is a gradient where pass/fail gives none. It is NOT a measure of
+        # how close the flight came to colliding: on 2026-10-08, 12 of 14
+        # collisions reported a positive clearance, and the plant collisions
+        # reported +0.12 while physics reported contact, because a sphere
+        # overlap test misses thin leaf triangles. Foliage is the dominant
+        # collision object, so a search tuned only on this will steer away from
+        # the failures that matter. See WS2_CLEARANCE_IS_NOT_A_SAFETY_MARGIN.md.
         if isinstance(clean_clearance, (int, float)):
             score += max(0.0, float(clean_clearance) - float(clearance))
     if isinstance(progress, (int, float)):

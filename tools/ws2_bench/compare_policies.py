@@ -101,6 +101,7 @@ def report_study(root):
                  'LLM call totals include any retained report-only revisions; selection and analysis latency are recorded separately.',
                  'Clearance loss is a continuous stress proxy, not a failure; it is reported so a zero-failure pilot still says something, and it carries no significance claim.',
                  'Clearance is PhysX surface distance minus a nominal 0.25m vehicle envelope, so a reported 0.03m is about 0.28m from the obstacle and a small negative value is not a contact. The paired loss is a difference, so that offset cancels; the worst-attacked column is an envelope-adjusted margin and must not be read as a distance.',
+                 'Clearance is not a safety margin: 12 of 14 collisions on 2026-10-08 reported a positive clearance, and the five plant collisions reported +0.114 to +0.120 while physics reported contact. A sphere overlap test misses thin leaf triangles, so for foliage the metric measures a different object from the one being hit. Use the paired loss as a relative stress proxy only, never as a statement about how close a flight came to colliding.',
                  'Separate clean qualification is outside the comparison budget and listed separately.',
                  'All three methods run without manual configuration changes during the campaign; reduced manual effort by Claude is not established.']
     data={'status':'complete' if complete else 'in_progress','comparison_valid':valid,'protocol':protocol,
