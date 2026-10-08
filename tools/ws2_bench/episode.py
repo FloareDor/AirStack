@@ -17,7 +17,7 @@ WORKERS={'mononav':'mononav_airstack.py','kim':'collision_avoidance_airstack.py'
 
 def resolved(raw):
     if not isinstance(raw,dict):raise ValueError('episode must be a mapping')
-    allowed={'name','planner','condition','height','goal_distance','goal_radius','timeout','fault','patch_start_s','patch_duration_s',*defaults('kim')}
+    allowed={'name','planner','condition','height','goal_distance','goal_radius','timeout','fault','patch_start_s','patch_duration_s',*defaults('kim'),*defaults('mononav')}
     if raw.keys()-allowed:raise ValueError('unknown episode keys: '+str(raw.keys()-allowed))
     c=dict(name='office',planner='kim',height=1.2,fault=None,**defaults(raw.get('planner','kim')))
     c.update(raw);c['condition']=validate(c.get('condition',{'layout':'stock','light':2200}))

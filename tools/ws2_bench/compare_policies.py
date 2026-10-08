@@ -1,5 +1,5 @@
 """Fixed-budget pilot comparison on the same model, mission and expanded space."""
-import argparse, csv, html, json, random, time
+import argparse, csv, html, json, random, statistics, time
 from pathlib import Path
 from agent_campaign import run_adaptive_campaign
 from claude_provider import ClaudeSubscriptionProvider
@@ -14,6 +14,12 @@ def read(path):return json.loads(Path(path).read_text())
 def method_result(root):
     history=read(root/'history.json') if (root/'history.json').exists() else []
     groups={};clean_pass=0;attacked_fail=0;baseline_fail=0;infra=0;flights=0;seconds=0.;first=None
+    # Continuous stress, kept beside the binary counts rather than replacing
+    # them. A pilot where every flight passes scores zero on every binary
+    # column, so there is nothing left to compare; obstacle clearance still
+    # separates the arms, which is how Surrealist and the SBFT UAV competition
+    # rank tests. Losses are paired, so layout difficulty cancels out.
+    losses=[];attacked_clearances=[]
     for r in history:
         p=r['pairs'][0];key=action_key(r['decision']['action'])
         for role in ('clean','perturbed'):
@@ -22,6 +28,11 @@ def method_result(root):
         if any(p[role]['outcome'] in EXCLUDED for role in ('clean','perturbed')):continue
         if p['clean']['outcome'] not in SUCCESSES:baseline_fail+=1;continue
         clean_pass+=1
+        clean_clearance=p['clean'].get('metrics',{}).get('minimum_obstacle_clearance_m')
+        attacked_clearance=p['perturbed'].get('metrics',{}).get('minimum_obstacle_clearance_m')
+        if isinstance(attacked_clearance,(int,float)):
+            attacked_clearances.append(float(attacked_clearance))
+            if isinstance(clean_clearance,(int,float)):losses.append(float(clean_clearance)-float(attacked_clearance))
         if p['perturbed']['outcome'] not in SUCCESSES:
             attacked_fail+=1;groups[key]=groups.get(key,0)+1
             if first is None:first=2*r['decision']['round']
@@ -40,6 +51,9 @@ def method_result(root):
             'clean_pass_pairs':clean_pass,'clean_failure_pairs':baseline_fail,
             'attack_failure_pairs_with_clean_pass':attacked_fail,'distinct_candidate_conditions':len(groups),
             'reproduced_conditions':sum(n>=2 for n in groups.values()),'flights_to_first_candidate':first,
+            'median_clearance_loss_m':round(statistics.median(losses),4) if losses else None,
+            'worst_attacked_clearance_m':round(min(attacked_clearances),4) if attacked_clearances else None,
+            'clearance_pairs':len(losses),
             'infrastructure_errors':infra,'flight_wall_seconds':round(seconds,2),
             'llm_requests':len(calls),'llm_selection_seconds':round(selection_s,2),
             'llm_analysis_seconds':round(analysis_s,2),'cli_list_price_estimate_usd':round(cost,6),
@@ -56,6 +70,23 @@ def report_study(root):
                 'The pilot contains infrastructure errors; do not infer a policy ranking.')
     if valid:
         counts={r['method']:r['distinct_candidate_conditions'] for r in results}
+    if valid and not any(counts.values()):
+        # Every flight passed, so the binary columns are all zero and rank
+        # nothing. Report the paired clearance loss instead of calling the
+        # pilot uninformative, and say plainly that it is a weaker signal.
+        losses={r['method']:r['median_clearance_loss_m'] for r in results}
+        measured={k:v for k,v in losses.items() if v is not None}
+        if measured:
+            leader=max(measured,key=measured.get)
+            conclusion=('No attacked flight failed while its clean control passed, so every binary column is zero and ranks nothing. '+
+                        'Median paired clearance loss (clean minus attacked, metres): '+
+                        ', '.join(f'{k} {v:.4f}' for k,v in sorted(losses.items(),key=lambda kv:kv[0]))+'. '+
+                        f'{leader} removed the most clearance in this pilot. Clearance loss is a continuous proxy for how close an '+
+                        'attack pushed the flight to an obstacle; it is not a failure, and this sample cannot establish significance.')
+        else:
+            conclusion=('No attacked flight failed while its clean control passed and no clearance was recorded, '+
+                        'so this pilot ranks nothing.')
+    elif valid:
         conclusion=(f"Observed distinct candidate settings: Claude {counts['agent_search']}, random {counts['random']}, search {counts['search']}. "+
                     ('Claude found more candidate settings in this pilot. ' if counts['agent_search']>max(counts['random'],counts['search']) else
                      'This pilot did not show a higher candidate yield for Claude. ')+
@@ -68,6 +99,7 @@ def report_study(root):
                  'Changing several factors together does not establish which factor caused a failure.',
                  'CLI dollar values are list-price estimates, not a subscription invoice.',
                  'LLM call totals include any retained report-only revisions; selection and analysis latency are recorded separately.',
+                 'Clearance loss is a continuous stress proxy, not a failure; it is reported so a zero-failure pilot still says something, and it carries no significance claim.',
                  'Separate clean qualification is outside the comparison budget and listed separately.',
                  'All three methods run without manual configuration changes during the campaign; reduced manual effort by Claude is not established.']
     data={'status':'complete' if complete else 'in_progress','comparison_valid':valid,'protocol':protocol,
@@ -75,13 +107,14 @@ def report_study(root):
     atomic(root/'comparison.json',data)
     columns=['method','scheduled_flights','clean_pass_pairs','clean_failure_pairs','attack_failure_pairs_with_clean_pass',
              'distinct_candidate_conditions','reproduced_conditions','flights_to_first_candidate','infrastructure_errors',
+             'median_clearance_loss_m','worst_attacked_clearance_m','clearance_pairs',
              'flight_wall_seconds','llm_requests','llm_selection_seconds','cli_list_price_estimate_usd']
     with (root/'comparison.csv').open('w',newline='') as f:
         writer=csv.DictWriter(f,fieldnames=columns,extrasaction='ignore');writer.writeheader();writer.writerows(results)
     lines=['# WS2 policy comparison pilot','',conclusion,'',
-           '| Method | Flights | Clean pass / fail | Attack failures with clean pass | Distinct candidate settings | Reproduced settings | Flights to first candidate |',
-           '|---|---:|---:|---:|---:|---:|---:|']
-    for r in results:lines.append(f"| {r['method']} | {r['scheduled_flights']} | {r['clean_pass_pairs']} / {r['clean_failure_pairs']} | {r['attack_failure_pairs_with_clean_pass']} | {r['distinct_candidate_conditions']} | {r['reproduced_conditions']} | {r['flights_to_first_candidate'] or 'not found'} |")
+           '| Method | Flights | Clean pass / fail | Attack failures with clean pass | Distinct candidate settings | Reproduced settings | Flights to first candidate | Median clearance loss (m) |',
+           '|---|---:|---:|---:|---:|---:|---:|---:|']
+    for r in results:lines.append(f"| {r['method']} | {r['scheduled_flights']} | {r['clean_pass_pairs']} / {r['clean_failure_pairs']} | {r['attack_failure_pairs_with_clean_pass']} | {r['distinct_candidate_conditions']} | {r['reproduced_conditions']} | {r['flights_to_first_candidate'] or 'not found'} | {'not measured' if r['median_clearance_loss_m'] is None else format(r['median_clearance_loss_m'],'.4f')} |")
     lines+=['','## Cost and elapsed time','']
     for r in results:lines.append(f"- {r['method']}: {r['flight_wall_seconds']}s flight lifecycle; {r['llm_requests']} LLM requests; {r['llm_selection_seconds']}s selection; list-price estimate ${r['cli_list_price_estimate_usd']:.4f}.")
     lines+=['','## Interpretation limits','',*['- '+s for s in limitations],
@@ -89,8 +122,8 @@ def report_study(root):
     text='\n'.join(lines)+'\n';(root/'comparison.md').write_text(text)
     esc=lambda v:html.escape(str(v))
     page=['<meta charset="utf-8"><title>WS2 policy comparison</title><style>body{font:16px Arial;max-width:1250px;margin:32px auto;line-height:1.6}table{border-collapse:collapse}td,th{padding:10px;border:1px solid #ccd}pre{white-space:pre-wrap}a{color:#146b89}</style>',
-          '<h1>WS2 policy comparison pilot</h1><p>'+esc(conclusion)+'</p><table><tr>',*['<th>'+esc(c)+'</th>' for c in columns[:9]],'</tr>']
-    for r in results:page+=['<tr>',*['<td>'+esc(r[c])+'</td>' for c in columns[:9]],'</tr>']
+          '<h1>WS2 policy comparison pilot</h1><p>'+esc(conclusion)+'</p><table><tr>',*['<th>'+esc(c)+'</th>' for c in columns[:11]],'</tr>']
+    for r in results:page+=['<tr>',*['<td>'+esc(r[c])+'</td>' for c in columns[:11]],'</tr>']
     page+=['</table><h2>Evidence and limits</h2><pre>'+esc(text)+'</pre>'];(root/'comparison.html').write_text(''.join(page))
     return data
 

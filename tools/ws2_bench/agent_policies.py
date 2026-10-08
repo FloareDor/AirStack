@@ -62,10 +62,19 @@ def _pair_score(pair):
         return 100.0
     metrics = attacked.get("metrics", {})
     clearance = metrics.get("minimum_obstacle_clearance_m")
+    clean_clearance = clean.get("metrics", {}).get("minimum_obstacle_clearance_m")
     progress = metrics.get("mission_progress_percent")
     score = 0.0
     if isinstance(clearance, (int, float)):
         score += max(0.0, 2.0 - float(clearance))
+        # Surrealist and the SBFT UAV competition rank a test by how close the
+        # flight passes an obstacle rather than by whether it crashed, which is
+        # what keeps a search moving when nothing fails. The paired bench can
+        # go one step further: reward the clearance the attack removed, so a
+        # corridor that is merely tight does not outrank a condition the attack
+        # actually degraded.
+        if isinstance(clean_clearance, (int, float)):
+            score += max(0.0, float(clean_clearance) - float(clearance))
     if isinstance(progress, (int, float)):
         score += max(0.0, 100.0 - float(progress)) / 100.0
     return score

@@ -48,3 +48,35 @@ def test_llm_evidence_does_not_assign_kim_controls_to_mononav():
             assert 'velocity' not in evidence['mission']
             assert 'depth-based speed governor' in ' '.join(evidence['limitations'])
         assert 'does not establish' in evidence['parameter_definitions']['attack_effect_evaluable']
+
+
+def passing_history(clean_clearance,attacked_clearance):
+    return [{'decision':{'round':i,'action':reference_action()},'pairs':[{
+        role:{'outcome':'goal_reached','wall_duration_s':2.,
+              'metrics':{'minimum_obstacle_clearance_m':clearance}}
+        for role,clearance in [('clean',clean_clearance),('perturbed',attacked_clearance)]}]} for i in (1,2)]
+
+def test_clearance_loss_is_measured_per_pair(tmp_path):
+    root=tmp_path/'random';write(root,'history.json',passing_history(.56,.29))
+    result=method_result(root)
+    assert result['attack_failure_pairs_with_clean_pass']==0
+    assert result['median_clearance_loss_m']==.27 and result['clearance_pairs']==2
+    assert result['worst_attacked_clearance_m']==.29
+
+def test_a_pilot_with_no_failure_is_ranked_on_clearance_loss(tmp_path):
+    protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['test-reference']}
+    write(tmp_path,'protocol.json',protocol)
+    losses={'random':.50,'search':.45,'agent_search':.20}
+    for name,attacked in losses.items():
+        write(tmp_path/name,'config.json',{});write(tmp_path/name,'history.json',passing_history(.6,attacked))
+    report=report_study(tmp_path)
+    assert report['comparison_valid']
+    assert all(r['distinct_candidate_conditions']==0 for r in report['results'])
+    # The widest paired loss wins, and the text must not call it a failure.
+    assert 'agent_search removed the most clearance' in report['conclusion']
+    assert 'cannot establish significance' in report['conclusion']
+
+def test_clearance_columns_tolerate_a_run_without_metrics(tmp_path):
+    root=tmp_path/'random';write(root,'history.json',history())
+    result=method_result(root)
+    assert result['median_clearance_loss_m'] is None and result['clearance_pairs']==0
