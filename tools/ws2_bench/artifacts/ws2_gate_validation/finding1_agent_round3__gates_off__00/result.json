@@ -1,0 +1,38 @@
+{
+  "schema_version": 3,
+  "scenario_id": "finding1_agent_round3 gates_off",
+  "configuration_hash": "44cdb9c696fd705189afd035d2bd17f7af778e59ffd09303c566f30ff92add47",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/ws2_gate_validation/finding1_agent_round3__gates_off__00",
+  "metrics": {
+    "time_to_goal_s": 42.14999905787408,
+    "path_length_m": 8.469999781133982,
+    "direct_start_to_goal_distance_m": 7.974895627296725,
+    "path_efficiency": 0.9415461432549209,
+    "mission_progress_percent": 93.78282402619466,
+    "final_distance_to_goal_m": 0.49581329487634485,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.053955078125,
+    "odometry_sample_count": 567,
+    "odometry_start_sim_time_s": 35.13999921455979,
+    "odometry_end_sim_time_s": 77.28999827243388,
+    "max_displacement_m": 7.603336493179824,
+    "mean_speed_m_s": 0.20094899099533178,
+    "stationary_fraction": 0.0,
+    "mean_obstacle_clearance_m": 0.595728538214524,
+    "clearance_method": "PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included",
+    "mission_duration_sim_s": 42.14999905787408,
+    "planner_wall_duration_s": 174.07357832975686
+  },
+  "bag_recorded": true,
+  "frames_written": 0,
+  "planner_command_count": 38,
+  "cleanup_errors": [],
+  "wall_duration_s": 213.454396488145
+}

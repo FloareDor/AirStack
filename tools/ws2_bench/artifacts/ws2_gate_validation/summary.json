@@ -1,0 +1,62 @@
+[
+  {
+    "case": "finding1_agent_round3",
+    "arm": "gates_off",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "mission_progress_percent": 93.78282402619466,
+    "path_length_m": 8.469999781133982,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.053955078125
+  },
+  {
+    "case": "finding1_agent_round3",
+    "arm": "gates_on",
+    "repeat": 0,
+    "outcome": "planner_stopped",
+    "mission_progress_percent": 0.0,
+    "path_length_m": 0.26823659394471094,
+    "planner_recovery_count": 12,
+    "minimum_obstacle_clearance_m": 1.0238037109375
+  },
+  {
+    "case": "finding1_random_round2",
+    "arm": "gates_off",
+    "repeat": 0,
+    "outcome": "goal_reached",
+    "mission_progress_percent": 93.85012498670652,
+    "path_length_m": 8.66737756664065,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.0240478515625
+  },
+  {
+    "case": "finding1_random_round2",
+    "arm": "gates_on",
+    "repeat": 0,
+    "outcome": "planner_stopped",
+    "mission_progress_percent": 0.22067319075483732,
+    "path_length_m": 0.2435385051845602,
+    "planner_recovery_count": 12,
+    "minimum_obstacle_clearance_m": 1.0067138671875
+  },
+  {
+    "case": "finding2_easy0",
+    "arm": "gates_off",
+    "repeat": 0,
+    "outcome": "collision",
+    "mission_progress_percent": 22.305947926005345,
+    "path_length_m": 1.8595554195103776,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.1143798828125
+  },
+  {
+    "case": "finding2_easy0",
+    "arm": "gates_on",
+    "repeat": 0,
+    "outcome": "planner_stopped",
+    "mission_progress_percent": 0.0,
+    "path_length_m": 0.27630004911152684,
+    "planner_recovery_count": 12,
+    "minimum_obstacle_clearance_m": 0.974365234375
+  }
+]

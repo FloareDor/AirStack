@@ -103,3 +103,57 @@ available) for the three underlying incidents is at:
 - `artifacts/ws2_random_mononav_qualified/round_02/mononav/perturbed/attempt_0/`
 - `artifacts/ws2_agent_mononav_guarded/round_03/mononav/clean/attempt_0/`
 - `artifacts/ws2_qualify_easy0_retry2/clean_validation/attempt_0/`
+
+## Addendum, 2026-10-08: the Finding 2 fix was flown and does not work
+
+The Finding 2 recommendation above — treat unmapped TSDF regions as
+not-yet-confirmed-clear — was implemented as `--max-unmapped-gap`, which
+rejects a trajectory when any of its points has no observed voxel within the
+gap. It was flown for the first time on 2026-10-08 against the three saved
+scenarios, each with the gate on and off in the same workspace and build.
+
+| scenario | gate off | gate on |
+|---|---|---|
+| `finding1_agent_round3` | `goal_reached` 93.8% | `planner_stopped` 0.0% |
+| `finding1_random_round2` | `goal_reached` 93.9% | `planner_stopped` 0.2% |
+| `finding2_easy0` | `collision` 22.3% | `planner_stopped` 0.0% |
+
+The gate does prevent the one collision that reproduced, but it stopped every
+flight at under 0.3 m travelled with all twelve yaw-scan recoveries consumed,
+including the two that were about to succeed. A planner that never moves
+cannot collide, so the apparent save on `finding2_easy0` is explained entirely
+by the grounding and is not evidence that the gate recognised the hazard.
+
+The mechanism is arithmetic. `known_tree` is built from weighted voxels, and
+Open3D allocates blocks only in the +/-trunc band around an observed surface.
+Here trunc is `trunc_voxel_multiplier * voxel_size = 8 * 3/64 = 0.375 m`, so an
+observed voxel only ever exists near a surface, and "within 0.35 m of a mapped
+voxel" means "within 0.725 m of a wall". Combined with `min_dist2obs = 0.5 m`
+the two conditions admit only a 0.5 m < d < 0.725 m shell, and the open centre
+of a 0.9 m corridor is rejected as unmapped precisely because it is open.
+
+No value of the gap fixes this. The premise that distance to the nearest voxel
+measures whether space has been observed is wrong, because the TSDF never
+represents observed free space at all. The gate now defaults to 0 in both
+`mission.defaults('mononav')` and the planner.
+
+The recommendation itself still stands; only this implementation of it is
+wrong. Observation should be tested against the depth image: project the
+trajectory point into the current camera and require it to be inside the
+frustum and nearer than the measured depth plus a margin. That is cheap and
+does not conflict with `min_dist2obs`.
+
+Two further notes from the same run:
+
+- The Finding 1 degenerate-depth gate remains unexercised. Every frame of all
+  six flights reported `depth_ok=True`, so that gate has still never been
+  observed firing and is neither confirmed nor refuted.
+- Two of the three saved collisions did not reproduce; their ungated flights
+  reached the goal at ~94%. Single-flight replay cannot separate a fix from
+  run-to-run variation, which is why `run_gate_validation.py` now defaults to
+  three repeats. `finding2_easy0` did reproduce, and is a clean-condition
+  collision with no patch and no delay, which makes it the most useful of the
+  three.
+
+Evidence: `artifacts/ws2_gate_validation/` (per-flight `result.json`,
+`summary.json`, worker logs).
