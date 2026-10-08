@@ -343,9 +343,21 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
         result['metrics']=summarize(samples,goal,[],.25,reached,text.count('HOLD'),text.count('RECOVERY'))
         result['metrics'].update(motion_metrics(samples))
         clearances=[x['clearance_m'] for x in samples]
+        # A collision that reported a positive clearance is the normal case, not
+        # an anomaly: sphere overlap misses thin foliage and the 0.25m envelope
+        # is smaller than the vehicle. Record the contact-time margin and the
+        # measured hull so the minimum is never read as a safety margin.
+        contact=(result.get('termination') or {}).get('detail') or {}
+        if isinstance(contact,dict):
+            result['metrics'].update(
+                clearance_at_contact_m=contact.get('clearance_at_contact_m'),
+                surface_distance_at_contact_m=contact.get('surface_distance_at_contact_m'),
+                measured_hull_radius_m=contact.get('measured_hull_radius_m'))
         result['metrics'].update(minimum_obstacle_clearance_m=min(clearances) if clearances else None,
             mean_obstacle_clearance_m=(sum((a['clearance_m']+b['clearance_m'])/2*(b['sim_time_s']-a['sim_time_s']) for a,b in zip(samples,samples[1:]))/(samples[-1]['sim_time_s']-samples[0]['sim_time_s'])) if len(samples)>1 else (clearances[0] if clearances else None),
-            clearance_method='PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included',
+            minimum_surface_distance_m=min(clearances)+.25 if clearances else None,
+            clearance_method='PhysX collider distance minus 0.25m spherical envelope; ground/ceiling included. '
+                'Not a safety margin: most collisions report a positive value, and sphere overlap misses thin foliage.',
             mission_duration_sim_s=None if mission_start is None else s['sim_time']-mission_start,
             planner_wall_duration_s=time.monotonic()-started)
         if result['outcome']!='goal_reached':result['metrics']['path_efficiency']=None
