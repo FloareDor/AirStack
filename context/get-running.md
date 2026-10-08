@@ -80,6 +80,13 @@ git clone --recursive --branch floaredor/osmo-smoke https://github.com/FloareDor
 (cd /root/MonoNav && bash docker/build_image.sh)
 ```
 
+The checkout must include MonoNav `2e86c87` or later, which added the
+depth-confidence gates. The bench passes `--max-unmapped-gap` and
+`--zoe-degenerate-min-correspondence` on every MonoNav flight, so an older
+checkout rejects the flags and the flight fails instead of quietly flying the
+version that scored unreadable depth as clear. An existing workspace needs
+`(cd /root/MonoNav && git pull --ff-only)` and an image rebuild.
+
 The full ROS build is slow on a clean workspace. Wait for it to finish before
 starting an episode. Its normal warnings are not failures. The Office download
 should contain 910 files and `office.usd` should exist under
