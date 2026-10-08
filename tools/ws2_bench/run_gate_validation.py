@@ -37,8 +37,12 @@ def main():
                 r=subprocess.run([sys.executable,str(HERE/'episode.py'),str(path),'--output',str(run)],
                                  stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
                 (a.output/f'{run.name}.log').write_text(r.stdout)
+                # The episode writes its own result; stdout is not a parseable
+                # frame. Scanning stdout for the last '{' lands inside a nested
+                # object, so every flight was labelled episode_failed while the
+                # saved result said otherwise.
                 outcome='episode_failed'
-                try:outcome=json.loads(r.stdout[r.stdout.rfind('{'):]).get('outcome','unknown')
+                try:outcome=json.loads((run/'result.json').read_text()).get('outcome','unknown')
                 except Exception:pass
                 rows.append({'case':case,'arm':arm,'repeat':i,'outcome':outcome,'exit':r.returncode})
                 print(f'    {outcome}',flush=True)
