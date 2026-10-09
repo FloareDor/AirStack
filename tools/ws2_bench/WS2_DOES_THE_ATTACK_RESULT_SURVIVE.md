@@ -73,11 +73,14 @@ where clean passes 15/15 with ~0.9 m of margin. If the effect survives there it
 is about the planner; if it vanishes it was about the gap.
 
 That run is blocked by the capability model: from `a82d18182` the bench refuses
-MonoNav with `patch_enabled`, because the patch is Kim's. Both positions are
-defensible and they conflict. Resolving it is a decision, not an analysis:
-either MonoNav+patch is a legitimate transfer experiment and the adapter should
-permit it, or the MonoNav patch line of work is closed and the attack question
-moves to Kim.
+MonoNav with `patch_enabled`, because the patch is Kim's.
+
+**Decided 2026-10-09: it stays blocked.** The patch is for Kim. The MonoNav
+patch line is closed and the decisive test will not be run. The MonoNav result
+is therefore withdrawn as an attack finding rather than defended -- it was
+measured in a configuration the bench no longer permits, its entire pathway is
+one plant cleared by 5 cm, and it has no dose response. The attack question
+moves to Kim, where the patch belongs.
 
 Kim is the matched target but is not ready for it: 64% of its collisions are the
 same plant, and its clean failure rate is 66%.

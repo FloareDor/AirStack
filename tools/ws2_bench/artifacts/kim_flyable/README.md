@@ -93,6 +93,20 @@ recorded.
 
 ## Honest one-line summary
 
+> **Correction, 2026-10-09.** The MonoNav patch result referred to below is
+> withdrawn as an attack finding. The patch is Kim's: `assets/patch_manifest.json`
+> records it as trained against `config_depth_fcrn.yaml` (FCRN), MonoNav runs
+> ZoeDepth, and the bench now refuses MonoNav with `patch_enabled` (`a82d18182`).
+> The rate difference is real (clean 58%/203 vs patch-only 38%/263,
+> p = 1.2e-05) but **310 of 311 MonoNav collisions ever recorded are the single
+> plant `WS2_plant/SM_Plant01`**, cleared by a measured 0.049 m when cleared, and
+> the dose response is non-monotonic. The effect is a bright object perturbing
+> ZoeDepth on a route where 5 cm decides the outcome -- not a patch defeating a
+> planner. Kim's null below stands and is now the only patch result on the model
+> the patch was made for. See `WS2_DOES_THE_ATTACK_RESULT_SURVIVE.md` and
+> `WS2_THE_ROUTE_IS_BLOCKED_BY_ONE_PLANT.md`.
+
+
 On the model the patch was trained against, there is no measurable attack
 effect at n=30 pairs; the significant MonoNav result is a transfer attack on a
 different depth backbone.
