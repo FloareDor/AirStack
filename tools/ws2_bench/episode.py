@@ -123,7 +123,7 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
     # Default to the historical nominal envelope so a flight that dies before
     # the first oracle read still reports a defined one. Overwritten with the
     # value the oracle actually used as soon as it is seen.
-    envelope=.25;envelope_source='nominal_default';hull_radius=None;basis='sphere_minus_envelope'
+    envelope=.25;envelope_source='nominal_default';hull_radius=None;basis='sphere_minus_envelope';half_extents=None
     # Periodic planner-input frames. A full bag of one 8-pair run is 41 GB and
     # never leaves the cluster; the same flight as JPEG frames is a few MB and
     # is the only footage anyone has actually wanted to look at.
@@ -293,6 +293,10 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             if oracle.get('measured_hull_radius_m') is not None:
                 hull_radius=float(oracle['measured_hull_radius_m'])
             if oracle.get('clearance_basis'):basis=oracle['clearance_basis']
+            # The box the clearance was measured against. Its anisotropy is the
+            # reason a single scalar could not work, so record which box, the
+            # same way the envelope is recorded.
+            if oracle.get('box_half_extents_m'):half_extents=oracle['box_half_extents_m']
             if mission_start is not None:
                 enabled=patch_active(c,t-mission_start)
                 if s['condition']['patch_enabled']!=enabled:
@@ -374,7 +378,7 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             minimum_surface_distance_m=(min(clearances) if basis=='oriented_box' else min(clearances)+envelope)
                 if clearances else None,
             clearance_envelope_m=envelope,clearance_envelope_source=envelope_source,
-            clearance_basis=basis,
+            clearance_basis=basis,box_half_extents_m=half_extents,
             clearance_method=('PhysX overlap of the vehicle oriented collider box, grown until it touches; '
                 'ground/ceiling included. The value is hull-to-surface distance along the direction of closest '
                 'approach, so zero is contact and negative is penetration.') if basis=='oriented_box' else
