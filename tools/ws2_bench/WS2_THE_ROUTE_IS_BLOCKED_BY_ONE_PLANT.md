@@ -86,3 +86,52 @@ Kim is worse placed again: `hard` 0/16, `medium` 1/8, `furnished_b` 2/14.
   That is one cheap experiment and it has not been run.
 - The difficulty tiers are not identical; they share the first three placements
   and add objects (11 / 15 / 19 for easy / medium / hard).
+
+## Measured: enforcing the corridor removes the clean failures
+
+Interleaved clean-only A/B on ws2-pilot-13, 15 pairs, same build, MonoNav.
+
+| arm | layout | plant face off route | pass | median min clearance |
+|---|---|---|---|---|
+| control | `easy` seed 2, from `layouts.json` | 0.05 m | **9/15 = 60%** | **0.049 m** |
+| checked | `generated` seed 42, corridor-enforced | 1.32 m | **15/15 = 100%** | **0.903 m** |
+
+Fisher exact, one-sided **p = 0.0084**; a 40 point difference.
+
+The control reproduced its own history: 60% live against **59% (118/201)**
+clean historical flights on that layout. That matters more than the p-value --
+the rig behaved as it always has, so the 15/15 is not an artifact of the build
+that introduced the oriented-box clearance basis.
+
+Every control failure was a collision at 18-23% progress, i.e. at the plant
+1.5 m in. No control flight ever cleared by more than 0.12 m.
+
+(The run script printed "47% over 603 flights" as the baseline. That figure is
+wrong -- it pooled 399 attacked flights. Clean is 59%.)
+
+## The feasibility check that exists is calibrated to the wrong number
+
+`challenge_layouts.free_route` -- Mason's newer sensor-challenge path, and the
+only layout code that checks a route is flyable at all -- inflates obstacles by
+**0.35 m**. That is the drone's physical half-extent and correct for asking
+"does this collide" (measured hull 0.3482 m).
+
+But `mononav_airstack.py` refuses any primitive within **0.8 m** of a TSDF
+obstacle. So `free_route` can certify a route that MonoNav will not fly. The
+feasibility check is calibrated to the vehicle's body; the planner is
+calibrated to its own safety margin; they differ by more than 2x.
+
+Catalogue layouts get no check at all, which is the larger gap, but closing it
+by reusing `free_route` unchanged would not be enough.
+
+## What this does and does not establish
+
+Establishes: on this layout and seed, roughly 4 in 10 MonoNav "clean failures"
+are geometry rather than planner behaviour or any attack, and every
+attacked-vs-clean comparison in this project sits on that background.
+
+Does not establish: that the plant is wrongly placed. This is an avoidance
+benchmark and an obstacle on the path is the point. The defect is that the
+catalogue layouts were never feasibility-checked against the planner's own
+clearance requirement, so "clean failure" has been silently mixing two
+different causes. One layout, one seed, one planner; not yet generalised.
