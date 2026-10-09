@@ -128,7 +128,15 @@ The mechanism is arithmetic. `known_tree` is built from weighted voxels, and
 Open3D allocates blocks only in the +/-trunc band around an observed surface.
 Here trunc is `trunc_voxel_multiplier * voxel_size = 8 * 3/64 = 0.375 m`, so an
 observed voxel only ever exists near a surface, and "within 0.35 m of a mapped
-voxel" means "within 0.725 m of a wall". Combined with `min_dist2obs = 0.5 m`
+voxel" means "within 0.725 m of a wall". **Correction (2026-10-08):** this
+analysis used `min_dist2obs = 0.5 m`, from `config.yml`. That file is read by
+`mononav_cf.py` and `simulate.py`; `mononav_airstack.py` takes the value from
+argparse and the bench never passes the flag, so our flights ran at the
+**0.8 m** default. The band is then `0.8 < d <= 0.725` -- empty -- so the gate
+admitted nothing anywhere, not merely in open space. The conclusion is
+unchanged and stronger; the arithmetic below is on the wrong figure.
+
+Combined with `min_dist2obs = 0.5 m`
 the two conditions admit only a 0.5 m < d < 0.725 m shell, and the open centre
 of a 0.9 m corridor is rejected as unmapped precisely because it is open.
 

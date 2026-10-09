@@ -66,9 +66,10 @@ COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displaceme
 # planner rather than protecting it. It asks that every trajectory point lie
 # within the gap of a weighted voxel, but Open3D allocates blocks only in the
 # +/-trunc band around an observed surface (8 * 3/64 m = 0.375 m), so 'near a
-# mapped voxel' means 'near a wall'. Together with min_dist2obs=0.5 that admits
-# only a 0.5 m < d < 0.725 m shell, and the open centre of a 0.9 m corridor is
-# rejected as unmapped for being open. Both gated flights stopped at under
+# mapped voxel' means 'near a wall'. mononav_airstack.py reads min_dist2obs from
+# argparse, default 0.8 (config.yml's 0.5 is read by mononav_cf and simulate.py,
+# not this entrypoint), so the admissible band is 0.8 < d <= 0.725 -- empty. The
+# gate cannot admit any point anywhere. Both gated flights stopped at under
 # 0.3 m travelled with depth_ok=True, while the ungated twin reached the goal.
 # Re-enable only once the test is a frustum/depth check for 'have we observed
 # this point', which is the intended meaning.
