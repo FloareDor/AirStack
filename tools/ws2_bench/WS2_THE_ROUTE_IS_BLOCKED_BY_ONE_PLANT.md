@@ -25,9 +25,18 @@ other layout name -- `easy`, `medium`, `hard`, `furnished_a`, `furnished_b` --
 is read straight out of the hand-authored `layouts.json` catalogue and never
 sees the corridor check.
 
-Essentially all MonoNav data is `easy`: **603 flights, 47% pass**. So the
-protected corridor has never applied to the layout nearly every MonoNav result
-was measured on.
+Essentially all MonoNav data is `easy`. So the protected corridor has never
+applied to the layout nearly every MonoNav result was measured on.
+
+**Correction.** An earlier version of this file said "603 flights, 47% pass".
+That pooled attacked flights into a figure it called a pass rate. Split:
+
+| mononav, layout easy | n | pass |
+|---|---|---|
+| clean | 201 | **59%** |
+| attacked | 399 | 41% |
+
+So the clean baseline to beat is 59%, not 47%.
 
 ## What passing actually requires
 
