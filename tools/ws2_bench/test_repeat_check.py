@@ -1,4 +1,5 @@
 """Repeat-check summary must report rates, not stop at the first failure."""
+import pytest
 import repeat_check
 
 
@@ -43,10 +44,21 @@ def test_clean_flag_forces_delay_and_patch_off():
 
 
 def test_attacked_episode_keeps_the_requested_delay_and_patch():
+    # Kim, not MonoNav: the patch is trained against FCRN, which is Kim's depth
+    # model, so MonoNav has no patch capability and is refused below.
     action = {"layout": "easy", "layout_seed": 2, "delay_s": 0.15,
               "patch_enabled": True, "patch_size_m": 0.9}
-    episode = repeat_check.build_episode(action, "mononav", 42, False, "x")
+    episode = repeat_check.build_episode(action, "kim", 42, False, "x")
     assert episode["condition"]["delay"] == 0.15
     assert episode["condition"]["patch_enabled"] is True
     assert episode["condition"]["patch_size"] == 0.9
     assert episode["condition"]["rgb_noise"] == 0.0
+
+def test_mononav_cannot_be_given_the_fcrn_patch():
+    # Guards the finding directly: the bench must not quietly accept a patch on
+    # the model it was never trained against, which is how 386 scenarios came
+    # to exist and how a scene-texture effect got read as a transfer attack.
+    action = {"layout": "easy", "layout_seed": 2, "delay_s": 0.15,
+              "patch_enabled": True, "patch_size_m": 0.9}
+    with pytest.raises(ValueError, match="ZoeDepth"):
+        repeat_check.build_episode(action, "mononav", 42, False, "x")

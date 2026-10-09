@@ -76,11 +76,11 @@ COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displaceme
 # The image tag is the one the workspace actually builds; :1.0 does not exist
 # there, and preflight fails on the missing image rather than on anything real.
 #
-# fcrn_patch is listed for MonoNav provisionally. The patch is trained on FCRN
-# and applied in a ZoeDepth scene -- that transfer IS the attack being measured,
-# and 386 existing scenarios run mononav with patch_enabled. Without it they all
-# raise at resolve time. Left enabled to keep them runnable, pending Mason's
-# call on whether the capability model should express transfer differently.
+# No fcrn_patch. assets/patch_manifest.json records the image as trained against
+# Humanflow config_depth_fcrn.yaml -- FCRN, which is Kim's depth model -- and
+# explicitly declines to infer efficacy. MonoNav runs ZoeDepth, so the patch is
+# a texture it was never optimised against. Existing mononav+patch scenarios
+# stay on disk as data; new ones are refused at resolve time, which is correct.
 register(ModelAdapter('mononav',WORKSPACE/'MonoNav','mononav-demo:2.7.1-cu128','mononav_airstack.py','goal',
     dict(COMMON,mission_mode='goal',timeout=180.,initial_speed=.4,maximum_speed=.5,velocity=.3,
          max_unmapped_gap=0.,zoe_degenerate_min_correspondence=.12),
@@ -91,7 +91,7 @@ register(ModelAdapter('mononav',WORKSPACE/'MonoNav','mononav-demo:2.7.1-cu128','
      '--execute-extreme-primitives','--tsdf-weight-threshold','0.5',
      '--max-unmapped-gap','{max_unmapped_gap}',
      '--zoe-degenerate-min-correspondence','{zoe_degenerate_min_correspondence}'),
-    torch_cache=True,attacks=('rgb_noise','delay','fcrn_patch')))
+    torch_cache=True))
 register(ModelAdapter('kim',WORKSPACE/'Collision-avoidance','collision-avoidance-airstack:1.0',
     'collision_avoidance_airstack.py','avoidance',
     dict(COMMON,mission_mode='avoidance',timeout=120.,initial_speed=.2,maximum_speed=.35,velocity=.4),

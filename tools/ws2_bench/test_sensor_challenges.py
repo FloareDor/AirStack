@@ -29,15 +29,6 @@ def test_challenge_rehash_does_not_allow_start_overlap():
     p['placement_id']=identity({k:v for k,v in p.items() if k!='placement_id'})
     with pytest.raises(ValueError,match='endpoint'):validate_placement(p)
 
-@pytest.mark.xfail(strict=True,reason=
-    "Open disagreement, not a bug. This test records Mason's contract: MonoNav "
-    "has no ZoeDepth patch, so patch_enabled must be refused at resolve time. "
-    "But 386 existing scenarios run mononav with patch_enabled, because the "
-    "attack being measured is an FCRN-trained patch transferring to ZoeDepth. "
-    "fcrn_patch is therefore provisionally listed on the mononav adapter to keep "
-    "those runnable. strict=True so this fails loudly the moment either side "
-    "changes and the question is actually settled. Do not resolve by editing "
-    "this test.")
 def test_mononav_patch_is_rejected_before_any_flight():
     with pytest.raises(ValueError,match='ZoeDepth'):resolved({'planner':'mononav','condition':{'patch_enabled':True}})
     assert resolved({'planner':'kim','condition':{'patch_enabled':True}})['condition']['patch_enabled']
