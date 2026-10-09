@@ -74,6 +74,13 @@ COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displaceme
 # Re-enable only once the test is a frustum/depth check for 'have we observed
 # this point', which is the intended meaning.
 #
+# min_dist2obs is passed explicitly at its existing argparse default of 0.8, so
+# the value is recorded in the worker command and visible in provenance instead
+# of being an invisible default nobody reconciled with the layouts. No behaviour
+# change. It is the number scene_feasibility checks layouts against: all three
+# of the challenge scenes leave under 0.65 m, so the planner can accept nothing
+# in them even though the vehicle fits.
+#
 # The image tag is the one the workspace actually builds; :1.0 does not exist
 # there, and preflight fails on the missing image rather than on anything real.
 #
@@ -84,12 +91,13 @@ COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displaceme
 # stay on disk as data; new ones are refused at resolve time, which is correct.
 register(ModelAdapter('mononav',WORKSPACE/'MonoNav','mononav-demo:2.7.1-cu128','mononav_airstack.py','goal',
     dict(COMMON,mission_mode='goal',timeout=180.,initial_speed=.4,maximum_speed=.5,velocity=.3,
-         max_unmapped_gap=0.,zoe_degenerate_min_correspondence=.12),
+         max_unmapped_gap=0.,zoe_degenerate_min_correspondence=.12,min_dist2obs=.8),
     ('goal_distance','goal_radius','velocity'),
     ('--depth-source','zoe','--zoe-depth-scale','1.68','--rate','1','--warmup-frames','6',
      '--velocity','{velocity}','--goal-distance','{goal_distance}','--goal-radius','{goal_radius}',
      '--min-tsdf-points','1000','--tsdf-local-radius','3','--tsdf-device','CPU:0',
      '--execute-extreme-primitives','--tsdf-weight-threshold','0.5',
+     '--min-dist2obs','{min_dist2obs}',
      '--max-unmapped-gap','{max_unmapped_gap}',
      '--zoe-degenerate-min-correspondence','{zoe_degenerate_min_correspondence}'),
     torch_cache=True))

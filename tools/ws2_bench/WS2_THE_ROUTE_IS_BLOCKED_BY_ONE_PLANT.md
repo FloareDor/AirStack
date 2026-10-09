@@ -135,3 +135,50 @@ benchmark and an obstacle on the path is the point. The defect is that the
 catalogue layouts were never feasibility-checked against the planner's own
 clearance requirement, so "clean failure" has been silently mixing two
 different causes. One layout, one seed, one planner; not yet generalised.
+
+## The mechanism is perception, not geometry
+
+In `easy` seed 2 the **column** face sits at `|y| = 0.00` and the **plant** face
+at `0.05`. Both are on the centreline. Of 311 MonoNav collisions ever recorded:
+
+| obstacle | on the centreline | collisions |
+|---|---|---|
+| column (solid) | yes | **0** |
+| plant (foliage) | yes | **311** |
+
+So `min_dist2obs` is binding against the **TSDF map, not ground truth**. The
+column registers in depth and is avoided on every single flight. The plant never
+enters the map, so the planner has nothing to avoid and flies through it at a
+measured 0.049 m.
+
+That reframes the corridor A/B. Moving the plant 1.32 m off route did not give
+the planner room to avoid it -- it removed the need to see it. The 60% to 15/15
+jump is real, but the underlying defect is that **MonoNav cannot perceive the
+plant**, not that the course is too tight.
+
+This is a different claim from the foliage one withdrawn on 2026-10-08. That was
+about the oracle's `overlap_sphere` missing thin geometry when *measuring*
+clearance, and it was refuted by the hull measurement. This is about ZoeDepth and
+the TSDF failing to *map* the plant, and its evidence is the column/plant split
+above: same geometry, opposite outcomes.
+
+## Mason's challenge scenes cannot be planned
+
+`scene_feasibility.py` runs `challenge_layouts.free_route` with the inflation
+radius as a parameter and reports the widest clearance a route can keep.
+
+| challenge | vehicle fits (0.348 m) | planner can plan (0.8 m) | widest clearance |
+|---|---|---|---|
+| offset_obstacle | yes | **no** | 0.64 m |
+| slalom | yes | **no** | 0.64 m |
+| offset_gap | yes | **no** | 0.39 m |
+
+All three use columns, which MonoNav *can* see. So the predicted outcome is not
+a collision and not an attack signal: the planner finds no admissible primitive
+and stops, the `planner_stopped` outcome that already exists 11 times at about
+0.10 m travelled.
+
+Flying these as-is would measure the clearance rule. They need gaps of about
+`2 * 0.8` plus the vehicle, or a `min_dist2obs` chosen to match the scene.
+`min_dist2obs` is now passed explicitly at its existing 0.8 default so it appears
+in the worker command and provenance rather than being an invisible default.
