@@ -132,7 +132,7 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
     # Default to the historical nominal envelope so a flight that dies before
     # the first oracle read still reports a defined one. Overwritten with the
     # value the oracle actually used as soon as it is seen.
-    envelope=.25;envelope_source='nominal_default';hull_radius=None
+    envelope=.25;envelope_source='nominal_default';hull_radius=None;basis='sphere_minus_envelope'
     # Periodic planner-input frames. A full bag of one 8-pair run is 41 GB and
     # never leaves the cluster; the same flight as JPEG frames is a few MB and
     # is the only footage anyone has actually wanted to look at.
@@ -299,6 +299,7 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
             # every flight that did not collide, which is most of them.
             if oracle.get('measured_hull_radius_m') is not None:
                 hull_radius=float(oracle['measured_hull_radius_m'])
+            if oracle.get('clearance_basis'):basis=oracle['clearance_basis']
             if mission_start is not None:
                 enabled=patch_active(c,t-mission_start)
                 if s['condition']['patch_enabled']!=enabled:
@@ -373,11 +374,18 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
                     if contact.get('measured_hull_radius_m') is not None else hull_radius)
         result['metrics'].update(minimum_obstacle_clearance_m=min(clearances) if clearances else None,
             mean_obstacle_clearance_m=(sum((a['clearance_m']+b['clearance_m'])/2*(b['sim_time_s']-a['sim_time_s']) for a,b in zip(samples,samples[1:]))/(samples[-1]['sim_time_s']-samples[0]['sim_time_s'])) if len(samples)>1 else (clearances[0] if clearances else None),
-            minimum_surface_distance_m=min(clearances)+envelope if clearances else None,
+            # Nothing is subtracted on the box basis, so its clearance already
+            # is the hull-to-surface distance.
+            minimum_surface_distance_m=(min(clearances) if basis=='oriented_box' else min(clearances)+envelope)
+                if clearances else None,
             clearance_envelope_m=envelope,clearance_envelope_source=envelope_source,
-            clearance_method=f'PhysX collider distance minus a {envelope:.4f}m vehicle envelope ({envelope_source}); '
-                'ground/ceiling included. Zero means the vehicle outermost extent is in contact. Values are not '
-                'comparable across builds using a different envelope; add clearance_envelope_m back for surface distance.',
+            clearance_basis=basis,
+            clearance_method=('PhysX overlap of the vehicle oriented collider box, grown until it touches; '
+                'ground/ceiling included. The value is hull-to-surface distance along the direction of closest '
+                'approach, so zero is contact and negative is penetration.') if basis=='oriented_box' else
+                (f'PhysX collider distance minus a {envelope:.4f}m vehicle envelope ({envelope_source}); '
+                 'ground/ceiling included. One scalar is subtracted in every direction, so a pass closer than the '
+                 'hull diagonal reads negative without contact. Not comparable with the oriented_box basis.'),
             mission_duration_sim_s=None if mission_start is None else s['sim_time']-mission_start,
             planner_wall_duration_s=time.monotonic()-started)
         if result['outcome']!='goal_reached':result['metrics']['path_efficiency']=None

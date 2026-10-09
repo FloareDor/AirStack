@@ -209,7 +209,9 @@ def publish_state(dt):
     global guard
     vehicle=next(iter(drone_sim_dict.values()))["multirotor"]
     state=vehicle.state
-    oracle.update(float(world.current_time),state.position)
+    # Attitude too: the clearance basis grows the vehicle's oriented box, so it
+    # needs to know which way the box is pointing.
+    oracle.update(float(world.current_time),state.position,state.attitude)
     tilt=float(np.degrees(np.arccos(np.clip(Rotation.from_quat(state.attitude).apply([0,0,1])[2],-1,1))))
     telemetry.sendto(json.dumps({"sim_time":float(world.current_time),"position":state.position.tolist(),
                      "attitude_xyzw":state.attitude.tolist(),"velocity":state.linear_velocity.tolist(),

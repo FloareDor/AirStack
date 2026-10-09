@@ -19,7 +19,7 @@ def method_result(root):
     # column, so there is nothing left to compare; obstacle clearance still
     # separates the arms, which is how Surrealist and the SBFT UAV competition
     # rank tests. Losses are paired, so layout difficulty cancels out.
-    losses=[];attacked_clearances=[];envelopes=set()
+    losses=[];attacked_clearances=[];envelopes=set();bases=set()
     for r in history:
         p=r['pairs'][0];key=action_key(r['decision']['action'])
         for role in ('clean','perturbed'):
@@ -31,6 +31,11 @@ def method_result(root):
         for role in ('clean','perturbed'):
             e=p[role].get('metrics',{}).get('clearance_envelope_m')
             if e is not None:envelopes.add(round(float(e),4))
+            # The basis matters as much as the envelope: the box basis reports
+            # the same measured hull as the scalar one it replaced, so pooling
+            # them would look consistent on the envelope alone and not be.
+            b=p[role].get('metrics',{}).get('clearance_basis')
+            if b:bases.add(str(b))
         clean_clearance=p['clean'].get('metrics',{}).get('minimum_obstacle_clearance_m')
         attacked_clearance=p['perturbed'].get('metrics',{}).get('minimum_obstacle_clearance_m')
         if isinstance(attacked_clearance,(int,float)):
@@ -57,7 +62,7 @@ def method_result(root):
             'median_clearance_loss_m':round(statistics.median(losses),4) if losses else None,
             'worst_attacked_clearance_m':round(min(attacked_clearances),4) if attacked_clearances else None,
             'clearance_pairs':len(losses),
-            'clearance_envelopes_m':sorted(envelopes),
+            'clearance_envelopes_m':sorted(envelopes),'clearance_bases':sorted(bases),
             'infrastructure_errors':infra,'flight_wall_seconds':round(seconds,2),
             'llm_requests':len(calls),'llm_selection_seconds':round(selection_s,2),
             'llm_analysis_seconds':round(analysis_s,2),'cli_list_price_estimate_usd':round(cost,6),
@@ -71,7 +76,8 @@ def report_study(root):
     # different envelopes makes the clearance columns incomparable, and the
     # difference is about 0.098m, far larger than the effects being looked for.
     envelopes=sorted({e for r in results for e in r.get('clearance_envelopes_m',[])})
-    mixed_envelopes=len(envelopes)>1
+    bases=sorted({b for r in results for b in r.get('clearance_bases',[])})
+    mixed_envelopes=len(envelopes)>1 or len(bases)>1
     valid=complete and all(r['infrastructure_errors']==0 for r in results)
     # Report exact-condition yield separately from unique root causes.
     conclusion=('This small pilot is complete. It does not establish statistical superiority of any policy.' if valid else
@@ -100,7 +106,7 @@ def report_study(root):
                     ('Claude found more candidate settings in this pilot. ' if counts['agent_search']>max(counts['random'],counts['search']) else
                      'This pilot did not show a higher candidate yield for Claude. ')+
                     'The sample is too small to establish statistical superiority; inspect reproduced settings and clean failures separately.')
-    limitations=([f'Clearance columns pool flights measured against different vehicle envelopes {envelopes}; '
+    limitations=([f'Clearance columns pool flights measured differently (envelopes {envelopes}, bases {bases}); '
                   'the offset between them exceeds the effects being measured, so do not compare them.'] if mixed_envelopes else [])+[
                  'Two pairs per method at the default budget; no statistical significance or generalization claim.',
                  'This pilot covers MonoNav on one Office route with a protected straight corridor, one seed and one method order.',
@@ -116,7 +122,7 @@ def report_study(root):
                  'Separate clean qualification is outside the comparison budget and listed separately.',
                  'All three methods run without manual configuration changes during the campaign; reduced manual effort by Claude is not established.']
     data={'status':'complete' if complete else 'in_progress','comparison_valid':valid,'protocol':protocol,
-          'clearance_envelopes_m':envelopes,'mixed_clearance_envelopes':mixed_envelopes,
+          'clearance_envelopes_m':envelopes,'clearance_bases':bases,'mixed_clearance_envelopes':mixed_envelopes,
           'results':results,'conclusion':conclusion,'limitations':limitations}
     atomic(root/'comparison.json',data)
     columns=['method','scheduled_flights','clean_pass_pairs','clean_failure_pairs','attack_failure_pairs_with_clean_pass',

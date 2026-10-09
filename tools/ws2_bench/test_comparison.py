@@ -82,10 +82,11 @@ def test_clearance_columns_tolerate_a_run_without_metrics(tmp_path):
     assert result['median_clearance_loss_m'] is None and result['clearance_pairs']==0
 
 
-def envelope_history(clean_env,attacked_env):
+def envelope_history(clean_env,attacked_env,basis='sphere_minus_envelope'):
     return [{'decision':{'round':i,'action':reference_action()},'pairs':[{
         role:{'outcome':'goal_reached','wall_duration_s':2.,
-              'metrics':{'minimum_obstacle_clearance_m':.05,'clearance_envelope_m':env}}
+              'metrics':{'minimum_obstacle_clearance_m':.05,'clearance_envelope_m':env,
+                         'clearance_basis':basis}}
         for role,env in [('clean',clean_env),('perturbed',attacked_env)]}]} for i in (1,2)]
 
 def test_mixed_clearance_envelopes_are_flagged(tmp_path):
@@ -96,7 +97,32 @@ def test_mixed_clearance_envelopes_are_flagged(tmp_path):
     report=report_study(tmp_path)
     assert report['mixed_clearance_envelopes']
     assert report['clearance_envelopes_m']==[.25,.3482]
-    assert any('different vehicle envelopes' in s for s in report['limitations'])
+    assert any('measured differently' in s for s in report['limitations'])
+
+def test_mixed_clearance_bases_are_flagged(tmp_path):
+    # The box basis reports the same measured hull as the scalar basis it
+    # replaced, so the envelope alone cannot tell them apart. Pooling them
+    # would compare a hull-to-surface distance against that distance minus the
+    # hull diagonal.
+    protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['t']}
+    write(tmp_path,'protocol.json',protocol)
+    for name,basis in [('random','sphere_minus_envelope'),('search','oriented_box'),('agent_search','oriented_box')]:
+        write(tmp_path/name,'config.json',{})
+        write(tmp_path/name,'history.json',envelope_history(.3482,.3482,basis))
+    report=report_study(tmp_path)
+    assert report['clearance_envelopes_m']==[.3482]
+    assert report['clearance_bases']==['oriented_box','sphere_minus_envelope']
+    assert report['mixed_clearance_envelopes']
+    assert any('measured differently' in s for s in report['limitations'])
+
+def test_one_basis_is_not_flagged(tmp_path):
+    protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['t']}
+    write(tmp_path,'protocol.json',protocol)
+    for name in ('random','search','agent_search'):
+        write(tmp_path/name,'config.json',{})
+        write(tmp_path/name,'history.json',envelope_history(.3482,.3482,'oriented_box'))
+    report=report_study(tmp_path)
+    assert not report['mixed_clearance_envelopes']
 
 def test_one_envelope_is_not_flagged(tmp_path):
     protocol={'order':['random','search','agent_search'],'flights_per_method':4,'qualification_directories':['t']}
