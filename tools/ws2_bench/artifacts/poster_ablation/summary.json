@@ -1,0 +1,38 @@
+{
+  "arms": {
+    "clean": {
+      "flown": 15,
+      "usable": 15,
+      "pass_count": 8,
+      "pass_rate": 0.5333333333333333,
+      "outcomes": {
+        "collision": 7,
+        "goal_reached": 8
+      }
+    },
+    "fcrn_patch": {
+      "flown": 15,
+      "usable": 15,
+      "pass_count": 3,
+      "pass_rate": 0.2,
+      "outcomes": {
+        "collision": 12,
+        "goal_reached": 3
+      }
+    },
+    "phase_scrambled": {
+      "flown": 15,
+      "usable": 15,
+      "pass_count": 6,
+      "pass_rate": 0.4,
+      "outcomes": {
+        "collision": 9,
+        "goal_reached": 6
+      }
+    }
+  },
+  "flights": 45,
+  "rounds_requested": 15,
+  "complete": true,
+  "note": "Pass rates here are a direction, not a result. The endpoint is per-flight mean zoe_corr; run analyse_poster_ablation.py."
+}

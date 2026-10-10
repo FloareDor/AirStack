@@ -1,0 +1,50 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: fcrn_patch",
+  "configuration_hash": "b46e7e1e8f655043ff265b94b06cc79282ea45b7f9a0f52b40e390387454e031",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_ablation/001_fcrn_patch",
+  "metrics": {
+    "time_to_goal_s": 66.56999851204455,
+    "path_length_m": 10.560448067337024,
+    "direct_start_to_goal_distance_m": 8.000640682159975,
+    "path_efficiency": 0.7576042826161501,
+    "mission_progress_percent": 93.82303088114296,
+    "final_distance_to_goal_m": 0.494197104247735,
+    "planner_hold_count": 1,
+    "planner_recovery_count": 9,
+    "minimum_obstacle_clearance_m": 0.04897033686784881,
+    "odometry_sample_count": 844,
+    "odometry_start_sim_time_s": 34.92999921925366,
+    "odometry_end_sim_time_s": 101.49999773129821,
+    "max_displacement_m": 7.808394355803447,
+    "mean_speed_m_s": 0.15863674783508244,
+    "stationary_fraction": 0.20508166969147004,
+    "clearance_at_contact_m": null,
+    "surface_distance_at_contact_m": null,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.5334764554575535,
+    "minimum_surface_distance_m": 0.04897033686784881,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 66.56999851204455,
+    "planner_wall_duration_s": 204.30875225225464
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 52,
+  "cleanup_errors": [],
+  "wall_duration_s": 238.4028162411414
+}

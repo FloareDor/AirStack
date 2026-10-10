@@ -1,0 +1,612 @@
+{
+  "root": "artifacts\\poster_ablation",
+  "arms": {
+    "clean": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3354,
+      "sd_zoe_corr": 0.0062,
+      "median_zoe_corr": 0.3364,
+      "pass_count": 8,
+      "pass_n": 15,
+      "distinct_poster_digests": []
+    },
+    "fcrn_patch": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3138,
+      "sd_zoe_corr": 0.0056,
+      "median_zoe_corr": 0.3123,
+      "pass_count": 3,
+      "pass_n": 15,
+      "distinct_poster_digests": [
+        "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+      ]
+    },
+    "phase_scrambled": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3172,
+      "sd_zoe_corr": 0.0067,
+      "median_zoe_corr": 0.315,
+      "pass_count": 6,
+      "pass_n": 15,
+      "distinct_poster_digests": [
+        "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+      ]
+    }
+  },
+  "comparisons": {
+    "clean vs fcrn_patch": {
+      "zoe_corr_mann_whitney": {
+        "u": 0.0,
+        "z": -4.646,
+        "p": 3e-06
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.064068
+    },
+    "clean vs phase_scrambled": {
+      "zoe_corr_mann_whitney": {
+        "u": 6.0,
+        "z": -4.397,
+        "p": 1.1e-05
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.357625
+    },
+    "fcrn_patch vs phase_scrambled": {
+      "zoe_corr_mann_whitney": {
+        "u": 84.0,
+        "z": -1.161,
+        "p": 0.245485
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.945677
+    }
+  },
+  "unit_of_analysis": "flight (per-flight mean zoe_corr); frames are autocorrelated and are not pooled",
+  "pass_rate_caveat": "Direction only at this n. Do not report as a result.",
+  "flights": [
+    {
+      "folder": "000_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 78,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32305128205128203,
+      "p10_zoe_corr": 0.249,
+      "minimum_obstacle_clearance_m": 0.04596138971235803,
+      "poster_sha256": null
+    },
+    {
+      "folder": "001_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 105,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32284761904761905,
+      "p10_zoe_corr": 0.222,
+      "minimum_obstacle_clearance_m": 0.04897033686784881,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "002_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.315,
+      "p10_zoe_corr": 0.287,
+      "minimum_obstacle_clearance_m": 0.03616302333422142,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "003_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.311,
+      "p10_zoe_corr": 0.274,
+      "minimum_obstacle_clearance_m": 0.03585441336955569,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "004_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 15,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32686666666666664,
+      "p10_zoe_corr": 0.305,
+      "minimum_obstacle_clearance_m": 0.030685196461404877,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "005_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 16,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3468125,
+      "p10_zoe_corr": 0.318,
+      "minimum_obstacle_clearance_m": 0.020346762645103246,
+      "poster_sha256": null
+    },
+    {
+      "folder": "006_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 16,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3206875,
+      "p10_zoe_corr": 0.293,
+      "minimum_obstacle_clearance_m": 0.023741472256426165,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "007_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3320952380952381,
+      "p10_zoe_corr": 0.31,
+      "minimum_obstacle_clearance_m": 0.0373974631928843,
+      "poster_sha256": null
+    },
+    {
+      "folder": "008_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 17,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3111764705882353,
+      "p10_zoe_corr": 0.283,
+      "minimum_obstacle_clearance_m": 0.03083950144373774,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "009_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 14,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3455714285714286,
+      "p10_zoe_corr": 0.333,
+      "minimum_obstacle_clearance_m": 0.03562295589605641,
+      "poster_sha256": null
+    },
+    {
+      "folder": "010_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 17,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3171176470588235,
+      "p10_zoe_corr": 0.296,
+      "minimum_obstacle_clearance_m": 0.023355709800594017,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "011_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3100555555555556,
+      "p10_zoe_corr": 0.293,
+      "minimum_obstacle_clearance_m": 0.029836519058574148,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "012_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3108181818181818,
+      "p10_zoe_corr": 0.269,
+      "minimum_obstacle_clearance_m": 0.03554580340488998,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "013_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 80,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.310325,
+      "p10_zoe_corr": 0.223,
+      "minimum_obstacle_clearance_m": 0.05066769167351026,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "014_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 77,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3314805194805195,
+      "p10_zoe_corr": 0.255,
+      "minimum_obstacle_clearance_m": 0.10837775506599996,
+      "poster_sha256": null
+    },
+    {
+      "folder": "015_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31585714285714284,
+      "p10_zoe_corr": 0.288,
+      "minimum_obstacle_clearance_m": 0.02474445464158976,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "016_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 84,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33530952380952384,
+      "p10_zoe_corr": 0.245,
+      "minimum_obstacle_clearance_m": 0.05259650395267102,
+      "poster_sha256": null
+    },
+    {
+      "folder": "017_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31231818181818183,
+      "p10_zoe_corr": 0.274,
+      "minimum_obstacle_clearance_m": 0.03407990607272781,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "018_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33865,
+      "p10_zoe_corr": 0.309,
+      "minimum_obstacle_clearance_m": 0.0077709065849751405,
+      "poster_sha256": null
+    },
+    {
+      "folder": "019_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.30457142857142855,
+      "p10_zoe_corr": 0.283,
+      "minimum_obstacle_clearance_m": 0.024590149659256898,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "020_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 83,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3135180722891566,
+      "p10_zoe_corr": 0.206,
+      "minimum_obstacle_clearance_m": 0.051516369076341,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "021_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3118695652173913,
+      "p10_zoe_corr": 0.247,
+      "minimum_obstacle_clearance_m": -0.006656609263147287,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "022_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31116666666666665,
+      "p10_zoe_corr": 0.291,
+      "minimum_obstacle_clearance_m": 0.03130241639073632,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "023_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 67,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33673134328358206,
+      "p10_zoe_corr": 0.258,
+      "minimum_obstacle_clearance_m": 0.056839890966824666,
+      "poster_sha256": null
+    },
+    {
+      "folder": "024_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32066666666666666,
+      "p10_zoe_corr": 0.294,
+      "minimum_obstacle_clearance_m": 0.025130217097421907,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "025_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3388421052631579,
+      "p10_zoe_corr": 0.307,
+      "minimum_obstacle_clearance_m": 0.026364656956084788,
+      "poster_sha256": null
+    },
+    {
+      "folder": "026_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31236842105263163,
+      "p10_zoe_corr": 0.267,
+      "minimum_obstacle_clearance_m": 0.031765331337734896,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "027_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 75,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3267466666666667,
+      "p10_zoe_corr": 0.247,
+      "minimum_obstacle_clearance_m": 0.05730280591382325,
+      "poster_sha256": null
+    },
+    {
+      "folder": "028_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3147142857142857,
+      "p10_zoe_corr": 0.278,
+      "minimum_obstacle_clearance_m": 0.029296451620409135,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "029_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 87,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3105287356321839,
+      "p10_zoe_corr": 0.221,
+      "minimum_obstacle_clearance_m": 0.06224056534847478,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "030_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3203684210526316,
+      "p10_zoe_corr": 0.289,
+      "minimum_obstacle_clearance_m": 0.025053064606255476,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "031_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 75,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.30906666666666666,
+      "p10_zoe_corr": 0.226,
+      "minimum_obstacle_clearance_m": 0.054062401284833195,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "032_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 89,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3302247191011236,
+      "p10_zoe_corr": 0.244,
+      "minimum_obstacle_clearance_m": 0.04719582957102091,
+      "poster_sha256": null
+    },
+    {
+      "folder": "033_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 87,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3296896551724138,
+      "p10_zoe_corr": 0.228,
+      "minimum_obstacle_clearance_m": 0.056531281002158956,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "034_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 86,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3363720930232558,
+      "p10_zoe_corr": 0.252,
+      "minimum_obstacle_clearance_m": 0.03570010838722284,
+      "poster_sha256": null
+    },
+    {
+      "folder": "035_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.30933333333333335,
+      "p10_zoe_corr": 0.274,
+      "minimum_obstacle_clearance_m": 0.03886336052504647,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "036_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3382173913043478,
+      "p10_zoe_corr": 0.292,
+      "minimum_obstacle_clearance_m": 0.039249122980878626,
+      "poster_sha256": null
+    },
+    {
+      "folder": "037_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 136,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.320625,
+      "p10_zoe_corr": 0.225,
+      "minimum_obstacle_clearance_m": 0.10220555577268557,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "038_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 93,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32640860215053763,
+      "p10_zoe_corr": 0.23,
+      "minimum_obstacle_clearance_m": 0.08222306056058017,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "039_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 102,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3224117647058824,
+      "p10_zoe_corr": 0.238,
+      "minimum_obstacle_clearance_m": 0.05128491160284171,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "040_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3150434782608696,
+      "p10_zoe_corr": 0.267,
+      "minimum_obstacle_clearance_m": 0.03878620803388004,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "041_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33117391304347826,
+      "p10_zoe_corr": 0.291,
+      "minimum_obstacle_clearance_m": 0.04326105252153298,
+      "poster_sha256": null
+    },
+    {
+      "folder": "042_phase_scrambled",
+      "arm": "phase_scrambled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3235,
+      "p10_zoe_corr": 0.301,
+      "minimum_obstacle_clearance_m": 0.028910689164576987,
+      "poster_sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac"
+    },
+    {
+      "folder": "043_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 91,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33987912087912087,
+      "p10_zoe_corr": 0.272,
+      "minimum_obstacle_clearance_m": 0.09117274953588606,
+      "poster_sha256": null
+    },
+    {
+      "folder": "044_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3055,
+      "p10_zoe_corr": 0.258,
+      "minimum_obstacle_clearance_m": 0.053368028864335317,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    }
+  ]
+}

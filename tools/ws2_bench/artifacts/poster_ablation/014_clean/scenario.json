@@ -1,0 +1,33 @@
+{
+  "name": "poster ablation: clean",
+  "planner": "mononav",
+  "height": 1.2,
+  "fault": null,
+  "goal_distance": 8.0,
+  "goal_radius": 0.5,
+  "minimum_travel": 3.0,
+  "minimum_displacement": 1.0,
+  "maximum_stationary_fraction": 0.5,
+  "trajectory_horizon": 2.0,
+  "mission_mode": "goal",
+  "timeout": 180.0,
+  "initial_speed": 0.4,
+  "maximum_speed": 0.5,
+  "velocity": 0.3,
+  "max_unmapped_gap": 0.0,
+  "zoe_degenerate_min_correspondence": 0.12,
+  "min_dist2obs": 0.8,
+  "condition": {
+    "name": "poster ablation: clean",
+    "layout": "easy",
+    "layout_seed": 2,
+    "seed": 42,
+    "light": 1800.0,
+    "rgb_noise": 0.0,
+    "depth_noise": 0.0,
+    "delay": 0.0,
+    "patch_enabled": false,
+    "patch_size": 0.9,
+    "poster": null
+  }
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "index": 0,
+    "round": 0,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "000_clean",
+    "minimum_obstacle_clearance_m": 0.04596138971235803
+  },
+  {
+    "index": 1,
+    "round": 0,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "001_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.04897033686784881
+  },
+  {
+    "index": 2,
+    "round": 0,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "002_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.03616302333422142
+  },
+  {
+    "index": 3,
+    "round": 1,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "003_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03585441336955569
+  },
+  {
+    "index": 4,
+    "round": 1,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "004_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.030685196461404877
+  },
+  {
+    "index": 5,
+    "round": 1,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "005_clean",
+    "minimum_obstacle_clearance_m": 0.020346762645103246
+  },
+  {
+    "index": 6,
+    "round": 2,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "006_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.023741472256426165
+  },
+  {
+    "index": 7,
+    "round": 2,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "007_clean",
+    "minimum_obstacle_clearance_m": 0.0373974631928843
+  },
+  {
+    "index": 8,
+    "round": 2,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "008_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03083950144373774
+  },
+  {
+    "index": 9,
+    "round": 3,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "009_clean",
+    "minimum_obstacle_clearance_m": 0.03562295589605641
+  },
+  {
+    "index": 10,
+    "round": 3,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "010_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.023355709800594017
+  },
+  {
+    "index": 11,
+    "round": 3,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "011_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.029836519058574148
+  },
+  {
+    "index": 12,
+    "round": 4,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "012_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03554580340488998
+  },
+  {
+    "index": 13,
+    "round": 4,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "013_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.05066769167351026
+  },
+  {
+    "index": 14,
+    "round": 4,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "014_clean",
+    "minimum_obstacle_clearance_m": 0.10837775506599996
+  },
+  {
+    "index": 15,
+    "round": 5,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "015_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.02474445464158976
+  },
+  {
+    "index": 16,
+    "round": 5,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "016_clean",
+    "minimum_obstacle_clearance_m": 0.05259650395267102
+  },
+  {
+    "index": 17,
+    "round": 5,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "017_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03407990607272781
+  },
+  {
+    "index": 18,
+    "round": 6,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "018_clean",
+    "minimum_obstacle_clearance_m": 0.0077709065849751405
+  },
+  {
+    "index": 19,
+    "round": 6,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "019_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.024590149659256898
+  },
+  {
+    "index": 20,
+    "round": 6,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "020_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.051516369076341
+  },
+  {
+    "index": 21,
+    "round": 7,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "021_fcrn_patch",
+    "minimum_obstacle_clearance_m": -0.006656609263147287
+  },
+  {
+    "index": 22,
+    "round": 7,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "022_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.03130241639073632
+  },
+  {
+    "index": 23,
+    "round": 7,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "023_clean",
+    "minimum_obstacle_clearance_m": 0.056839890966824666
+  },
+  {
+    "index": 24,
+    "round": 8,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "024_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.025130217097421907
+  },
+  {
+    "index": 25,
+    "round": 8,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "025_clean",
+    "minimum_obstacle_clearance_m": 0.026364656956084788
+  },
+  {
+    "index": 26,
+    "round": 8,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "026_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.031765331337734896
+  },
+  {
+    "index": 27,
+    "round": 9,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "027_clean",
+    "minimum_obstacle_clearance_m": 0.05730280591382325
+  },
+  {
+    "index": 28,
+    "round": 9,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "028_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.029296451620409135
+  },
+  {
+    "index": 29,
+    "round": 9,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "029_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.06224056534847478
+  },
+  {
+    "index": 30,
+    "round": 10,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "030_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.025053064606255476
+  },
+  {
+    "index": 31,
+    "round": 10,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "031_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.054062401284833195
+  },
+  {
+    "index": 32,
+    "round": 10,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "032_clean",
+    "minimum_obstacle_clearance_m": 0.04719582957102091
+  },
+  {
+    "index": 33,
+    "round": 11,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "033_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.056531281002158956
+  },
+  {
+    "index": 34,
+    "round": 11,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "034_clean",
+    "minimum_obstacle_clearance_m": 0.03570010838722284
+  },
+  {
+    "index": 35,
+    "round": 11,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "035_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03886336052504647
+  },
+  {
+    "index": 36,
+    "round": 12,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "036_clean",
+    "minimum_obstacle_clearance_m": 0.039249122980878626
+  },
+  {
+    "index": 37,
+    "round": 12,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "037_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.10220555577268557
+  },
+  {
+    "index": 38,
+    "round": 12,
+    "arm": "phase_scrambled",
+    "outcome": "goal_reached",
+    "folder": "038_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.08222306056058017
+  },
+  {
+    "index": 39,
+    "round": 13,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "039_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.05128491160284171
+  },
+  {
+    "index": 40,
+    "round": 13,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "040_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.03878620803388004
+  },
+  {
+    "index": 41,
+    "round": 13,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "041_clean",
+    "minimum_obstacle_clearance_m": 0.04326105252153298
+  },
+  {
+    "index": 42,
+    "round": 14,
+    "arm": "phase_scrambled",
+    "outcome": "collision",
+    "folder": "042_phase_scrambled",
+    "minimum_obstacle_clearance_m": 0.028910689164576987
+  },
+  {
+    "index": 43,
+    "round": 14,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "043_clean",
+    "minimum_obstacle_clearance_m": 0.09117274953588606
+  },
+  {
+    "index": 44,
+    "round": 14,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "044_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.053368028864335317
+  }
+]
