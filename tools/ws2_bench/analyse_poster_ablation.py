@@ -74,7 +74,12 @@ def flights(root):
         arm = None
         if scenario.exists():
             condition = json.loads(scenario.read_text()).get('condition', {})
-            arm = condition.get('poster') or 'clean'
+            # Absent is not the same as null. A flight recorded before the
+            # poster axis existed has no key at all, and reading that as 'clean'
+            # would quietly relabel archived patch flights as controls. Only a
+            # condition that actually carries the field is evidence about it.
+            if 'poster' in condition:
+                arm = condition['poster'] or 'clean'
         if arm is None:
             arm = folder.name.split('_', 1)[-1]
         values, skipped = frame_correspondences(folder/'worker.log')

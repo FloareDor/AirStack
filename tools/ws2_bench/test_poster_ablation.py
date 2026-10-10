@@ -137,3 +137,15 @@ def test_infrastructure_errors_are_excluded_from_both_endpoints(tmp_path):
     assert result['arms']['clean']['flights'] == 2
     assert result['arms']['clean']['usable'] == 1
     assert result['arms']['clean']['pass_n'] == 1
+
+
+def test_a_flight_recorded_before_the_poster_axis_is_not_relabelled_clean(tmp_path):
+    # An archived patch flight has no 'poster' key at all. Reading absent as
+    # null would turn it into a control and corrupt any pooled analysis.
+    folder = tmp_path/'000_patch_090'
+    folder.mkdir()
+    (folder/'result.json').write_text(json.dumps({'outcome': 'collision', 'metrics': {}}))
+    (folder/'scenario.json').write_text(json.dumps(
+        {'condition': {'layout': 'easy', 'patch_enabled': True, 'patch_size': .9}}))
+    (folder/'worker.log').write_text('frame=1 zoe_corr=0.300/0.120 zoe_edges=4000\n')
+    assert set(analyse.report(tmp_path)['arms']) == {'patch_090'}
