@@ -222,13 +222,50 @@ outcome.
 **So the mechanism is low-spatial-frequency structured contrast, not mean
 brightness, not the colour histogram, and not the optimised phase.**
 
+## The dose response: contrast is the driver
+
+`ws2-pilot-14`, third arm set, 48 flights, 12 per arm, own clean. The dose
+posters keep the patch's exact structure and mean colour and scale only the
+amplitude, so the spectrum's shape is untouched and scaling toward the mean
+cannot clip.
+
+| arm | luminance contrast | mean `zoe_corr` | diff vs clean | 95% CI | p |
+|---|---|---|---|---|---|
+| clean | 0 | 0.3350 | -- | -- | -- |
+| `contrast_25` | 17.11 | 0.3300 | -0.0050 | [-0.0121, +0.0021] | 0.112 |
+| `contrast_50` | 34.12 | 0.3253 | -0.0098 | [-0.0157, -0.0038] | **0.0043** |
+| `fcrn_patch` | 68.33 | 0.3187 | -0.0163 | [-0.0231, -0.0095] | **0.00059** |
+
+**Monotone across the whole ladder**, and the pairwise steps hold as well:
+`contrast_25` vs `fcrn_patch` p = 0.010, `contrast_50` vs `fcrn_patch`
+p = 0.035. A linear fit over all 48 flights gives
+`zoe_corr = 0.3343 - 2.37e-4 x contrast`, slope **t = -5.41**, R^2 = 0.39.
+
+So the degradation scales with contrast. Taken with the other two arm sets the
+account is now closed on all three sides: the **phase** can be destroyed and
+the effect survives, the **colour statistics** can be matched exactly and
+nothing happens, and the **contrast** can be dialled and the effect follows it.
+
+This also supplies the one thing the original patch result never had. Its
+absence of a dose response across 0.3/0.6/0.9 m was one of the three reasons
+the transfer reading was withdrawn. The dose response exists -- it is just in
+contrast, not in apparent size, and it belongs to any poster rather than to
+that one image.
+
+`contrast_25` alone is not individually significant (p = 0.112). The claim
+rests on the trend, not on that cell.
+
 ### The two sessions must not be pooled
 
-The clean arms differ: **0.3354 (A) vs 0.3294 (B), p = 0.028**, a gap of
-0.0060 which is 28% of the patch effect. Same build, same GPU, different sim
-restarts. Every comparison above is within its own session against its own
-clean arm. This is the same-build rule doing exactly the job it exists for, and
-it is why both arm sets carried a clean arm instead of reusing A's.
+Session A and session B's clean arms differ: **0.3354 vs 0.3294, p = 0.028**,
+a gap of 0.0060 which is 28% of the patch effect, across nothing but different
+sim restarts within one build and GPU. Session C's clean lands at 0.3350 and
+**agrees with A** (p = 0.83), so the drift is episodic rather than a trend --
+which is worse, not better, because it cannot be corrected for, only
+controlled against. Every comparison in this document is within its own session
+against its own clean arm. This is the same-build rule doing exactly the job it
+exists for, and it is why all three arm sets carried their own clean instead of
+reusing one.
 
 ### One discrepancy, recorded rather than buried
 

@@ -1,0 +1,49 @@
+{
+  "arms": {
+    "clean": {
+      "flown": 12,
+      "usable": 12,
+      "pass_count": 5,
+      "pass_rate": 0.4166666666666667,
+      "outcomes": {
+        "collision": 7,
+        "goal_reached": 5
+      }
+    },
+    "fcrn_patch": {
+      "flown": 12,
+      "usable": 12,
+      "pass_count": 4,
+      "pass_rate": 0.3333333333333333,
+      "outcomes": {
+        "collision": 8,
+        "goal_reached": 4
+      }
+    },
+    "contrast_50": {
+      "flown": 12,
+      "usable": 12,
+      "pass_count": 3,
+      "pass_rate": 0.25,
+      "outcomes": {
+        "collision": 8,
+        "goal_reached": 3,
+        "planner_stopped": 1
+      }
+    },
+    "contrast_25": {
+      "flown": 12,
+      "usable": 12,
+      "pass_count": 2,
+      "pass_rate": 0.16666666666666666,
+      "outcomes": {
+        "collision": 10,
+        "goal_reached": 2
+      }
+    }
+  },
+  "flights": 48,
+  "rounds_requested": 12,
+  "complete": true,
+  "note": "Pass rates here are a direction, not a result. The endpoint is per-flight mean zoe_corr; run analyse_poster_ablation.py."
+}

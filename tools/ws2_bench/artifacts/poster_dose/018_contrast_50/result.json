@@ -1,0 +1,47 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: contrast_50",
+  "configuration_hash": "c089f4acfff28175cb057c827af137416db43bd27596b53ba38b3ddd4266e285",
+  "outcome": "planner_stopped",
+  "termination": {
+    "source": "planner",
+    "reason": "planner_terminal",
+    "detail": "F sliding window pre-prune: blocks=97425, pruned=2573\nTSDF sliding window post-prune: blocks=97520, pruned=33355\nTSDF CAPACITY WARNING: 97520 active blocks; map retained, consider reducing --tsdf-local-radius\nRECOVERY 11/12: blocked yaw scan, yaw_step=25.0 deg\nframe=75 seq=202 primitive=7 tsdf_points=49631 tsdf_blocks=97520 blocked=True speckles=0/456 depth_ok=True zoe_corr=0.428/0.120 zoe_edges=46045 zoe=0.220s bridge={'accepted': True, 'visualized': True, 'waypoint_count': 17, 'trajectory_mode': 'override'}\nTSDF sliding window pre-prune: blocks=96026, pruned=1494\nTSDF sliding window post-prune: blocks=96762, pruned=29652\nframe=76 seq=203 primitive=7 tsdf_points=47056 tsdf_blocks=96762 blocked=True speckles=0/796 depth_ok=True zoe_corr=0.437/0.120 zoe_edges=46063 zoe=0.229s bridge={'accepted': False, 'reason': 'holding recovery 11 (1.3/2.0s)'}\nTSDF sliding window pre-prune: blocks=95914, pruned=848\nTSDF sliding window post-prune: blocks=96188, pruned=32127\nRECOVERY 12/12: blocked yaw scan, yaw_step=25.0 deg\nframe=77 seq=205 primitive=7 tsdf_points=47051 tsdf_blocks=96188 blocked=True speckles=0/33 depth_ok=True zoe_corr=0.444/0.120 zoe_edges=46041 zoe=0.217s bridge={'accepted': True, 'visualized': True, 'waypoint_count': 17, 'trajectory_mode': 'override'}\nTSDF sliding window pre-prune: blocks=92896, pruned=3292\nTSDF sliding window post-prune: blocks=92901, pruned=34488\nMission stopping (no central safe primitive after 12 yaw scans) at goal distance 4.10 m: {'success': True}\n"
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_dose/018_contrast_50",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 5.112337267235285,
+    "direct_start_to_goal_distance_m": 7.996575089941338,
+    "path_efficiency": null,
+    "mission_progress_percent": 52.863122615650205,
+    "final_distance_to_goal_m": 3.7693357950931077,
+    "planner_hold_count": 3,
+    "planner_recovery_count": 12,
+    "minimum_obstacle_clearance_m": 0.0897068522037239,
+    "odometry_sample_count": 657,
+    "odometry_start_sim_time_s": 34.02999923937023,
+    "odometry_end_sim_time_s": 76.17999829724431,
+    "max_displacement_m": 4.37336446547826,
+    "mean_speed_m_s": 0.12128914309620237,
+    "stationary_fraction": 0.32323232323232326,
+    "mean_obstacle_clearance_m": 0.357047262934457,
+    "minimum_surface_distance_m": 0.0897068522037239,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 42.14999905787408,
+    "planner_wall_duration_s": 188.56075959187
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 41,
+  "cleanup_errors": [],
+  "wall_duration_s": 229.47446631127968
+}

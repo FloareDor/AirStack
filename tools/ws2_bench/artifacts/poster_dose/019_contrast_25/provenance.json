@@ -1,0 +1,168 @@
+{
+  "started_at_utc": "2026-10-10T15:45:42+00:00",
+  "AirStack": {
+    "head": "c7f5d5aa8698cf84775a6d50a82443de4e93678c",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mononav": {
+    "head": "b8e53771db8607aaf0a6bc5b3579e8edeaf4e818",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "model_adapter": {
+    "name": "mononav",
+    "mission_mode": "goal",
+    "supported_attacks": [
+      "rgb_noise",
+      "delay",
+      "scene_poster"
+    ],
+    "input": "RGB + camera calibration + odometry over HTTP /frame",
+    "output": "HTTP /trajectory; bridge publishes trajectory to AirStack",
+    "reset": "Fresh worker container/model state and fresh simulator/PX4 for each episode",
+    "worker_image": "mononav-demo:2.7.1-cu128",
+    "entrypoint": "mononav_airstack.py"
+  },
+  "worker_image": "sha256:fcc0416d163767b51c463d0ceb325df77f3466c5f3701085838960dfaadc1028",
+  "runtime_images": {
+    "isaac-sim": "sha256:0c2aadfabdec13ab35576cade4bdb4531b2bf3f27f799aa948d5e88d35d092e6",
+    "airstack-robot-desktop-1": "sha256:ebd9f74dc39a45a558c39aaa1c0b2d223f47efd0e054eaeafe41155068140e00"
+  },
+  "host": {
+    "gpus": [
+      "NVIDIA RTX PRO 5000 Blackwell, 580.126.20, 48935 MiB"
+    ],
+    "cpu_count": 48
+  },
+  "runtime_sources": {
+    "test_scene_feasibility.py": "fd5fba1d2998b8a31be82d3b6713de49996b4055354b5ffc158a7826b1cae3e5",
+    "expanded_space.py": "d43183f771d65b724d7b70f3ba2544b1be547493bff23235a6f9667632a1b890",
+    "test_agent_campaign.py": "594eebc8ecc0fb6fd0c50ef7eca6cd7a1b17a6de20e69eafbf4ac91866099bad",
+    "agent_schema.py": "923a13d486f2e90cf0fcc21064992ae02c2b0edf0e57b2db77c45f52b870233e",
+    "vulnerability_report.py": "e3a8c1249e01f6fc57316c5352f0c5a8ee3f13efe7d257b17321a37891022f52",
+    "occupancy.py": "7f1fe2695366c4c37ed2b5ad523b55eb37bb84e12f038321ce2ad29c17615e27",
+    "test_gate_ab.py": "12abf9a4c1ff26a5c4d7d96a76834c05079844b913e39459f47fd5c73925eb70",
+    "dashboard.py": "a7fafd8aa601222ba365e4270134ed64a80e5b7ca626a44858e7eed0f56f1c33",
+    "ground_truth.py": "6169bc9985635d8d9be5e256f917d8e053a17a662561248104f01be927b23599",
+    "test_intent_layout_scope.py": "3b8a7a0bcf50e2131837aa34c998fd5e95a4ea4eda41cd8697ab8f4db3246b3e",
+    "check_provenance.py": "db6ad489e9d237f1faa5328055518b7e9029447cb4c3ac40a5d3c128ff9d88cf",
+    "agent_campaign.py": "bc0ed8a40e723b36f5af0c4aca1e220c0e26e49755f6edda710cb25a7e321c51",
+    "qualify_reference.py": "43a45113022b49837d80bab6203a08de449daeb214494f8422f841350c106059",
+    "test_comparison.py": "90eb56bdfa7b09d1feec12754f89c2f2bb010588ddefebee9b203d1c81f3dde3",
+    "flight_action.py": "8f6607dc07294fcff9bea2dd4bdf8c881812e857bd57ef7e0ab624a43518665c",
+    "test_mission.py": "60c9f3cad59d654a1ef597d21046004756f6abf97e9127b9808f077becf42dec",
+    "inspect_patch_depth.py": "7bc129be0caaf1ed3aba99bfe72bfdc0449eabf0bb84a9217b75a5c8d7d46245",
+    "warm_mononav_cache.py": "a3cf540673a28f0606f3ad54a3216fd89dc770c0c27949480c79a4a16af1e587",
+    "gt_hover.py": "14555436a2970fada6a0bc9a10f54817b9d1ab31d9507962b8bed87e71a5972c",
+    "prepare_difficulty.py": "75a61e2230f4d20cdd7d2d74775540829877cb8ad09069bc87f8fc7d97c9ddcf",
+    "replay_flight.py": "ac5ba0ae75ce0f60fd352c74af08f0c0e9f118b5a9f47e2ee70b660655a8443b",
+    "audit_results.py": "14db2f6428adbfb81d8d6fbf1cf75c5d3abb85b8b848172792cd203aaaa64a84",
+    "make_control_posters.py": "bd10c302b5772f3a6dce9ae7f353eaa4ac898af4ca6ea8f495b3f19d1df4bf5e",
+    "agent_policies.py": "cf17491d134e450c6fbec506715e4a5acfd2bb851e86a4c1d1f46a3fa59f81c8",
+    "verify_bag.py": "27f4e224fb2b9c1531ddd95f58ca51bc7ec883a6ecc1fd24a6ede6576d03479a",
+    "scene_oracle.py": "cd07de6fd4b9c26c543d261c8779d3e8694a5de0a4b52accc23afe87a8dfa6e6",
+    "check_fcrn_parity.py": "fa64785f9e7a945f0f4754ef659d76b53e4ebe72292f79584798842d54f4cc3d",
+    "test_clearance_search.py": "60eeab70256fcb92e1ea98f05c2ddf9ae700a53dffb1edef7bc0add8c293d3e9",
+    "test_poster_ablation.py": "c5dc3fa226e39bf651735d5f773d09e4aae250e20ad8500799355ec8d24ff4b7",
+    "operator_control.py": "d080de40b9fd1ba697801265a71b0e9f769b8d0d7a76fa940428f9a2c4af91cd",
+    "layout_summary.py": "326970467df2602bbd6b12454c1af5ec66df4f66258c54352c9d0ce190b5acd5",
+    "test_conditions.py": "33acaa1ed19fd749c44bbe3d6d7e53f3365c30a478e55763d754487c98ac56ad",
+    "import_patch.py": "d0a771cc517926d85b7a4405e47e655da9f2b8c44196c9ceaad447550688d3be",
+    "test_feedback.py": "70162f767745ff4c9ac57f89b34354cc4d072b11049699e730d8afd898054219",
+    "repeat_check.py": "7a859e7689788f522315bf43bbdb924491cc84b2d50c81d0bf500794031f5f20",
+    "analyse_gate_ab.py": "9966ee04f226110f8e497ee64ec332e50cdc15e8d32ccd3a444756e974b029fd",
+    "test_clean_failure_policy.py": "70ebd9138dec556996a29a2a04fdf62ac7f92607d2ad46b7d6bf1c248220ac01",
+    "compare_methods.py": "4016afebf4a7918a0802176904a557660a3484f78759425954a78cb4e5aa77cb",
+    "prepare_layouts.py": "13399cb7d2ed527bda6a8b1d2a2c2d41b5a6703bc47e12b6f271b6d3affff355",
+    "test_agent_policies.py": "06258f96c9760235fb59a9fab8294e184aa9a13e9b50c951f8747750a5b3704f",
+    "analyse_kim_paired.py": "5f5f913d11243c43e7c065632e708a8305d7ea0393fe837cfd08d4aacb654450",
+    "test_agent_provider_retry.py": "ac7b4e7b70d184d944381941bcf98202cac24657646ddde277aea8f4d085ed63",
+    "test_repeat_check.py": "5651cea3344eaba1f37760fab92d2e7156b5192fc39bd7b45272ff4543ca9d23",
+    "test_episode.py": "088b528693ab0598e3b26c794f993864491c0603e1fb195922c9ff584880a307",
+    "test_agent_schema.py": "aa4a50393ce61485b45bb5c1713d736d3c34ef4fb4d5f397dcfb2eef98c6bcc1",
+    "feedback.py": "bfcc18e49713176f526475ca4399ba52ac06afd0520eabea1e130034bdd049b2",
+    "ros_control.py": "037332ba2f5fbfd1f9d9e44d1f109c7a6517b121c758c761140952dcad08b7ec",
+    "scene_geometry.py": "35ac175eaecc8bacfbea6ed7df55c6a60ae83d48e9a258fa514125e39e08283f",
+    "test_posters.py": "f142abb5cf93534c1342f56d9d5894ec0df74dd36e606072deed4378bfecc436",
+    "analyse_patch_only.py": "22f6fb8ca8575fe1b945d48005d4908b133c492cba3324bca73a7c4df64b7104",
+    "audit_feedback.py": "eff3ebbd6c53da159f6eac8beec648c61ac5f3f0b4c91ff68e4c23131072a255",
+    "poster_ablation.py": "d0d3f2c8293ed14211379b4e92b8759294ba444263ec60d1771ba30e3acf3cae",
+    "episode.py": "c1794b408ca4edfdab23304a8987be70db28412402b63f98f2449dd55d5eaca5",
+    "flight_check.py": "dcecdeb5d50a6035fd16d808fa936295ffb976158f9d74ce5185a8a2505dc788",
+    "conditions.py": "162399ca9126cb415217ad2439638d755a349dc0da2dffd735f04539ee7038dd",
+    "sensor_study.py": "c41553cfca08ac89e8148321d483466150d21f42e8e11a7197295d48f9199561",
+    "clearance_search.py": "8045e66ed435c1abd2c9208aacc792e77ac6b9bd229cceb0d9ade2a9ef1dcd44",
+    "run_gate_validation.py": "bbde1a53fd7008a2caccc950f63eb98d74a139208b66049681554869dca5051f",
+    "audit_sensor_study.py": "14c1149aa1e1cd140afb356cf48f042acdec5c9a711134c4e670f901a1d90149",
+    "test_sensor_challenges.py": "574dcfd1fbaa0c664a44d54f08775ec1aaf299f3948573b841fc0222e17969bf",
+    "audit_expanded.py": "28b5ab5c42f47d35260cf672eb86d1c85bec205df4081c41d09ec280ec592f7d",
+    "run_conditions.py": "908714363a30fd69089be73f3c4fbd161166bb43118c38f2f6c8f4b87921676f",
+    "office_variants.py": "ec31c9902d2db8b8e00f9905ccd89a3819b55dacae5c94603bc0d37d8cd7e3c6",
+    "physics_state.py": "3da7d66e4be400c7f296e07ec33cd1551e41e87a22192f7048560db98ef03e99",
+    "challenge_layouts.py": "d4718c15c6e3475b367bf9656b4667ff41ea1bbd846fa57214df93a9668925b3",
+    "campaign.py": "fa4d62cbbc22454a6511cee7bda44cd50b222231ef39eb3473fb6d6400a6e88b",
+    "claude_check.py": "4e28a9af4442b7ca94157e5739ad02ad3b16ec6248c0be663a0284020328660b",
+    "agent_analysis.py": "693df05e560f54958a9f9cb71df95847678210691b0e00548c55b44453076d36",
+    "mission.py": "4eaf312071fe2f9fc51918380cdc9662a303f1caceaf076c7543168458f1cd42",
+    "check_drift.py": "7c2e5b905533adbb28c78a01cddf0fcf0b67ba010d7188f3ff7184d0ef7db81e",
+    "ravi_metrics.py": "3eda5b862a8a089cd5fc52e7d89c181e42587e861aa8150a96f969200bef864c",
+    "test_claude_agent.py": "bbc9d7feda4baf626f2428db1fb79faba5cd0d1b12d96827b586f24de70352e6",
+    "analyse_poster_ablation.py": "3137770380eb994306e42469ba44d0e75e1cde2e5d42f7f372bd177188d0ae08",
+    "scene_feasibility.py": "4e975a0e83aa8004776b0f0d74506c2a434df2dfdf32a1b34924c47a7dd0cc0e",
+    "model_adapters.py": "c1ccd449db689ea199871a2e890605ff3a0be2a233e658cd40cd2a018ab313d2",
+    "download_office_assets.py": "3f235f0f6c3cda454f1c96e9e76d24174d82c11740a853a6cc83340d47751be9",
+    "test_expanded_space.py": "92604ebfdb89ba1abc87c1eb63d30b13960601b75b71e05fe86ae54aa848f323",
+    "generated_layouts.py": "b795871e9dabf8b9ed5c145466823223697f435779649ff85b7e0ba2dcbfe324",
+    "export_geometry.py": "7408ed18157b94a6452228d5574f5cf200cc41997e2a1448f0ee3b5adaa88224",
+    "test_difficulty.py": "eb64dd68f28a8ced47e5f886e6608bb677933a676e35ca8ffa95ef2ab60dd1c8",
+    "compare_policies.py": "99ae41371f0c135941cf47d7be3dfc2b368d8167cb9d3134d1a2f51b8f601f72",
+    "launch_office.py": "e864e4a2ad3e76decc6ab31aec2d0b0ec4b7c78276eec4d6ac874ebdec8c17d7",
+    "ravi_reporting.py": "c2969cf368c9ef7233ebc08cb6d37caae3593887b5767b13f3a5139c096eee81",
+    "claude_provider.py": "316a4d9292f7eede9ab1f3a2dd1bda27179b422d40f65923025c4b3cc67ad3ac"
+  },
+  "layout_catalog_sha256": "1818fb588be68a084899afe28f368eec8e76c5397b5ff34b8dceb708b596b9cd",
+  "patch": {
+    "filename": "learned_patch.png",
+    "sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80",
+    "width": 128,
+    "height": 128,
+    "source": "Rui, supplied by Mason on 2026-09-22 for config_depth_fcrn.yaml",
+    "download": "Bundled in AirStack at tools/ws2_bench/assets/learned_patch.png; restored with the repository. No separate public download URL.",
+    "training_config": "Humanflow/attk/configs/goal_depth_estimation/config_depth_fcrn.yaml",
+    "note": "Physical size, placement and timing are WS2 test parameters, not prerequisites from Rui. Training dataset and attack efficacy are not inferred from this image."
+  },
+  "poster": {
+    "name": "contrast_25",
+    "policy": "scene_texture_no_efficacy_claim_v1",
+    "claim": "Scene texture. No attack efficacy is claimed for any poster, learned or control.",
+    "texture": "assets/controls/contrast_25.png",
+    "sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278",
+    "derivation": {
+      "filename": "contrast_25.png",
+      "sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278",
+      "width": 128,
+      "height": 128,
+      "description": "contrast_25",
+      "statistics": {
+        "mean_rgb": [
+          108.9032,
+          83.0899,
+          73.2485
+        ],
+        "std_rgb": [
+          22.0276,
+          19.6344,
+          19.3355
+        ],
+        "mean_luminance": 87.8673,
+        "std_luminance": 17.1121,
+        "min_luminance": 65.7466,
+        "max_luminance": 129.534,
+        "mean_abs_gradient": 8.831
+      }
+    },
+    "control_seed": 20261010
+  },
+  "model_weights": {
+    "ZoeD_M12_N.pt": "c97f94c4d53c5b788af46c5da0462262aebb37ea116fd70014bcbba93146c33b"
+  }
+}

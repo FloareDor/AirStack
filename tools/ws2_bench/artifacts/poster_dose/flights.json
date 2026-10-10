@@ -1,0 +1,386 @@
+[
+  {
+    "index": 0,
+    "round": 0,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "000_clean",
+    "minimum_obstacle_clearance_m": 0.03037658649673916
+  },
+  {
+    "index": 1,
+    "round": 0,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "001_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03631732831655428
+  },
+  {
+    "index": 2,
+    "round": 0,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "002_contrast_50",
+    "minimum_obstacle_clearance_m": 0.029990824040907006
+  },
+  {
+    "index": 3,
+    "round": 0,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "003_contrast_25",
+    "minimum_obstacle_clearance_m": 0.028987841655743418
+  },
+  {
+    "index": 4,
+    "round": 1,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "004_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.03107095891723703
+  },
+  {
+    "index": 5,
+    "round": 1,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "005_contrast_50",
+    "minimum_obstacle_clearance_m": 0.03562295589605641
+  },
+  {
+    "index": 6,
+    "round": 1,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "006_contrast_25",
+    "minimum_obstacle_clearance_m": 0.018572255348275356
+  },
+  {
+    "index": 7,
+    "round": 1,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "007_clean",
+    "minimum_obstacle_clearance_m": 0.031225263899569887
+  },
+  {
+    "index": 8,
+    "round": 2,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "008_contrast_50",
+    "minimum_obstacle_clearance_m": 0.03469712600205924
+  },
+  {
+    "index": 9,
+    "round": 2,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "009_contrast_25",
+    "minimum_obstacle_clearance_m": 0.04086932529537365
+  },
+  {
+    "index": 10,
+    "round": 2,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "010_clean",
+    "minimum_obstacle_clearance_m": 0.028910689164576987
+  },
+  {
+    "index": 11,
+    "round": 2,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "011_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.01625768061328245
+  },
+  {
+    "index": 12,
+    "round": 3,
+    "arm": "contrast_25",
+    "outcome": "goal_reached",
+    "folder": "012_contrast_25",
+    "minimum_obstacle_clearance_m": 0.08029424828141941
+  },
+  {
+    "index": 13,
+    "round": 3,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "013_clean",
+    "minimum_obstacle_clearance_m": 0.033694143616895655
+  },
+  {
+    "index": 14,
+    "round": 3,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "014_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.02296994734476187
+  },
+  {
+    "index": 15,
+    "round": 3,
+    "arm": "contrast_50",
+    "outcome": "goal_reached",
+    "folder": "015_contrast_50",
+    "minimum_obstacle_clearance_m": 0.04835311693851736
+  },
+  {
+    "index": 16,
+    "round": 4,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "016_clean",
+    "minimum_obstacle_clearance_m": 0.058691550754818994
+  },
+  {
+    "index": 17,
+    "round": 4,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "017_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.029836519058574148
+  },
+  {
+    "index": 18,
+    "round": 4,
+    "arm": "contrast_50",
+    "outcome": "planner_stopped",
+    "folder": "018_contrast_50",
+    "minimum_obstacle_clearance_m": 0.0897068522037239
+  },
+  {
+    "index": 19,
+    "round": 4,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "019_contrast_25",
+    "minimum_obstacle_clearance_m": 0.02968221407624129
+  },
+  {
+    "index": 20,
+    "round": 5,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "020_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.061931955383809065
+  },
+  {
+    "index": 21,
+    "round": 5,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "021_contrast_50",
+    "minimum_obstacle_clearance_m": 0.0325368562493992
+  },
+  {
+    "index": 22,
+    "round": 5,
+    "arm": "contrast_25",
+    "outcome": "goal_reached",
+    "folder": "022_contrast_25",
+    "minimum_obstacle_clearance_m": 0.05429385875833248
+  },
+  {
+    "index": 23,
+    "round": 5,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "023_clean",
+    "minimum_obstacle_clearance_m": 0.05498823117883035
+  },
+  {
+    "index": 24,
+    "round": 6,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "024_contrast_50",
+    "minimum_obstacle_clearance_m": 0.020886830083268255
+  },
+  {
+    "index": 25,
+    "round": 6,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "025_contrast_25",
+    "minimum_obstacle_clearance_m": 0.04009780038370935
+  },
+  {
+    "index": 26,
+    "round": 6,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "026_clean",
+    "minimum_obstacle_clearance_m": 0.04464979736252872
+  },
+  {
+    "index": 27,
+    "round": 6,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "027_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.050436234200010976
+  },
+  {
+    "index": 28,
+    "round": 7,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "028_contrast_25",
+    "minimum_obstacle_clearance_m": 0.04009780038370935
+  },
+  {
+    "index": 29,
+    "round": 7,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "029_clean",
+    "minimum_obstacle_clearance_m": 0.047967354482685215
+  },
+  {
+    "index": 30,
+    "round": 7,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "030_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.02775340179708053
+  },
+  {
+    "index": 31,
+    "round": 7,
+    "arm": "contrast_50",
+    "outcome": "goal_reached",
+    "folder": "031_contrast_50",
+    "minimum_obstacle_clearance_m": 0.054448163740665335
+  },
+  {
+    "index": 32,
+    "round": 8,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "032_clean",
+    "minimum_obstacle_clearance_m": 0.056299823528659663
+  },
+  {
+    "index": 33,
+    "round": 8,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "033_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.0546024687229982
+  },
+  {
+    "index": 34,
+    "round": 8,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "034_contrast_50",
+    "minimum_obstacle_clearance_m": 0.023741472256426165
+  },
+  {
+    "index": 35,
+    "round": 8,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "035_contrast_25",
+    "minimum_obstacle_clearance_m": 0.02713618186774909
+  },
+  {
+    "index": 36,
+    "round": 9,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "036_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.014251715842955268
+  },
+  {
+    "index": 37,
+    "round": 9,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "037_contrast_50",
+    "minimum_obstacle_clearance_m": 0.02968221407624129
+  },
+  {
+    "index": 38,
+    "round": 9,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "038_contrast_25",
+    "minimum_obstacle_clearance_m": 0.034928583475558536
+  },
+  {
+    "index": 39,
+    "round": 9,
+    "arm": "clean",
+    "outcome": "goal_reached",
+    "folder": "039_clean",
+    "minimum_obstacle_clearance_m": 0.06748693474779202
+  },
+  {
+    "index": 40,
+    "round": 10,
+    "arm": "contrast_50",
+    "outcome": "collision",
+    "folder": "040_contrast_50",
+    "minimum_obstacle_clearance_m": 0.027984859270579823
+  },
+  {
+    "index": 41,
+    "round": 10,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "041_contrast_25",
+    "minimum_obstacle_clearance_m": 0.028910689164576987
+  },
+  {
+    "index": 42,
+    "round": 10,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "042_clean",
+    "minimum_obstacle_clearance_m": 0.02960506158507486
+  },
+  {
+    "index": 43,
+    "round": 10,
+    "arm": "fcrn_patch",
+    "outcome": "collision",
+    "folder": "043_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.033616991125729224
+  },
+  {
+    "index": 44,
+    "round": 11,
+    "arm": "contrast_25",
+    "outcome": "collision",
+    "folder": "044_contrast_25",
+    "minimum_obstacle_clearance_m": 0.025053064606255476
+  },
+  {
+    "index": 45,
+    "round": 11,
+    "arm": "clean",
+    "outcome": "collision",
+    "folder": "045_clean",
+    "minimum_obstacle_clearance_m": 0.04596138971235803
+  },
+  {
+    "index": 46,
+    "round": 11,
+    "arm": "fcrn_patch",
+    "outcome": "goal_reached",
+    "folder": "046_fcrn_patch",
+    "minimum_obstacle_clearance_m": 0.05930877068415043
+  },
+  {
+    "index": 47,
+    "round": 11,
+    "arm": "contrast_50",
+    "outcome": "goal_reached",
+    "folder": "047_contrast_50",
+    "minimum_obstacle_clearance_m": 0.05005047174417883
+  }
+]

@@ -1,0 +1,685 @@
+{
+  "root": "artifacts\\poster_dose",
+  "arms": {
+    "clean": {
+      "flights": 12,
+      "usable": 12,
+      "with_depth_log": 12,
+      "mean_zoe_corr": 0.335,
+      "sd_zoe_corr": 0.0076,
+      "median_zoe_corr": 0.3374,
+      "pass_count": 5,
+      "pass_n": 12,
+      "distinct_poster_digests": []
+    },
+    "contrast_25": {
+      "flights": 12,
+      "usable": 12,
+      "with_depth_log": 12,
+      "mean_zoe_corr": 0.33,
+      "sd_zoe_corr": 0.0084,
+      "median_zoe_corr": 0.3316,
+      "pass_count": 2,
+      "pass_n": 12,
+      "distinct_poster_digests": [
+        "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+      ]
+    },
+    "contrast_50": {
+      "flights": 12,
+      "usable": 12,
+      "with_depth_log": 12,
+      "mean_zoe_corr": 0.3253,
+      "sd_zoe_corr": 0.0058,
+      "median_zoe_corr": 0.3262,
+      "pass_count": 3,
+      "pass_n": 12,
+      "distinct_poster_digests": [
+        "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+      ]
+    },
+    "fcrn_patch": {
+      "flights": 12,
+      "usable": 12,
+      "with_depth_log": 12,
+      "mean_zoe_corr": 0.3187,
+      "sd_zoe_corr": 0.0078,
+      "median_zoe_corr": 0.3181,
+      "pass_count": 4,
+      "pass_n": 12,
+      "distinct_poster_digests": [
+        "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+      ]
+    }
+  },
+  "comparisons": {
+    "clean vs contrast_25": {
+      "zoe_corr_mann_whitney": {
+        "u": 44.0,
+        "z": -1.588,
+        "p": 0.112351
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.185355
+    },
+    "clean vs contrast_50": {
+      "zoe_corr_mann_whitney": {
+        "u": 22.0,
+        "z": -2.858,
+        "p": 0.004265
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.333423
+    },
+    "clean vs fcrn_patch": {
+      "zoe_corr_mann_whitney": {
+        "u": 12.0,
+        "z": -3.435,
+        "p": 0.000592
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.5
+    },
+    "contrast_25 vs contrast_50": {
+      "zoe_corr_mann_whitney": {
+        "u": 43.0,
+        "z": -1.645,
+        "p": 0.099877
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.841615
+    },
+    "contrast_25 vs fcrn_patch": {
+      "zoe_corr_mann_whitney": {
+        "u": 27.0,
+        "z": -2.569,
+        "p": 0.010193
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.922524
+    },
+    "contrast_50 vs fcrn_patch": {
+      "zoe_corr_mann_whitney": {
+        "u": 35.0,
+        "z": -2.107,
+        "p": 0.035089
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.814645
+    }
+  },
+  "unit_of_analysis": "flight (per-flight mean zoe_corr); frames are autocorrelated and are not pooled",
+  "pass_rate_caveat": "Direction only at this n. Do not report as a result.",
+  "flights": [
+    {
+      "folder": "000_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3343684210526316,
+      "p10_zoe_corr": 0.301,
+      "minimum_obstacle_clearance_m": 0.03037658649673916,
+      "poster_sha256": null
+    },
+    {
+      "folder": "001_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3173333333333333,
+      "p10_zoe_corr": 0.295,
+      "minimum_obstacle_clearance_m": 0.03631732831655428,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "002_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3185,
+      "p10_zoe_corr": 0.278,
+      "minimum_obstacle_clearance_m": 0.029990824040907006,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "003_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3292380952380952,
+      "p10_zoe_corr": 0.303,
+      "minimum_obstacle_clearance_m": 0.028987841655743418,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "004_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3057142857142857,
+      "p10_zoe_corr": 0.268,
+      "minimum_obstacle_clearance_m": 0.03107095891723703,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "005_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31595,
+      "p10_zoe_corr": 0.279,
+      "minimum_obstacle_clearance_m": 0.03562295589605641,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "006_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3332,
+      "p10_zoe_corr": 0.306,
+      "minimum_obstacle_clearance_m": 0.018572255348275356,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "007_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3411363636363636,
+      "p10_zoe_corr": 0.302,
+      "minimum_obstacle_clearance_m": 0.031225263899569887,
+      "poster_sha256": null
+    },
+    {
+      "folder": "008_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3264761904761905,
+      "p10_zoe_corr": 0.308,
+      "minimum_obstacle_clearance_m": 0.03469712600205924,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "009_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3188695652173913,
+      "p10_zoe_corr": 0.278,
+      "minimum_obstacle_clearance_m": 0.04086932529537365,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "010_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3423181818181818,
+      "p10_zoe_corr": 0.32,
+      "minimum_obstacle_clearance_m": 0.028910689164576987,
+      "poster_sha256": null
+    },
+    {
+      "folder": "011_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3193684210526316,
+      "p10_zoe_corr": 0.294,
+      "minimum_obstacle_clearance_m": 0.01625768061328245,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "012_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 76,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33313157894736845,
+      "p10_zoe_corr": 0.263,
+      "minimum_obstacle_clearance_m": 0.08029424828141941,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "013_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.34061904761904765,
+      "p10_zoe_corr": 0.322,
+      "minimum_obstacle_clearance_m": 0.033694143616895655,
+      "poster_sha256": null
+    },
+    {
+      "folder": "014_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3189047619047619,
+      "p10_zoe_corr": 0.292,
+      "minimum_obstacle_clearance_m": 0.02296994734476187,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "015_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 85,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33085882352941176,
+      "p10_zoe_corr": 0.256,
+      "minimum_obstacle_clearance_m": 0.04835311693851736,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "016_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 81,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33811111111111114,
+      "p10_zoe_corr": 0.251,
+      "minimum_obstacle_clearance_m": 0.058691550754818994,
+      "poster_sha256": null
+    },
+    {
+      "folder": "017_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31395,
+      "p10_zoe_corr": 0.281,
+      "minimum_obstacle_clearance_m": 0.029836519058574148,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "018_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "planner_stopped",
+      "passed": false,
+      "frames": 80,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31985,
+      "p10_zoe_corr": 0.243,
+      "minimum_obstacle_clearance_m": 0.0897068522037239,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "019_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3304782608695652,
+      "p10_zoe_corr": 0.307,
+      "minimum_obstacle_clearance_m": 0.02968221407624129,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "020_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 85,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3211294117647059,
+      "p10_zoe_corr": 0.244,
+      "minimum_obstacle_clearance_m": 0.061931955383809065,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "021_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3232272727272727,
+      "p10_zoe_corr": 0.297,
+      "minimum_obstacle_clearance_m": 0.0325368562493992,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "022_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 84,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3187857142857143,
+      "p10_zoe_corr": 0.247,
+      "minimum_obstacle_clearance_m": 0.05429385875833248,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "023_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32149367088607594,
+      "p10_zoe_corr": 0.246,
+      "minimum_obstacle_clearance_m": 0.05498823117883035,
+      "poster_sha256": null
+    },
+    {
+      "folder": "024_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3323,
+      "p10_zoe_corr": 0.31,
+      "minimum_obstacle_clearance_m": 0.020886830083268255,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "025_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33744999999999997,
+      "p10_zoe_corr": 0.302,
+      "minimum_obstacle_clearance_m": 0.04009780038370935,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "026_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33452380952380956,
+      "p10_zoe_corr": 0.307,
+      "minimum_obstacle_clearance_m": 0.04464979736252872,
+      "poster_sha256": null
+    },
+    {
+      "folder": "027_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 82,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3293780487804878,
+      "p10_zoe_corr": 0.246,
+      "minimum_obstacle_clearance_m": 0.050436234200010976,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "028_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3265454545454545,
+      "p10_zoe_corr": 0.295,
+      "minimum_obstacle_clearance_m": 0.04009780038370935,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "029_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 86,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3301162790697674,
+      "p10_zoe_corr": 0.265,
+      "minimum_obstacle_clearance_m": 0.047967354482685215,
+      "poster_sha256": null
+    },
+    {
+      "folder": "030_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.315,
+      "p10_zoe_corr": 0.281,
+      "minimum_obstacle_clearance_m": 0.02775340179708053,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "031_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 81,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3317901234567901,
+      "p10_zoe_corr": 0.265,
+      "minimum_obstacle_clearance_m": 0.054448163740665335,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "032_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31849367088607594,
+      "p10_zoe_corr": 0.251,
+      "minimum_obstacle_clearance_m": 0.056299823528659663,
+      "poster_sha256": null
+    },
+    {
+      "folder": "033_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 64,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33603125,
+      "p10_zoe_corr": 0.249,
+      "minimum_obstacle_clearance_m": 0.0546024687229982,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "034_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3322631578947368,
+      "p10_zoe_corr": 0.31,
+      "minimum_obstacle_clearance_m": 0.023741472256426165,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "035_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33273684210526316,
+      "p10_zoe_corr": 0.301,
+      "minimum_obstacle_clearance_m": 0.02713618186774909,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "036_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31521052631578944,
+      "p10_zoe_corr": 0.28,
+      "minimum_obstacle_clearance_m": 0.014251715842955268,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "037_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31772222222222224,
+      "p10_zoe_corr": 0.254,
+      "minimum_obstacle_clearance_m": 0.02968221407624129,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "038_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31561904761904763,
+      "p10_zoe_corr": 0.29,
+      "minimum_obstacle_clearance_m": 0.034928583475558536,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "039_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 70,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3366571428571428,
+      "p10_zoe_corr": 0.249,
+      "minimum_obstacle_clearance_m": 0.06748693474779202,
+      "poster_sha256": null
+    },
+    {
+      "folder": "040_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3286315789473684,
+      "p10_zoe_corr": 0.311,
+      "minimum_obstacle_clearance_m": 0.027984859270579823,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    },
+    {
+      "folder": "041_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3403333333333334,
+      "p10_zoe_corr": 0.31,
+      "minimum_obstacle_clearance_m": 0.028910689164576987,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "042_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33977777777777773,
+      "p10_zoe_corr": 0.309,
+      "minimum_obstacle_clearance_m": 0.02960506158507486,
+      "poster_sha256": null
+    },
+    {
+      "folder": "043_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3102,
+      "p10_zoe_corr": 0.29,
+      "minimum_obstacle_clearance_m": 0.033616991125729224,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "044_contrast_25",
+      "arm": "contrast_25",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3437727272727273,
+      "p10_zoe_corr": 0.319,
+      "minimum_obstacle_clearance_m": 0.025053064606255476,
+      "poster_sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278"
+    },
+    {
+      "folder": "045_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.342875,
+      "p10_zoe_corr": 0.314,
+      "minimum_obstacle_clearance_m": 0.04596138971235803,
+      "poster_sha256": null
+    },
+    {
+      "folder": "046_fcrn_patch",
+      "arm": "fcrn_patch",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 89,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32225842696629214,
+      "p10_zoe_corr": 0.246,
+      "minimum_obstacle_clearance_m": 0.05930877068415043,
+      "poster_sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+    },
+    {
+      "folder": "047_contrast_50",
+      "arm": "contrast_50",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32589873417721515,
+      "p10_zoe_corr": 0.248,
+      "minimum_obstacle_clearance_m": 0.05005047174417883,
+      "poster_sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d"
+    }
+  ]
+}

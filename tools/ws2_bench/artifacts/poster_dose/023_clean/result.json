@@ -1,0 +1,50 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: clean",
+  "configuration_hash": "2b13ab16d9139dc9e371d279aa1ced11083a13b6ca3641a611a367bf80389f20",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_dose/023_clean",
+  "metrics": {
+    "time_to_goal_s": 39.83999910950661,
+    "path_length_m": 8.404221670279602,
+    "direct_start_to_goal_distance_m": 7.9702705657369135,
+    "path_efficiency": 0.9483651048761246,
+    "mission_progress_percent": 93.78031673457197,
+    "final_distance_to_goal_m": 0.49572558458647575,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.05498823117883035,
+    "odometry_sample_count": 614,
+    "odometry_start_sim_time_s": 36.63999918103218,
+    "odometry_end_sim_time_s": 76.47999829053879,
+    "max_displacement_m": 7.601303702956259,
+    "mean_speed_m_s": 0.2109493438285291,
+    "stationary_fraction": 0.0,
+    "clearance_at_contact_m": null,
+    "surface_distance_at_contact_m": null,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.5722571082041608,
+    "minimum_surface_distance_m": 0.05498823117883035,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 39.83999910950661,
+    "planner_wall_duration_s": 187.72083831904456
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 44,
+  "cleanup_errors": [],
+  "wall_duration_s": 228.17419090121984
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: contrast_25",
+  "configuration_hash": "abc7017731526f5dc2b0e50c17f67be5d12ed6996a5a6d9fbdcd048309f51e39",
+  "outcome": "collision",
+  "termination": {
+    "source": "planner",
+    "reason": "physx_contact",
+    "detail": {
+      "sim_time": 43.2899990323931,
+      "objects": [
+        "/World/Office/WS2_plant/SM_Plant01"
+      ],
+      "position": [
+        -2.2245559692382812,
+        0.009068725630640984,
+        1.2210147380828857
+      ],
+      "drone_position": [
+        -2.2245559692382812,
+        0.009068725630640984,
+        1.2210147380828857
+      ],
+      "clearance_at_contact_m": 0.05020477672651169,
+      "surface_distance_at_contact_m": 0.05020477672651169,
+      "clearance_basis": "oriented_box",
+      "clearance_censored_at_contact": false,
+      "measured_hull_radius_m": 0.3482276960663908,
+      "clearance_envelope_m": 0.3482276960663908,
+      "clearance_envelope_source": "measured_hull"
+    }
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_dose/009_contrast_25",
+  "metrics": {
+    "time_to_goal_s": null,
+    "path_length_m": 1.786281126735595,
+    "direct_start_to_goal_distance_m": 7.998625328229927,
+    "path_efficiency": null,
+    "mission_progress_percent": 22.198702022919214,
+    "final_distance_to_goal_m": 6.223034325686422,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.04086932529537365,
+    "odometry_sample_count": 138,
+    "odometry_start_sim_time_s": 34.179999236017466,
+    "odometry_end_sim_time_s": 43.29999903216958,
+    "max_displacement_m": 1.775700108443189,
+    "mean_speed_m_s": 0.1958641630111941,
+    "stationary_fraction": 0.0,
+    "clearance_at_contact_m": 0.05020477672651169,
+    "surface_distance_at_contact_m": 0.05020477672651169,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.4111059843401821,
+    "minimum_surface_distance_m": 0.04086932529537365,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 9.119999796152115,
+    "planner_wall_duration_s": 118.70164280897006
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 10,
+  "cleanup_errors": [],
+  "wall_duration_s": 130.47827576519921
+}

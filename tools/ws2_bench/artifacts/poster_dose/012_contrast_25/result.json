@@ -1,0 +1,50 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: contrast_25",
+  "configuration_hash": "abc7017731526f5dc2b0e50c17f67be5d12ed6996a5a6d9fbdcd048309f51e39",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_dose/012_contrast_25",
+  "metrics": {
+    "time_to_goal_s": 40.5899990927428,
+    "path_length_m": 8.510408057166279,
+    "direct_start_to_goal_distance_m": 8.001614655626376,
+    "path_efficiency": 0.9402151579428124,
+    "mission_progress_percent": 93.81793171195666,
+    "final_distance_to_goal_m": 0.49466528215690614,
+    "planner_hold_count": 0,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.08029424828141941,
+    "odometry_sample_count": 648,
+    "odometry_start_sim_time_s": 34.11999923735857,
+    "odometry_end_sim_time_s": 74.70999833010137,
+    "max_displacement_m": 7.65961416409638,
+    "mean_speed_m_s": 0.20966760895266634,
+    "stationary_fraction": 0.0,
+    "clearance_at_contact_m": null,
+    "surface_distance_at_contact_m": null,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.5797120745817579,
+    "minimum_surface_distance_m": 0.08029424828141941,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 40.5899990927428,
+    "planner_wall_duration_s": 197.2141605708748
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 51,
+  "cleanup_errors": [],
+  "wall_duration_s": 243.8716191938147
+}
