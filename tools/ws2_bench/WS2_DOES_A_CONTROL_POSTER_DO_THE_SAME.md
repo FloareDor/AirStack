@@ -131,7 +131,81 @@ A poster result is a **perception measurement**, not an attack result.
 | control ~= patch, both below clean | appearance explains it; the patch does nothing an ordinary bright poster would not |
 | all three ~= each other | no detectable perception effect at this exposure; the pass-rate difference needs another explanation |
 
-## Results
+## Result: appearance explains it
 
-Not yet flown. Campaign: `ws2-pilot-14`, `run_poster_ablation.sh`, output
-`campaigns/poster_ablation`.
+`ws2-pilot-14`, 2026-10-10, 45 flights, 15 per arm, interleaved. One build, one
+GPU, **zero infrastructure errors**, and each poster arm used exactly one
+texture digest -- the registered learned patch and the registered control.
+
+| arm | n | mean `zoe_corr` | sd | pass |
+|---|---|---|---|---|
+| clean | 15 | **0.3354** | 0.0065 | 8/15 |
+| `fcrn_patch` | 15 | **0.3138** | 0.0058 | 3/15 |
+| `phase_scrambled` | 15 | **0.3172** | 0.0069 | 6/15 |
+
+Mann-Whitney over per-flight means:
+
+| contrast | p |
+|---|---|
+| clean vs learned patch | **3e-06** |
+| clean vs scrambled control | **1.1e-05** |
+| learned patch vs scrambled control | **0.245** |
+
+Both posters degrade ZoeDepth's RGB/depth edge correspondence, decisively and
+by about the same amount. The two cannot be told apart.
+
+| difference | estimate | 95% CI |
+|---|---|---|
+| clean - patch | +0.0216 | [+0.0170, +0.0262] |
+| clean - control | +0.0182 | [+0.0132, +0.0232] |
+| control - patch | **+0.0034** | **[-0.0013, +0.0082]** |
+
+**The structure-free control reproduces 84% of the learned patch's
+degradation, and the remaining difference is not distinguishable from zero.**
+
+The honest bound, because 15 per arm cannot prove equivalence: the CI's upper
+end allows the patch a residual of at most 0.0082, which is 38% of its own
+total effect of 0.0216. So **at least 62% of the degradation is appearance
+alone**, point estimate 84%, and any structure-specific remainder is small.
+
+This is the "appearance" branch of the table above. A bright, saturated,
+high-contrast rectangle perturbs ZoeDepth; the particular arrangement of pixels
+inside it contributes little or nothing that can be detected here. Note the
+control carries **more** local edge energy than the patch (53.3 vs 35.2) and
+still degrades slightly *less*, so the result is not an artefact of the control
+being the harsher image.
+
+### The pass rates, as a direction only
+
+clean 8/15 (53%), scrambled 6/15 (40%), patch 3/15 (20%). The clean arm
+reproduces its own history -- 53% live against 58% over 201 archived clean
+flights -- which is the part worth trusting, because it says the rig behaved
+normally. The arm ordering matches the correspondence ordering. But
+clean-vs-patch is p = 0.064 and clean-vs-control p = 0.36 at this n; neither is
+a result, and the point of the design was that it did not need them to be.
+
+### What this settles
+
+The MonoNav patch result was withdrawn on 2026-10-09 as an attack finding
+because the patch is Kim's and the pathway was one plant cleared by 5 cm. It
+left open *why* the degradation happened at all. This closes that: the learned
+patch does essentially nothing to MonoNav that a structure-free poster with the
+same colours does not also do. "A scene texture degrades MonoNav" was the right
+phrasing, and "the attack transfers" was not.
+
+The mechanism is now measured rather than inferred, which the earlier writeups
+could only offer as "the simplest account".
+
+### What it does not settle
+
+- Whether a bright surface needs **contrast** or only **brightness**. The
+  `flat_grey` arm -- same mean colour, zero contrast -- answers that and is
+  registered but was not in this arm set.
+- Anything about Kim. The patch is FCRN's, Kim is the matched target, and Kim's
+  matched test is null. This is a MonoNav perception measurement only.
+- Whether the effect matters anywhere the route is not a 5 cm knife edge.
+  `generated` seed 42 passes 15/15 clean with ~0.9 m of margin, and a poster
+  has never been flown there.
+
+Evidence: `artifacts/poster_ablation/` (per-flight `result.json`,
+`provenance.json`, `scenario.json`, plus `analysis.json`).

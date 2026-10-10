@@ -13,7 +13,13 @@
 
 set -u
 CAMPAIGNS=/root/AirStack/robot/ros_ws/ws2_runtime/campaigns
-OUT=$CAMPAIGNS/poster_ablation
+# Settable so a second arm set can run beside the first without editing this
+# file. Rewriting the script with sed to change the output path also renames
+# the python files it calls, which fails every chunk and still writes the DONE
+# marker at the end, so the run looks finished and has flown nothing.
+OUT=${OUT:-$CAMPAIGNS/poster_ablation}
+DONE_MARKER=${DONE_MARKER:-/root/POSTER_DONE}
+RESULT_PREFIX=${RESULT_PREFIX:-/root/poster_result}
 ARMS=${ARMS:-clean,fcrn_patch,phase_scrambled}
 ROUNDS=${ROUNDS:-12}
 LAYOUT=${LAYOUT:-easy}
@@ -22,7 +28,7 @@ PATCH_SIZE=${PATCH_SIZE:-0.9}
 # One round per chunk: a sim cycle between rounds keeps every arm on the same
 # side of each restart, and leaves the campaign balanced at every stop point.
 CHUNK=${CHUNK:-3}
-rm -f /root/POSTER_DONE
+rm -f "$DONE_MARKER"
 
 say () { echo "[$(date +%H:%M:%S)] $*"; }
 
@@ -107,12 +113,23 @@ for pass_index in $(seq 1 200); do
     dmesg 2>/dev/null | tail -40 | grep -i 'oom-kill\|out of memory' && say "(OOM seen this chunk)"
 done
 
+# A chunk that fails for any reason -- a bad path, a dead sim, a missing
+# module -- leaves the loop spinning through all 200 passes in seconds and then
+# falls through to here. Without this the DONE marker still gets written and
+# the run reports success having flown nothing.
+flown=$(ls -d "$OUT"/*_*/ 2>/dev/null | wc -l)
+if [ "${flown:-0}" -eq 0 ]; then
+    say "ABORT: no flights were flown; see the chunk errors above"
+    exit 1
+fi
+say "$flown flights on disk"
+
 say "checking every flight shares one build"
 python3 tools/ws2_bench/check_provenance.py "$OUT" || say "provenance check reported differences"
 
 say "analysis"
-python3 tools/ws2_bench/analyse_poster_ablation.py "$OUT" | tee /root/poster_result.txt
-python3 tools/ws2_bench/analyse_poster_ablation.py "$OUT" --json > /root/poster_result.json
+python3 tools/ws2_bench/analyse_poster_ablation.py "$OUT" | tee "$RESULT_PREFIX.txt"
+python3 tools/ws2_bench/analyse_poster_ablation.py "$OUT" --json > "$RESULT_PREFIX.json"
 
-touch /root/POSTER_DONE
+touch "$DONE_MARKER"
 say "done"
