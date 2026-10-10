@@ -131,7 +131,7 @@ A poster result is a **perception measurement**, not an attack result.
 | control ~= patch, both below clean | appearance explains it; the patch does nothing an ordinary bright poster would not |
 | all three ~= each other | no detectable perception effect at this exposure; the pass-rate difference needs another explanation |
 
-## Result: appearance explains it
+## Result: structured contrast explains it, not appearance and not the optimisation
 
 `ws2-pilot-14`, 2026-10-10, 45 flights, 15 per arm, interleaved. One build, one
 GPU, **zero infrastructure errors**, and each poster arm used exactly one
@@ -165,15 +165,15 @@ degradation, and the remaining difference is not distinguishable from zero.**
 
 The honest bound, because 15 per arm cannot prove equivalence: the CI's upper
 end allows the patch a residual of at most 0.0082, which is 38% of its own
-total effect of 0.0216. So **at least 62% of the degradation is appearance
-alone**, point estimate 84%, and any structure-specific remainder is small.
+total effect of 0.0216. So **at least 62% of the degradation is reproduced
+without the patch's optimised structure**, point estimate 84%.
 
-This is the "appearance" branch of the table above. A bright, saturated,
-high-contrast rectangle perturbs ZoeDepth; the particular arrangement of pixels
-inside it contributes little or nothing that can be detected here. Note the
-control carries **more** local edge energy than the patch (53.3 vs 35.2) and
-still degrades slightly *less*, so the result is not an artefact of the control
-being the harsher image.
+An optimised adversarial pattern lives in the Fourier **phase**.
+`phase_scrambled` keeps the patch's amplitude spectrum and replaces its phase
+with noise. It reproduces the effect. So the optimisation contributes nothing
+detectable here. Note also that the control carries **more** local edge energy
+than the patch (53.3 vs 35.2) and still degrades slightly *less*, so this is
+not an artefact of the control being the harsher image.
 
 ### The pass rates, as a direction only
 
@@ -183,6 +183,60 @@ flights -- which is the part worth trusting, because it says the rig behaved
 normally. The arm ordering matches the correspondence ordering. But
 clean-vs-patch is p = 0.064 and clean-vs-control p = 0.36 at this n; neither is
 a result, and the point of the design was that it did not need them to be.
+
+## The second arm set says it is not appearance either
+
+`ws2-pilot-14`, same workspace and build, 45 more flights with its own clean
+arm. The first reading of campaign A was that "appearance" explained the
+effect. Campaign B refutes that reading.
+
+| arm (session B) | mean `zoe_corr` | diff vs B's clean | p | pass |
+|---|---|---|---|---|
+| clean | 0.3294 | -- | -- | 10/15 |
+| `flat_grey` | 0.3315 | +0.0022 | 0.41 | 6/15 |
+| `pixel_shuffled` | 0.3311 | +0.0017 | 0.51 | 4/15 |
+
+Both are **null**. And `pixel_shuffled` has the **identical per-channel
+histogram** to the learned patch -- same mean, same sd, same native RMS
+contrast of 68.33 -- so identical colour statistics are demonstrably *not*
+sufficient. "A bright high-contrast rectangle degrades ZoeDepth" is wrong as
+stated.
+
+What separates the two arms that degrade from the two that do not is how much
+contrast survives at the scale the depth network samples. The poster spans
+about 180 px in a 1280-wide frame, so roughly 72 px of ZoeDepth's 512-wide
+input:
+
+| poster | native | 72 px | 32 px | 16 px | degrades |
+|---|---|---|---|---|---|
+| learned patch | 68.33 | 60.44 | 48.45 | 36.74 | **yes** (-0.0216) |
+| `phase_scrambled` | 76.08 | 63.68 | 48.65 | 35.27 | **yes** (-0.0182) |
+| `pixel_shuffled` | 68.33 | 41.62 | **17.29** | 7.74 | no (+0.0017) |
+| `flat_grey` | 0 | 0 | 0 | 0 | no (+0.0022) |
+
+Pixel-shuffling puts all the energy at the pixel scale, where resampling
+averages it away; the poster arrives at the network as nearly flat. The split
+is exact and it is the only one of the measured statistics that predicts the
+outcome.
+
+**So the mechanism is low-spatial-frequency structured contrast, not mean
+brightness, not the colour histogram, and not the optimised phase.**
+
+### The two sessions must not be pooled
+
+The clean arms differ: **0.3354 (A) vs 0.3294 (B), p = 0.028**, a gap of
+0.0060 which is 28% of the patch effect. Same build, same GPU, different sim
+restarts. Every comparison above is within its own session against its own
+clean arm. This is the same-build rule doing exactly the job it exists for, and
+it is why both arm sets carried a clean arm instead of reusing A's.
+
+### One discrepancy, recorded rather than buried
+
+`pixel_shuffled` passed 4/15 against clean's 10/15, Fisher p = 0.033, while
+showing no `zoe_corr` effect at all. Pass rates here are direction only and
+this is the exact shape of the two interim readings already withdrawn on this
+bench. It is most likely noise. It is not claimed as a finding, and it would
+need its own powered run to be one.
 
 ### What this settles
 
@@ -194,13 +248,14 @@ same colours does not also do. "A scene texture degrades MonoNav" was the right
 phrasing, and "the attack transfers" was not.
 
 The mechanism is now measured rather than inferred, which the earlier writeups
-could only offer as "the simplest account".
+could only offer as "the simplest account" -- and it is narrower than that
+account guessed, since two posters matching the patch's colour statistics do
+nothing at all.
 
 ### What it does not settle
 
-- Whether a bright surface needs **contrast** or only **brightness**. The
-  `flat_grey` arm -- same mean colour, zero contrast -- answers that and is
-  registered but was not in this arm set.
+- The exact spatial-frequency band responsible. The 72/32/16 px table brackets
+  it but a band-pass series would locate it.
 - Anything about Kim. The patch is FCRN's, Kim is the matched target, and Kim's
   matched test is null. This is a MonoNav perception measurement only.
 - Whether the effect matters anywhere the route is not a 5 cm knife edge.

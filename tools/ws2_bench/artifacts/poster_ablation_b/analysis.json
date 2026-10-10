@@ -1,0 +1,612 @@
+{
+  "root": "artifacts\\poster_ablation_b",
+  "arms": {
+    "clean": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3294,
+      "sd_zoe_corr": 0.0074,
+      "median_zoe_corr": 0.3306,
+      "pass_count": 10,
+      "pass_n": 15,
+      "distinct_poster_digests": []
+    },
+    "flat_grey": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3315,
+      "sd_zoe_corr": 0.0057,
+      "median_zoe_corr": 0.3334,
+      "pass_count": 6,
+      "pass_n": 15,
+      "distinct_poster_digests": [
+        "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+      ]
+    },
+    "pixel_shuffled": {
+      "flights": 15,
+      "usable": 15,
+      "with_depth_log": 15,
+      "mean_zoe_corr": 0.3311,
+      "sd_zoe_corr": 0.0048,
+      "median_zoe_corr": 0.3321,
+      "pass_count": 4,
+      "pass_n": 15,
+      "distinct_poster_digests": [
+        "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+      ]
+    }
+  },
+  "comparisons": {
+    "clean vs flat_grey": {
+      "zoe_corr_mann_whitney": {
+        "u": 92.0,
+        "z": -0.83,
+        "p": 0.406787
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.136152
+    },
+    "clean vs pixel_shuffled": {
+      "zoe_corr_mann_whitney": {
+        "u": 96.0,
+        "z": -0.664,
+        "p": 0.506915
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.032798
+    },
+    "flat_grey vs pixel_shuffled": {
+      "zoe_corr_mann_whitney": {
+        "u": 100.0,
+        "z": -0.498,
+        "p": 0.61867
+      },
+      "pass_rate_fisher_one_sided_right_worse": 0.349925
+    }
+  },
+  "unit_of_analysis": "flight (per-flight mean zoe_corr); frames are autocorrelated and are not pooled",
+  "pass_rate_caveat": "Direction only at this n. Do not report as a result.",
+  "flights": [
+    {
+      "folder": "000_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 85,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3306,
+      "p10_zoe_corr": 0.263,
+      "minimum_obstacle_clearance_m": 0.047350134553353775,
+      "poster_sha256": null
+    },
+    {
+      "folder": "001_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 25,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.31784,
+      "p10_zoe_corr": 0.288,
+      "minimum_obstacle_clearance_m": 0.05352233384666818,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "002_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 92,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3235108695652174,
+      "p10_zoe_corr": 0.255,
+      "minimum_obstacle_clearance_m": 0.04650145715052305,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "003_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33021052631578945,
+      "p10_zoe_corr": 0.303,
+      "minimum_obstacle_clearance_m": 0.027676249305914103,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "004_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3322,
+      "p10_zoe_corr": 0.309,
+      "minimum_obstacle_clearance_m": 0.01749212047194533,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "005_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3357727272727273,
+      "p10_zoe_corr": 0.295,
+      "minimum_obstacle_clearance_m": 0.03215109379356705,
+      "poster_sha256": null
+    },
+    {
+      "folder": "006_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32195833333333335,
+      "p10_zoe_corr": 0.284,
+      "minimum_obstacle_clearance_m": 0.039249122980878626,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "007_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 18,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3333333333333333,
+      "p10_zoe_corr": 0.29,
+      "minimum_obstacle_clearance_m": 0.0302222815144063,
+      "poster_sha256": null
+    },
+    {
+      "folder": "008_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3402631578947368,
+      "p10_zoe_corr": 0.311,
+      "minimum_obstacle_clearance_m": 0.0302222815144063,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "009_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 16,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3449375,
+      "p10_zoe_corr": 0.308,
+      "minimum_obstacle_clearance_m": 0.025747437026753348,
+      "poster_sha256": null
+    },
+    {
+      "folder": "010_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32934177215189875,
+      "p10_zoe_corr": 0.246,
+      "minimum_obstacle_clearance_m": 0.03415705856389424,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "011_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 84,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3250952380952381,
+      "p10_zoe_corr": 0.256,
+      "minimum_obstacle_clearance_m": 0.0866207525570667,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "012_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3345909090909091,
+      "p10_zoe_corr": 0.311,
+      "minimum_obstacle_clearance_m": 0.029913671549740575,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "013_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33404761904761904,
+      "p10_zoe_corr": 0.305,
+      "minimum_obstacle_clearance_m": 0.016720595560281028,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "014_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 81,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33614814814814814,
+      "p10_zoe_corr": 0.255,
+      "minimum_obstacle_clearance_m": 0.047272982062187344,
+      "poster_sha256": null
+    },
+    {
+      "folder": "015_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 82,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32940243902439026,
+      "p10_zoe_corr": 0.253,
+      "minimum_obstacle_clearance_m": 0.06717832478312631,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "016_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3168354430379747,
+      "p10_zoe_corr": 0.236,
+      "minimum_obstacle_clearance_m": 0.0602346005781476,
+      "poster_sha256": null
+    },
+    {
+      "folder": "017_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32095833333333335,
+      "p10_zoe_corr": 0.291,
+      "minimum_obstacle_clearance_m": 0.03539149842255712,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "018_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 82,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3208170731707317,
+      "p10_zoe_corr": 0.241,
+      "minimum_obstacle_clearance_m": 0.05012762423534526,
+      "poster_sha256": null
+    },
+    {
+      "folder": "019_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3339,
+      "p10_zoe_corr": 0.301,
+      "minimum_obstacle_clearance_m": 0.03747461568405073,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "020_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 23,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32869565217391306,
+      "p10_zoe_corr": 0.281,
+      "minimum_obstacle_clearance_m": 0.04912464185018167,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "021_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3292727272727273,
+      "p10_zoe_corr": 0.305,
+      "minimum_obstacle_clearance_m": 0.03299977119639778,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "022_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33142105263157895,
+      "p10_zoe_corr": 0.314,
+      "minimum_obstacle_clearance_m": 0.027290486850081952,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "023_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32879166666666665,
+      "p10_zoe_corr": 0.282,
+      "minimum_obstacle_clearance_m": 0.04812165946501808,
+      "poster_sha256": null
+    },
+    {
+      "folder": "024_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 87,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33213793103448275,
+      "p10_zoe_corr": 0.244,
+      "minimum_obstacle_clearance_m": 0.06602103741562987,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "025_clean",
+      "arm": "clean",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 24,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3329583333333333,
+      "p10_zoe_corr": 0.301,
+      "minimum_obstacle_clearance_m": 0.04812165946501808,
+      "poster_sha256": null
+    },
+    {
+      "folder": "026_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33336363636363636,
+      "p10_zoe_corr": 0.306,
+      "minimum_obstacle_clearance_m": 0.028062011761746254,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "027_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 78,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32191025641025645,
+      "p10_zoe_corr": 0.238,
+      "minimum_obstacle_clearance_m": 0.054371011249498905,
+      "poster_sha256": null
+    },
+    {
+      "folder": "028_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 77,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33549350649350645,
+      "p10_zoe_corr": 0.265,
+      "minimum_obstacle_clearance_m": 0.04958755679718024,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "029_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33622727272727276,
+      "p10_zoe_corr": 0.311,
+      "minimum_obstacle_clearance_m": 0.015254698228118858,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "030_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 76,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3303157894736842,
+      "p10_zoe_corr": 0.252,
+      "minimum_obstacle_clearance_m": 0.05005047174417883,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "031_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33290476190476187,
+      "p10_zoe_corr": 0.3,
+      "minimum_obstacle_clearance_m": 0.03423421105506067,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "032_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 88,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33279545454545456,
+      "p10_zoe_corr": 0.247,
+      "minimum_obstacle_clearance_m": 0.0679498496947906,
+      "poster_sha256": null
+    },
+    {
+      "folder": "033_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32926315789473687,
+      "p10_zoe_corr": 0.306,
+      "minimum_obstacle_clearance_m": 0.02474445464158976,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "034_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 93,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3218279569892473,
+      "p10_zoe_corr": 0.239,
+      "minimum_obstacle_clearance_m": 0.05676273847565824,
+      "poster_sha256": null
+    },
+    {
+      "folder": "035_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 22,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3354090909090909,
+      "p10_zoe_corr": 0.291,
+      "minimum_obstacle_clearance_m": 0.05275080893500388,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "036_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 81,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.32380246913580246,
+      "p10_zoe_corr": 0.247,
+      "minimum_obstacle_clearance_m": 0.05259650395267102,
+      "poster_sha256": null
+    },
+    {
+      "folder": "037_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 81,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33765432098765435,
+      "p10_zoe_corr": 0.268,
+      "minimum_obstacle_clearance_m": 0.04789020199151879,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "038_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 19,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.33689473684210525,
+      "p10_zoe_corr": 0.307,
+      "minimum_obstacle_clearance_m": 0.03446566852855996,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "039_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 77,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3336103896103896,
+      "p10_zoe_corr": 0.259,
+      "minimum_obstacle_clearance_m": 0.05159352156750743,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    },
+    {
+      "folder": "040_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 20,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3328,
+      "p10_zoe_corr": 0.3,
+      "minimum_obstacle_clearance_m": 0.031225263899569887,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "041_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 85,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3244352941176471,
+      "p10_zoe_corr": 0.244,
+      "minimum_obstacle_clearance_m": 0.048430269429683794,
+      "poster_sha256": null
+    },
+    {
+      "folder": "042_pixel_shuffled",
+      "arm": "pixel_shuffled",
+      "outcome": "collision",
+      "passed": false,
+      "frames": 21,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3403333333333333,
+      "p10_zoe_corr": 0.318,
+      "minimum_obstacle_clearance_m": 0.019806695206938237,
+      "poster_sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d"
+    },
+    {
+      "folder": "043_clean",
+      "arm": "clean",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 94,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3358617021276596,
+      "p10_zoe_corr": 0.264,
+      "minimum_obstacle_clearance_m": 0.03624017582538785,
+      "poster_sha256": null
+    },
+    {
+      "folder": "044_flat_grey",
+      "arm": "flat_grey",
+      "outcome": "goal_reached",
+      "passed": true,
+      "frames": 79,
+      "skipped_low_edge_frames": 0,
+      "mean_zoe_corr": 0.3309113924050633,
+      "p10_zoe_corr": 0.255,
+      "minimum_obstacle_clearance_m": 0.03755176817521716,
+      "poster_sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee"
+    }
+  ]
+}

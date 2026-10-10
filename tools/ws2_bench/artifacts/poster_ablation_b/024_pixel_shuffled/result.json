@@ -1,0 +1,50 @@
+{
+  "schema_version": 3,
+  "scenario_id": "poster ablation: pixel_shuffled",
+  "configuration_hash": "05a808dfc24ea0fe554fbfb8780bdb975fdf363b87538b151640e6fc633f7b4e",
+  "outcome": "goal_reached",
+  "termination": {
+    "source": "planner",
+    "reason": "goal_region",
+    "detail": null
+  },
+  "result_dir": "/root/AirStack/robot/ros_ws/ws2_runtime/campaigns/poster_ablation_b/024_pixel_shuffled",
+  "metrics": {
+    "time_to_goal_s": 43.52999902702868,
+    "path_length_m": 8.557764031620904,
+    "direct_start_to_goal_distance_m": 8.002153488199868,
+    "path_efficiency": 0.9350752671646405,
+    "mission_progress_percent": 93.7992915163252,
+    "final_distance_to_goal_m": 0.49619021021948895,
+    "planner_hold_count": 1,
+    "planner_recovery_count": 0,
+    "minimum_obstacle_clearance_m": 0.06602103741562987,
+    "odometry_sample_count": 695,
+    "odometry_start_sim_time_s": 34.449999229982495,
+    "odometry_end_sim_time_s": 77.97999825701118,
+    "max_displacement_m": 7.630073577265061,
+    "mean_speed_m_s": 0.19659462951761636,
+    "stationary_fraction": 0.023960535588442564,
+    "clearance_at_contact_m": null,
+    "surface_distance_at_contact_m": null,
+    "measured_hull_radius_m": 0.3482276960663908,
+    "mean_obstacle_clearance_m": 0.5805148972543783,
+    "minimum_surface_distance_m": 0.06602103741562987,
+    "clearance_envelope_m": 0.3482276960663908,
+    "clearance_envelope_source": "measured_hull",
+    "clearance_basis": "oriented_box",
+    "box_half_extents_m": [
+      0.2607726393896946,
+      0.23885686110485096,
+      0.05683400109410286
+    ],
+    "clearance_method": "PhysX overlap of the vehicle oriented collider box, grown until it touches; ground/ceiling included. The value is hull-to-surface distance along the direction of closest approach, so zero is contact and negative is penetration.",
+    "mission_duration_sim_s": 43.52999902702868,
+    "planner_wall_duration_s": 207.68969004508108
+  },
+  "bag_recorded": false,
+  "frames_written": 0,
+  "planner_command_count": 48,
+  "cleanup_errors": [],
+  "wall_duration_s": 274.0779993389733
+}
