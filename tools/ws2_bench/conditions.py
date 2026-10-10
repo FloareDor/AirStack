@@ -17,7 +17,9 @@ PATCH_POLICY='original_texture_size_only_v1'
 POSTERS={'fcrn_patch':'assets/learned_patch.png',
          'phase_scrambled':'assets/controls/phase_scrambled.png',
          'pixel_shuffled':'assets/controls/pixel_shuffled.png',
-         'flat_grey':'assets/controls/flat_grey.png'}
+         'flat_grey':'assets/controls/flat_grey.png',
+         'contrast_50':'assets/controls/contrast_50.png',
+         'contrast_25':'assets/controls/contrast_25.png'}
 POSTER_POLICY='scene_texture_no_efficacy_claim_v1'
 
 

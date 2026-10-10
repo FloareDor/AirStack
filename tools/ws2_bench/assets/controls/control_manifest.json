@@ -24,6 +24,54 @@
     "mean_abs_gradient": 35.2405
   },
   "controls": {
+    "contrast_25": {
+      "filename": "contrast_25.png",
+      "sha256": "562eae47ab38cf384b69ea48c53e033c493b3152dc5bcddca29e80599a070278",
+      "width": 128,
+      "height": 128,
+      "description": "contrast_25",
+      "statistics": {
+        "mean_rgb": [
+          108.9032,
+          83.0899,
+          73.2485
+        ],
+        "std_rgb": [
+          22.0276,
+          19.6344,
+          19.3355
+        ],
+        "mean_luminance": 87.8673,
+        "std_luminance": 17.1121,
+        "min_luminance": 65.7466,
+        "max_luminance": 129.534,
+        "mean_abs_gradient": 8.831
+      }
+    },
+    "contrast_50": {
+      "filename": "contrast_50.png",
+      "sha256": "9bd21fa537c7501289ce7d0ba177156273a1d0fb5fe1736b0ddd7fd71517431d",
+      "width": 128,
+      "height": 128,
+      "description": "contrast_50",
+      "statistics": {
+        "mean_rgb": [
+          108.7116,
+          83.3718,
+          73.4811
+        ],
+        "std_rgb": [
+          44.4349,
+          39.059,
+          38.6242
+        ],
+        "mean_luminance": 88.0449,
+        "std_luminance": 34.1215,
+        "min_luminance": 44.1902,
+        "max_luminance": 171.4028,
+        "mean_abs_gradient": 17.5999
+      }
+    },
     "flat_grey": {
       "filename": "flat_grey.png",
       "sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee",

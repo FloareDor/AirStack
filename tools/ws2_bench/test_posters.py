@@ -99,3 +99,21 @@ def test_invalid_poster_conditions(bad):
 
 def test_poster_defaults_off_so_historical_conditions_are_unchanged():
     assert validate({'layout': 'easy', 'layout_seed': 2})['poster'] is None
+
+
+@pytest.mark.parametrize('name,factor', [('contrast_50', .5), ('contrast_25', .25)])
+def test_contrast_dose_series_keeps_the_mean_and_scales_only_the_amplitude(name, factor):
+    # The dose arm must differ from the patch in amplitude and nothing else:
+    # same mean colour, and a luminance sd scaled by exactly the factor. If the
+    # mean moved too, a dose effect could be a brightness effect.
+    learned, dosed = MANIFEST['learned_patch'], MANIFEST['controls'][name]['statistics']
+    assert dosed['mean_luminance'] == pytest.approx(learned['mean_luminance'], abs=.6)
+    assert dosed['mean_rgb'] == pytest.approx(learned['mean_rgb'], abs=.6)
+    assert dosed['std_luminance'] == pytest.approx(learned['std_luminance']*factor, rel=.02)
+    assert dosed['mean_abs_gradient'] == pytest.approx(learned['mean_abs_gradient']*factor, rel=.02)
+
+
+def test_the_dose_series_is_monotone_in_contrast():
+    sd = {n: MANIFEST['controls'][n]['statistics']['std_luminance']
+          for n in ('flat_grey', 'contrast_25', 'contrast_50')}
+    assert 0 == sd['flat_grey'] < sd['contrast_25'] < sd['contrast_50'] < MANIFEST['learned_patch']['std_luminance']

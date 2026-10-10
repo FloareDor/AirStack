@@ -73,8 +73,32 @@ def flat_grey(rgb, rng):
     return np.broadcast_to(rgb.reshape(-1, rgb.shape[2]).mean(axis=0), rgb.shape).copy()
 
 
+def _scaled_contrast(rgb, factor):
+    """The patch's own structure, scaled toward its mean colour."""
+    mean = rgb.reshape(-1, rgb.shape[2]).mean(axis=0)
+    return mean + factor*(rgb-mean)
+
+
+def contrast_50(rgb, rng):
+    return _scaled_contrast(rgb, .5)
+
+
+def contrast_25(rgb, rng):
+    return _scaled_contrast(rgb, .25)
+
+
+# contrast_50 and contrast_25 are a dose series on the variable the ws2-pilot-14
+# arms point at. They keep the patch's exact spatial structure and mean colour
+# and scale only the amplitude, so the spectrum's SHAPE is untouched and
+# scaling toward the mean can never clip. A band-pass series was the obvious
+# alternative and does not work: an 8-bit image cannot hold the patch's 68.3
+# contrast inside one octave without clipping, clipping spreads energy back
+# across the bands it was meant to separate, and the largest contrast every
+# band can reach unclipped is 10.6, low enough that every arm would likely read
+# null. Dose response is also the specific thing the original patch result
+# lacked across its 0.3/0.6/0.9 m sizes.
 DERIVATIONS = {'phase_scrambled': phase_scrambled, 'pixel_shuffled': pixel_shuffled,
-               'flat_grey': flat_grey}
+               'flat_grey': flat_grey, 'contrast_50': contrast_50, 'contrast_25': contrast_25}
 # Statistics a control is supposed to preserve, checked and recorded rather
 # than asserted in prose. luminance is Rec. 709.
 LUMINANCE = np.array([.2126, .7152, .0722])
