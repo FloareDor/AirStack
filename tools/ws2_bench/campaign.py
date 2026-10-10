@@ -8,7 +8,10 @@ from conditions import DIFFICULTY_COUNTS,PATCH_POLICY
 
 def clean_twin(c):
     clean=copy.deepcopy(c)
-    clean['condition'].update(rgb_noise=0.,depth_noise=0.,delay=0.,patch_enabled=False)
+    # poster too: a clean twin that kept the poster would be the treatment arm
+    # wearing the control's label, which is the one mistake this whole study
+    # cannot survive.
+    clean['condition'].update(rgb_noise=0.,depth_noise=0.,delay=0.,patch_enabled=False,poster=None)
     return resolved(clean)
 
 def candidates(backend,budget,seed,planners,matrix=False,profile='sensors',difficulty=None):

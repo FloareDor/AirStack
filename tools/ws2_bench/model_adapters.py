@@ -42,7 +42,7 @@ def register(adapter):
         raise ValueError('Supported evaluation contracts are goal and avoidance')
     if adapter.mission_defaults.get('mission_mode')!=adapter.mission_mode:
         raise ValueError('Mission mode differs from adapter defaults')
-    if set(adapter.attacks)-{'rgb_noise','delay','fcrn_patch'}:
+    if set(adapter.attacks)-{'rgb_noise','delay','fcrn_patch','scene_poster'}:
         raise ValueError('Unknown attack capability')
     REGISTRY[adapter.name]=adapter
 
@@ -55,6 +55,18 @@ def validate_attacks(planner, condition, allow_patch=True):
     for key,cap in [('rgb_noise','rgb_noise'),('delay','delay'),('patch_enabled','fcrn_patch')]:
         if condition.get(key) and (cap not in capabilities or (cap=='fcrn_patch' and not allow_patch)):
             raise ValueError(f'{planner}: {cap} is outside the selected attack capabilities; no ZoeDepth patch is available')
+    # scene_poster is deliberately a separate gate from fcrn_patch rather than a
+    # relaxation of it. fcrn_patch means 'run this planner under an adversarial
+    # patch built for its depth model', which stays refused for MonoNav.
+    # scene_poster means 'hang a registered image on the column and measure what
+    # the perception stack does', which is answerable for any planner and claims
+    # nothing. The learned patch is available on this axis only as one image
+    # among its own matched controls -- the comparison is the deliverable, and a
+    # poster arm reported on its own, without its controls, would smuggle back
+    # exactly the attack claim the fcrn_patch gate exists to refuse.
+    if condition.get('poster') and 'scene_poster' not in capabilities:
+        raise ValueError(f'{planner}: scene_poster is outside the selected attack capabilities; '
+                         'this planner is not registered for scene-texture studies')
     return condition
 
 COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displacement=1.,
@@ -89,6 +101,15 @@ COMMON=dict(goal_distance=8.,goal_radius=.5,minimum_travel=3.,minimum_displaceme
 # explicitly declines to infer efficacy. MonoNav runs ZoeDepth, so the patch is
 # a texture it was never optimised against. Existing mononav+patch scenarios
 # stay on disk as data; new ones are refused at resolve time, which is correct.
+#
+# scene_poster IS granted, and is not a quiet reversal of that. The open
+# question the fcrn_patch refusal leaves behind is why MonoNav degraded 58% ->
+# 38% under the patch at all. Two accounts fit: adversarial structure that
+# happened to transfer, or an ordinary bright high-contrast object that
+# ZoeDepth mis-reads. Those differ in what they predict for a structure-free
+# image with the same colours and contrast, so the poster axis flies the
+# learned image against exactly those controls. Granting it buys the ablation
+# that decides the question; it grants no claim that any image is an attack.
 register(ModelAdapter('mononav',WORKSPACE/'MonoNav','mononav-demo:2.7.1-cu128','mononav_airstack.py','goal',
     dict(COMMON,mission_mode='goal',timeout=180.,initial_speed=.4,maximum_speed=.5,velocity=.3,
          max_unmapped_gap=0.,zoe_degenerate_min_correspondence=.12,min_dist2obs=.8),
@@ -100,7 +121,7 @@ register(ModelAdapter('mononav',WORKSPACE/'MonoNav','mononav-demo:2.7.1-cu128','
      '--min-dist2obs','{min_dist2obs}',
      '--max-unmapped-gap','{max_unmapped_gap}',
      '--zoe-degenerate-min-correspondence','{zoe_degenerate_min_correspondence}'),
-    torch_cache=True))
+    torch_cache=True,attacks=('rgb_noise','delay','scene_poster')))
 register(ModelAdapter('kim',WORKSPACE/'Collision-avoidance','collision-avoidance-airstack:1.0',
     'collision_avoidance_airstack.py','avoidance',
     dict(COMMON,mission_mode='avoidance',timeout=120.,initial_speed=.2,maximum_speed=.35,velocity=.4),

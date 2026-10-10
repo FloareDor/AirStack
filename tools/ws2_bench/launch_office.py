@@ -46,6 +46,11 @@ install()
 from scipy.spatial.transform import Rotation
 
 OFFICE = os.environ.get("WS2_OFFICE_USD", "/tmp/ws2_assets/Isaac/4.5/Isaac/Environments/Office/office.usd")
+# The texture is fixed for the life of the process: every episode launches its
+# own simulator, and the only runtime change is the quad's visibility (patch
+# timing). episode.py picks the file from the condition's poster and reports
+# what it chose in WS2_PATCH_KIND, so scene_status and provenance name the
+# image that was actually rendered rather than the default.
 PATCH = os.environ.get("WS2_PATCH_TEXTURE", str(HERE / "assets/learned_patch.png"))
 PATCH_KIND = os.environ.get("WS2_PATCH_KIND", "Rui learned FCRN patch")
 import hashlib
@@ -159,7 +164,7 @@ def apply_condition(raw):
         y = float((b.GetMin()[1]+b.GetMax()[1])/2)
         half = c["patch_size"]/2; z = PATCH_HEIGHT_M
         quad.GetPointsAttr().Set([(x,y-half,z-half),(x,y+half,z-half),(x,y+half,z+half),(x,y-half,z+half)])
-        if c['patch_enabled']:
+        if c['patch_enabled'] or c.get('poster'):
             UsdGeom.Imageable(quad).MakeVisible()
         else:
             UsdGeom.Imageable(quad).MakeInvisible()

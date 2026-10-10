@@ -2,7 +2,7 @@
 import argparse,datetime,fcntl,hashlib,json,math,os,re,shutil,subprocess,time,urllib.request
 from pathlib import Path
 import yaml
-from conditions import validate
+from conditions import validate,POSTERS,POSTER_POLICY
 from run_conditions import RUNTIME,HERE,bridge_url,apply,scene_command,get_frame
 from ravi_metrics import summarize
 from mission import defaults,motion_metrics,horizon_outcome
@@ -192,6 +192,21 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
         provenance['patch']=json.loads((HERE/'assets/patch_manifest.json').read_text())
         if sha256_file(HERE/'assets/learned_patch.png')!=provenance['patch']['sha256']:
             raise ValueError('Installed patch differs from its manifest')
+        # A poster run renders a different image than provenance['patch']
+        # describes, and on the controls a different image entirely. Record the
+        # file that is really bound, so a replay cannot be handed the Rui
+        # manifest for a flight that never showed the Rui patch.
+        poster=c['condition'].get('poster')
+        provenance['poster']={'name':poster,'policy':POSTER_POLICY,
+            'claim':'Scene texture. No attack efficacy is claimed for any poster, learned or control.'}
+        if poster:
+            controls=json.loads((HERE/'assets/controls/control_manifest.json').read_text())
+            provenance['poster'].update(texture=POSTERS[poster],sha256=sha256_file(HERE/POSTERS[poster]),
+                derivation=controls['controls'].get(poster,{'description':'the registered learned patch itself'}),
+                control_seed=controls['seed'])
+            for name,entry in controls['controls'].items():
+                if sha256_file(HERE/POSTERS[name])!=entry['sha256']:
+                    raise ValueError(f'Control poster {name} differs from control_manifest.json; regenerate with make_control_posters.py')
         model_files=[p for pattern in adapter.weight_patterns for p in adapter.repository.glob(pattern)]
         if adapter.weight_patterns and not model_files:raise ValueError('Adapter weight files are missing')
         provenance['model_weights']={str(p.relative_to(adapter.repository)):sha256_file(p) for p in model_files}
@@ -207,7 +222,8 @@ def run_episode(raw,output,wait_for_recording=False,camera='overview',record_bag
         initial_condition=dict(c['condition'],patch_enabled=patch_active(c,0))
         atomic(RUNTIME/'episode.json',{'condition':initial_condition,'spawn':[-4,0,.07],'fault':c['fault']})
         env=os.environ.copy();env.update(WS2_CONTROL_MODE='bench',WS2_EPISODE_CONFIG='/isaac-sim/AirStack/robot/ros_ws/ws2_runtime/episode.json',
-            WS2_PATCH_TEXTURE='/isaac-sim/AirStack/tools/ws2_bench/assets/learned_patch.png',WS2_PATCH_KIND='Rui learned FCRN patch')
+            WS2_PATCH_TEXTURE='/isaac-sim/AirStack/tools/ws2_bench/'+(POSTERS[poster] if poster else 'assets/learned_patch.png'),
+            WS2_PATCH_KIND=f'poster:{poster} (scene texture, no efficacy claimed)' if poster else 'Rui learned FCRN patch')
         phase='startup';event('starting_simulator');cmd(['bash',str(HERE/'start_existing.sh')],log,
             timeout=float(os.environ.get('WS2_ROBOT_STARTUP_TIMEOUT','180')),env=env)
         url=bridge_url();deadline=time.monotonic()+float(os.environ.get('WS2_STARTUP_TIMEOUT','360'));previous=None;ready_count=0

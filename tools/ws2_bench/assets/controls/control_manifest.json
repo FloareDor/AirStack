@@ -1,0 +1,100 @@
+{
+  "derived_from": {
+    "filename": "learned_patch.png",
+    "sha256": "5b152747392afea6cc5af14aa25a3e8be9feb843781f1806bdde9753ceeccd80"
+  },
+  "seed": 20261010,
+  "generator": "make_control_posters.py",
+  "claim": "Scene texture only. No attack efficacy is claimed or implied for any poster here, learned or control.",
+  "learned_patch": {
+    "mean_rgb": [
+      108.9689,
+      83.1605,
+      73.3318
+    ],
+    "std_rgb": [
+      88.6906,
+      78.2561,
+      77.3995
+    ],
+    "mean_luminance": 87.9378,
+    "std_luminance": 68.3263,
+    "min_luminance": 0.0,
+    "max_luminance": 255.0,
+    "mean_abs_gradient": 35.2405
+  },
+  "controls": {
+    "flat_grey": {
+      "filename": "flat_grey.png",
+      "sha256": "96196ec5e6bbf097e6b7fe4f53b6be67835e248d0bba8ed3810777a8aebfd3ee",
+      "width": 128,
+      "height": 128,
+      "description": "flat_grey",
+      "statistics": {
+        "mean_rgb": [
+          109.0,
+          83.0,
+          73.0
+        ],
+        "std_rgb": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mean_luminance": 87.8056,
+        "std_luminance": 0.0,
+        "min_luminance": 87.8056,
+        "max_luminance": 87.8056,
+        "mean_abs_gradient": 0.0
+      }
+    },
+    "phase_scrambled": {
+      "filename": "phase_scrambled.png",
+      "sha256": "31e967533d0898d543dfe5ce52f3266d269038400691548b5c7a12cd422866ac",
+      "width": 128,
+      "height": 128,
+      "description": "phase_scrambled",
+      "statistics": {
+        "mean_rgb": [
+          108.9689,
+          83.1605,
+          73.3318
+        ],
+        "std_rgb": [
+          88.6906,
+          78.2561,
+          77.3995
+        ],
+        "mean_luminance": 87.9378,
+        "std_luminance": 76.0814,
+        "min_luminance": 0.0,
+        "max_luminance": 255.0,
+        "mean_abs_gradient": 53.2876
+      }
+    },
+    "pixel_shuffled": {
+      "filename": "pixel_shuffled.png",
+      "sha256": "40d5e98f501cbd17e3a0c09074167b7f55c14df205b66a9f48651a45753d6b0d",
+      "width": 128,
+      "height": 128,
+      "description": "pixel_shuffled",
+      "statistics": {
+        "mean_rgb": [
+          108.9689,
+          83.1605,
+          73.3318
+        ],
+        "std_rgb": [
+          88.6906,
+          78.2561,
+          77.3995
+        ],
+        "mean_luminance": 87.9378,
+        "std_luminance": 68.3263,
+        "min_luminance": 0.0,
+        "max_luminance": 255.0,
+        "mean_abs_gradient": 76.4907
+      }
+    }
+  }
+}
